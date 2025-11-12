@@ -682,7 +682,7 @@ def get_coverage_map():
     """API endpoint - mapa zasięgu sieci (aktywne heksagony H3)"""
     try:
         # Zmniejszony domyślny limit dla szybszego ładowania
-        limit = int(request.args.get('limit', 2000))
+        limit = int(request.args.get('limit', 50000))
         min_activity = int(request.args.get('min_activity', 1))
         
         db = MeshtasticDatabase(DB_PATH)
