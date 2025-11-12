@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>meshscout.guru - HAM Radio Vintage Design Preview</title>
+
+    <!-- Google Fonts - Retro/Vintage fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Courier+Prime&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', 'Courier Prime', monospace;
+            background: #2c2416;
+            color: #d4c5a0;
+            font-size: 16px;
+            line-height: 1.6;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.1) 2px,
+                    rgba(0, 0, 0, 0.1) 4px
+                );
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header - Radio Panel Style */
+        .header {
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border: 4px solid #8b7355;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow:
+                0 4px 0 #1a1410,
+                0 8px 20px rgba(0, 0, 0, 0.5),
+                inset 0 2px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid rgba(212, 197, 160, 0.2);
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        /* Radio screws decoration */
+        .screw {
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #6b5d4f 30%, #3d3020 70%);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.5);
+        }
+        .screw::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 1px;
+            background: #1a1410;
+        }
+        .screw.top-left { top: 15px; left: 15px; }
+        .screw.top-right { top: 15px; right: 15px; }
+        .screw.bottom-left { bottom: 15px; left: 15px; }
+        .screw.bottom-right { bottom: 15px; right: 15px; }
+
+        .header h1 {
+            font-family: 'VT323', monospace;
+            font-size: 42px;
+            color: #ff6b35;
+            text-align: center;
+            text-shadow:
+                0 0 10px rgba(255, 107, 53, 0.8),
+                2px 2px 0 rgba(0, 0, 0, 0.5);
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+        }
+
+        .callsign {
+            text-align: center;
+            font-size: 14px;
+            color: #8b7355;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Pixel Art Character Styles */
+        .pixel-character {
+            width: 80px;
+            height: 80px;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            display: inline-block;
+        }
+
+        /* Stats Panel - Like old radio meters */
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .meter {
+            background: linear-gradient(180deg, #2c2416 0%, #1a1410 100%);
+            border: 3px solid #8b7355;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow:
+                inset 0 2px 8px rgba(0, 0, 0, 0.5),
+                0 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .meter-label {
+            font-size: 11px;
+            color: #8b7355;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .meter-value {
+            font-family: 'VT323', monospace;
+            font-size: 36px;
+            color: #ff6b35;
+            text-align: center;
+            text-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+        }
+
+        .meter-bar {
+            height: 8px;
+            background: #1a1410;
+            border: 1px solid #8b7355;
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .meter-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35 0%, #ffa500 100%);
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.8);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* Radio Buttons */
+        .button-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .radio-button {
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 3px solid #8b7355;
+            border-radius: 6px;
+            padding: 12px 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            color: #d4c5a0;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow:
+                0 4px 0 #1a1410,
+                0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .radio-button::before {
+            content: "";
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #ff6b35;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(255, 107, 53, 0.8);
+        }
+
+        .radio-button:hover {
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
+            transform: translateY(2px);
+            box-shadow:
+                0 2px 0 #1a1410,
+                0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .radio-button:active,
+        .radio-button.active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .radio-button.active::before {
+            background: #00ff00;
+            box-shadow: 0 0 12px rgba(0, 255, 0, 0.8);
+        }
+
+        /* Panel Container */
+        .panel {
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border: 4px solid #8b7355;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow:
+                0 4px 0 #1a1410,
+                0 8px 20px rgba(0, 0, 0, 0.5),
+                inset 0 2px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .panel-title {
+            font-family: 'VT323', monospace;
+            font-size: 24px;
+            color: #ff6b35;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8b7355;
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.5);
+        }
+
+        .panel-title::before {
+            content: "▶ ";
+            color: #ff6b35;
+        }
+
+        /* Player Card with Pixel Art */
+        .player-card {
+            background: linear-gradient(180deg, #2c2416 0%, #1a1410 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .player-card:hover {
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .player-avatar {
+            width: 64px;
+            height: 64px;
+            background: #1a1410;
+            border: 2px solid #ff6b35;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Pixel Art Character SVG */
+        .pixel-char {
+            width: 48px;
+            height: 48px;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-rank {
+            font-family: 'VT323', monospace;
+            font-size: 28px;
+            color: #ffa500;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.6);
+            min-width: 50px;
+        }
+
+        .player-name {
+            color: #d4c5a0;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .player-callsign {
+            color: #8b7355;
+            font-size: 12px;
+            font-family: 'VT323', monospace;
+        }
+
+        .player-points {
+            font-family: 'VT323', monospace;
+            font-size: 32px;
+            color: #ff6b35;
+            text-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+            text-align: right;
+        }
+
+        .player-points small {
+            font-size: 16px;
+            color: #8b7355;
+        }
+
+        /* Data Table - Radio Log Style */
+        .radio-log {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #1a1410;
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .radio-log thead {
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 100%);
+        }
+
+        .radio-log th {
+            color: #ff6b35;
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #8b7355;
+        }
+
+        .radio-log td {
+            padding: 10px;
+            border-bottom: 1px solid #3d3020;
+            color: #d4c5a0;
+            font-size: 14px;
+        }
+
+        .radio-log tr:hover {
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .radio-log .status-confirmed {
+            color: #00ff00;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        }
+
+        .radio-log .status-pending {
+            color: #ffa500;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.5);
+        }
+
+        .radio-log .points {
+            color: #ffa500;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.5);
+        }
+
+        /* Map Preview - Minimalist */
+        .map-preview {
+            background: #1a1410;
+            border: 3px solid #8b7355;
+            border-radius: 4px;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .map-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(139, 115, 85, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139, 115, 85, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .map-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(44, 36, 22, 0.95);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            color: #d4c5a0;
+        }
+
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Signal Indicator */
+        .signal-indicator {
+            display: flex;
+            gap: 3px;
+            align-items: flex-end;
+        }
+
+        .signal-bar {
+            width: 4px;
+            background: #8b7355;
+            border-radius: 1px;
+        }
+
+        .signal-bar.active {
+            background: #00ff00;
+            box-shadow: 0 0 4px rgba(0, 255, 0, 0.6);
+        }
+
+        .signal-bar:nth-child(1) { height: 6px; }
+        .signal-bar:nth-child(2) { height: 10px; }
+        .signal-bar:nth-child(3) { height: 14px; }
+        .signal-bar:nth-child(4) { height: 18px; }
+        .signal-bar:nth-child(5) { height: 22px; }
+
+        /* Radio Dial */
+        .radio-dial {
+            width: 120px;
+            height: 120px;
+            margin: 20px auto;
+            background: radial-gradient(circle, #2c2416 0%, #1a1410 100%);
+            border: 4px solid #8b7355;
+            border-radius: 50%;
+            position: relative;
+            box-shadow:
+                inset 0 4px 8px rgba(0, 0, 0, 0.5),
+                0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .radio-dial::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            height: 90%;
+            border: 1px solid rgba(139, 115, 85, 0.3);
+            border-radius: 50%;
+        }
+
+        .dial-needle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 3px;
+            height: 40%;
+            background: #ff6b35;
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(45deg);
+            box-shadow: 0 0 6px rgba(255, 107, 53, 0.8);
+            animation: sweep 3s ease-in-out infinite;
+        }
+
+        @keyframes sweep {
+            0%, 100% { transform: translate(-50%, -100%) rotate(-45deg); }
+            50% { transform: translate(-50%, -100%) rotate(45deg); }
+        }
+
+        .dial-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            background: #8b7355;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Color Palette Display */
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .color-swatch {
+            height: 60px;
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-family: 'VT323', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="screw top-left"></div>
+            <div class="screw top-right"></div>
+            <div class="screw bottom-left"></div>
+            <div class="screw bottom-right"></div>
+
+            <h1>MESHSCOUT.GURU</h1>
+            <div class="callsign">◆ HAM RADIO NETWORK ◆</div>
+        </div>
+
+        <!-- Stats Panel - Radio Meters -->
+        <div class="stats-panel">
+            <div class="meter">
+                <div class="meter-label">◆ Active Devices</div>
+                <div class="meter-value">142</div>
+                <div class="meter-bar">
+                    <div class="meter-bar-fill" style="width: 85%;"></div>
+                </div>
+            </div>
+            <div class="meter">
+                <div class="meter-label">◆ Operators</div>
+                <div class="meter-value">89</div>
+                <div class="meter-bar">
+                    <div class="meter-bar-fill" style="width: 60%;"></div>
+                </div>
+            </div>
+            <div class="meter">
+                <div class="meter-label">◆ Transmissions</div>
+                <div class="meter-value">2547</div>
+                <div class="meter-bar">
+                    <div class="meter-bar-fill" style="width: 95%;"></div>
+                </div>
+            </div>
+            <div class="meter">
+                <div class="meter-label">◆ Coverage</div>
+                <div class="meter-value">324 km²</div>
+                <div class="meter-bar">
+                    <div class="meter-bar-fill" style="width: 70%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Radio Buttons -->
+        <div class="button-panel">
+            <button class="radio-button active">Ranking</button>
+            <button class="radio-button">Connections</button>
+            <button class="radio-button">Coverage</button>
+            <button class="radio-button">QSL Cards</button>
+            <button class="radio-button">Rules</button>
+        </div>
+
+        <!-- Top Operators Panel -->
+        <div class="panel">
+            <h2 class="panel-title">Top Radio Operators</h2>
+
+            <div class="player-card">
+                <div class="player-rank">01</div>
+                <div class="player-avatar">
+                    <!-- Pixel Art Character with Radio Pack -->
+                    <svg class="pixel-char" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Character body -->
+                        <rect x="6" y="4" width="4" height="2" fill="#d4c5a0"/>
+                        <rect x="5" y="6" width="6" height="4" fill="#4a3f2e"/>
+                        <rect x="4" y="10" width="3" height="4" fill="#3d3020"/>
+                        <rect x="9" y="10" width="3" height="4" fill="#3d3020"/>
+                        <!-- Head -->
+                        <rect x="6" y="2" width="4" height="2" fill="#d4c5a0"/>
+                        <!-- Radio pack on back -->
+                        <rect x="10" y="5" width="4" height="4" fill="#8b7355"/>
+                        <rect x="11" y="6" width="2" height="1" fill="#ff6b35"/>
+                        <!-- Antenna -->
+                        <rect x="12" y="1" width="1" height="4" fill="#8b7355"/>
+                        <rect x="12" y="0" width="1" height="1" fill="#ff6b35"/>
+                    </svg>
+                </div>
+                <div class="player-info">
+                    <div class="player-name">RadioMaster</div>
+                    <div class="player-callsign">!a1b2c3d4</div>
+                </div>
+                <div class="signal-indicator">
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar active"></div>
+                </div>
+                <div class="player-points">1,247 <small>pts</small></div>
+            </div>
+
+            <div class="player-card">
+                <div class="player-rank">02</div>
+                <div class="player-avatar">
+                    <svg class="pixel-char" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="6" y="4" width="4" height="2" fill="#d4c5a0"/>
+                        <rect x="5" y="6" width="6" height="4" fill="#4a3f2e"/>
+                        <rect x="4" y="10" width="3" height="4" fill="#3d3020"/>
+                        <rect x="9" y="10" width="3" height="4" fill="#3d3020"/>
+                        <rect x="6" y="2" width="4" height="2" fill="#d4c5a0"/>
+                        <rect x="10" y="5" width="4" height="4" fill="#8b7355"/>
+                        <rect x="11" y="6" width="2" height="1" fill="#ffa500"/>
+                        <rect x="12" y="1" width="1" height="4" fill="#8b7355"/>
+                        <rect x="12" y="0" width="1" height="1" fill="#ffa500"/>
+                    </svg>
+                </div>
+                <div class="player-info">
+                    <div class="player-name">MeshNinja</div>
+                    <div class="player-callsign">!e5f6g7h8</div>
+                </div>
+                <div class="signal-indicator">
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar"></div>
+                </div>
+                <div class="player-points">1,089 <small>pts</small></div>
+            </div>
+
+            <div class="player-card">
+                <div class="player-rank">03</div>
+                <div class="player-avatar">
+                    <svg class="pixel-char" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="6" y="4" width="4" height="2" fill="#d4c5a0"/>
+                        <rect x="5" y="6" width="6" height="4" fill="#4a3f2e"/>
+                        <rect x="4" y="10" width="3" height="4" fill="#3d3020"/>
+                        <rect x="9" y="10" width="3" height="4" fill="#3d3020"/>
+                        <rect x="6" y="2" width="4" height="2" fill="#d4c5a0"/>
+                        <rect x="10" y="5" width="4" height="4" fill="#8b7355"/>
+                        <rect x="11" y="6" width="2" height="1" fill="#00ff00"/>
+                        <rect x="12" y="1" width="1" height="4" fill="#8b7355"/>
+                        <rect x="12" y="0" width="1" height="1" fill="#00ff00"/>
+                    </svg>
+                </div>
+                <div class="player-info">
+                    <div class="player-name">SignalHunter</div>
+                    <div class="player-callsign">!x9y8z7w6</div>
+                </div>
+                <div class="signal-indicator">
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar active"></div>
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                </div>
+                <div class="player-points">892 <small>pts</small></div>
+            </div>
+        </div>
+
+        <!-- Radio Log -->
+        <div class="panel">
+            <h2 class="panel-title">Recent Transmissions</h2>
+            <table class="radio-log">
+                <thead>
+                    <tr>
+                        <th>FROM</th>
+                        <th>TO</th>
+                        <th>DISTANCE</th>
+                        <th>POINTS</th>
+                        <th>STATUS</th>
+                        <th>TIME</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>!a1b2c3d4</td>
+                        <td>!e5f6g7h8</td>
+                        <td>15.5 km</td>
+                        <td class="points">+15.5</td>
+                        <td class="status-confirmed">✓ QSL</td>
+                        <td>14:23</td>
+                    </tr>
+                    <tr>
+                        <td>!x9y8z7w6</td>
+                        <td>!m5n4o3p2</td>
+                        <td>23.2 km</td>
+                        <td class="points">+23.2</td>
+                        <td class="status-confirmed">✓ QSL</td>
+                        <td>14:15</td>
+                    </tr>
+                    <tr>
+                        <td>!q1r2s3t4</td>
+                        <td>!u5v6w7x8</td>
+                        <td>8.7 km</td>
+                        <td style="color: #8b7355;">0.0</td>
+                        <td class="status-pending">⧗ WAIT</td>
+                        <td>14:10</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Map with Dial -->
+        <div class="panel">
+            <h2 class="panel-title">Network Map</h2>
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px;">
+                <div class="map-preview">
+                    <div class="map-grid"></div>
+                    <div class="map-content">
+                        <!-- Minimalist pixel art icons -->
+                        <svg width="200" height="100" viewBox="0 0 200 100">
+                            <!-- Player characters (with radio packs) -->
+                            <g transform="translate(30, 30)">
+                                <rect x="6" y="4" width="4" height="2" fill="#d4c5a0"/>
+                                <rect x="5" y="6" width="6" height="4" fill="#4a3f2e"/>
+                                <rect x="10" y="5" width="4" height="4" fill="#8b7355"/>
+                                <rect x="12" y="1" width="1" height="4" fill="#ff6b35"/>
+                                <circle cx="12" cy="0" r="1" fill="#ff6b35"/>
+                            </g>
+
+                            <!-- Antenna towers (simple devices) -->
+                            <g transform="translate(100, 40)">
+                                <rect x="5" y="8" width="2" height="8" fill="#8b7355"/>
+                                <polygon points="6,0 2,8 10,8" fill="#8b7355"/>
+                                <circle cx="6" cy="5" r="1" fill="#ffa500"/>
+                            </g>
+
+                            <g transform="translate(160, 35)">
+                                <rect x="5" y="8" width="2" height="8" fill="#8b7355"/>
+                                <polygon points="6,0 2,8 10,8" fill="#8b7355"/>
+                                <circle cx="6" cy="5" r="1" fill="#ffa500"/>
+                            </g>
+
+                            <!-- Connection lines -->
+                            <line x1="42" y1="42" x2="106" y2="48" stroke="#ff6b35" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
+                            <line x1="106" y1="48" x2="166" y2="43" stroke="#ff6b35" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
+                        </svg>
+
+                        <div style="margin-top: 20px; color: #8b7355; font-size: 14px;">
+                            [ Minimalist Network Visualization ]
+                        </div>
+                    </div>
+
+                    <div class="map-legend">
+                        <div class="legend-item">
+                            <div class="legend-icon">
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <rect x="6" y="4" width="4" height="2" fill="#d4c5a0"/>
+                                    <rect x="10" y="5" width="4" height="4" fill="#8b7355"/>
+                                    <rect x="12" y="1" width="1" height="4" fill="#ff6b35"/>
+                                </svg>
+                            </div>
+                            <span>Operator</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-icon">
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <rect x="7" y="8" width="2" height="6" fill="#8b7355"/>
+                                    <polygon points="8,2 4,8 12,8" fill="#8b7355"/>
+                                </svg>
+                            </div>
+                            <span>Antenna</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-icon">
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <line x1="2" y1="8" x2="14" y2="8" stroke="#ff6b35" stroke-width="1" stroke-dasharray="2,2"/>
+                                </svg>
+                            </div>
+                            <span>Signal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Radio Dial -->
+                <div>
+                    <div class="radio-dial">
+                        <div class="dial-needle"></div>
+                        <div class="dial-center"></div>
+                    </div>
+                    <div style="text-align: center; color: #8b7355; font-size: 12px; margin-top: 10px;">
+                        SIGNAL STRENGTH
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="panel">
+            <h2 class="panel-title">Color Palette - Vintage Radio</h2>
+            <div class="color-palette">
+                <div class="color-swatch" style="background: #2c2416; color: #d4c5a0;">#2c2416</div>
+                <div class="color-swatch" style="background: #3d3020; color: #d4c5a0;">#3d3020</div>
+                <div class="color-swatch" style="background: #8b7355; color: #1a1410;">#8b7355</div>
+                <div class="color-swatch" style="background: #d4c5a0; color: #1a1410;">#d4c5a0</div>
+                <div class="color-swatch" style="background: #ff6b35; color: #1a1410;">#ff6b35</div>
+                <div class="color-swatch" style="background: #ffa500; color: #1a1410;">#ffa500</div>
+                <div class="color-swatch" style="background: #00ff00; color: #1a1410;">#00ff00</div>
+                <div class="color-swatch" style="background: #1a1410; color: #d4c5a0;">#1a1410</div>
+            </div>
+        </div>
+
+        <!-- Design Notes -->
+        <div class="panel">
+            <h2 class="panel-title">Design Features</h2>
+            <div style="color: #d4c5a0; line-height: 1.8;">
+                <p><strong style="color: #ff6b35;">✓</strong> Vintage radio equipment aesthetic</p>
+                <p><strong style="color: #ff6b35;">✓</strong> Pixel art characters with radio packs and antennas</p>
+                <p><strong style="color: #ff6b35;">✓</strong> Operators = characters, Devices = antenna towers</p>
+                <p><strong style="color: #ff6b35;">✓</strong> Minimalist, clean design</p>
+                <p><strong style="color: #ff6b35;">✓</strong> Warm vintage colors (browns, beiges, orange)</p>
+                <p><strong style="color: #ff6b35;">✓</strong> Radio meters, dials, and panels</p>
+                <p><strong style="color: #ff6b35;">✓</strong> "QSL" terminology (HAM radio confirmation cards)</p>
+                <p><strong style="color: #ff6b35;">✓</strong> Signal strength indicators</p>
+                <p><strong style="color: #ff6b35;">✓</strong> Screws and physical details</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
