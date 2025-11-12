@@ -93,46 +93,28 @@ class MeshtasticDatabase:
                     result = cursor.execute("PRAGMA integrity_check").fetchone()
                     if result and result[0] != "ok":
                         logger.error(f"Baza danych jest uszkodzona: {result[0]}")
-                        # Spróbuj naprawić używając PRAGMA
-                        logger.warning("Próba naprawy bazy danych...")
-                        try:
-                            cursor.execute("PRAGMA writable_schema=ON")
-                            cursor.execute("PRAGMA integrity_check")
-                            cursor.execute("PRAGMA writable_schema=OFF")
-                            logger.info("Próba naprawy zakończona")
-                        except sqlite3.Error as repair_error:
-                            logger.error(f"Nie udało się naprawić bazy: {repair_error}")
-                            # Utwórz backup uszkodzonej bazy
-                            backup_path = self.db_path.with_suffix('.db.corrupted')
-                            import shutil
-                            shutil.copy2(self.db_path, backup_path)
-                            logger.warning(f"Uszkodzona baza zapisana jako: {backup_path}")
-                            # Usuń uszkodzoną bazę i utwórz nową
-                            self.conn.close()
-                            self.db_path.unlink()
-                            logger.info("Tworzenie nowej bazy danych...")
-                            self.conn = sqlite3.connect(
-                                self.db_path,
-                                check_same_thread=False,
-                                timeout=30.0
-                            )
-                            self.conn.row_factory = sqlite3.Row
-                            cursor = self.conn.cursor()
+                        logger.warning("Rozpoczynam odzyskiwanie danych z uszkodzonej bazy...")
+                        self._recover_corrupted_database()
+                        # Po odzyskaniu, ponownie połącz się z nową bazą
+                        self.conn = sqlite3.connect(
+                            self.db_path,
+                            check_same_thread=False,
+                            timeout=30.0
+                        )
+                        self.conn.row_factory = sqlite3.Row
+                        cursor = self.conn.cursor()
+                        logger.info("Baza danych odzyskana pomyślnie")
                     else:
                         logger.debug("Integralność bazy danych: OK")
                 except sqlite3.DatabaseError as e:
                     logger.error(f"Błąd sprawdzania integralności bazy: {e}")
                     # Jeśli nie można sprawdzić integralności, utwórz backup i nową bazę
-                    if "malformed" in str(e).lower() or "corrupt" in str(e).lower():
-                        logger.warning("Wykryto uszkodzoną bazę danych, tworzenie backupu...")
-                        backup_path = self.db_path.with_suffix('.db.corrupted')
-                        import shutil
+                    if "malformed" in str(e).lower() or "corrupt" in str(e).lower() or "database disk image is malformed" in str(e).lower():
+                        logger.warning("Wykryto uszkodzoną bazę danych, rozpoczynam odzyskiwanie...")
                         try:
                             self.conn.close()
-                            shutil.copy2(self.db_path, backup_path)
-                            self.db_path.unlink()
-                            logger.warning(f"Uszkodzona baza zapisana jako: {backup_path}")
-                            logger.info("Tworzenie nowej bazy danych...")
+                            self._recover_corrupted_database()
+                            # Ponownie połącz się z nową bazą
                             self.conn = sqlite3.connect(
                                 self.db_path,
                                 check_same_thread=False,
@@ -140,21 +122,25 @@ class MeshtasticDatabase:
                             )
                             self.conn.row_factory = sqlite3.Row
                             cursor = self.conn.cursor()
-                        except Exception as backup_error:
-                            logger.error(f"Błąd tworzenia backupu: {backup_error}")
+                            logger.info("Baza danych odzyskana pomyślnie")
+                        except Exception as recovery_error:
+                            logger.error(f"Błąd odzyskiwania bazy danych: {recovery_error}")
                             raise
 
             # Włącz WAL (Write-Ahead Logging) dla pełnej współbieżności
             # WAL pozwala na jednoczesne czytanie i pisanie do bazy
             cursor.execute("PRAGMA journal_mode=WAL")
 
-            # Optymalizacje dla współbieżności
-            cursor.execute("PRAGMA synchronous=NORMAL")  # Balans między wydajnością a bezpieczeństwem
+            # Optymalizacje dla współbieżności i zapobiegania korupcji
+            cursor.execute("PRAGMA synchronous=FULL")     # Pełna synchronizacja dla bezpieczeństwa danych
             cursor.execute("PRAGMA cache_size=-64000")    # 64MB cache
             cursor.execute("PRAGMA temp_store=MEMORY")    # Tymczasowe dane w pamięci
             cursor.execute("PRAGMA busy_timeout=30000")   # 30 sekund timeout
+            cursor.execute("PRAGMA wal_autocheckpoint=1000")  # Checkpoint co 1000 stron
+            cursor.execute("PRAGMA page_size=4096")       # Standardowy rozmiar strony
+            cursor.execute("PRAGMA auto_vacuum=INCREMENTAL")  # Automatyczne czyszczenie
 
-            logger.info("Włączono tryb WAL dla współbieżnego dostępu do bazy danych")
+            logger.info("Włączono tryb WAL z pełną synchronizacją dla bezpiecznego dostępu do bazy danych")
 
             # Tabela główna dla wiadomości
             cursor.execute("""
@@ -425,6 +411,133 @@ class MeshtasticDatabase:
         except sqlite3.Error as e:
             logger.error(f"Błąd inicjalizacji bazy danych: {e}")
             raise
+
+    def _recover_corrupted_database(self):
+        """
+        Odzyskuje dane z uszkodzonej bazy danych używając SQLite .recover
+        Tworzy backup uszkodzonej bazy i nową czystą bazę danych
+        """
+        import shutil
+        import subprocess
+        import tempfile
+        from datetime import datetime
+
+        try:
+            # Zamknij obecne połączenie jeśli jest otwarte
+            if self.conn:
+                try:
+                    self.conn.close()
+                except:
+                    pass
+
+            # Utwórz backup uszkodzonej bazy z timestampem
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_path = self.db_path.with_suffix(f'.corrupted.{timestamp}.db')
+            shutil.copy2(self.db_path, backup_path)
+            logger.warning(f"✓ Uszkodzona baza zapisana jako: {backup_path}")
+
+            # Spróbuj odzyskać dane używając sqlite3 .recover lub .dump
+            recovered_data_path = self.db_path.with_suffix('.recovered.sql')
+
+            # Metoda 1: Spróbuj użyć .recover (wymaga SQLite 3.37.0+)
+            logger.info("Próba odzyskania danych używając .recover...")
+            try:
+                result = subprocess.run(
+                    ['sqlite3', str(self.db_path), '.recover'],
+                    capture_output=True,
+                    text=True,
+                    timeout=60
+                )
+
+                if result.returncode == 0 and result.stdout:
+                    with open(recovered_data_path, 'w', encoding='utf-8') as f:
+                        f.write(result.stdout)
+                    logger.info(f"✓ Odzyskano dane używając .recover ({len(result.stdout)} bajtów)")
+                    recovery_method = 'recover'
+                else:
+                    raise Exception("Recover failed or returned no data")
+
+            except Exception as recover_error:
+                logger.warning(f".recover nie powiodło się: {recover_error}, próbuję .dump...")
+
+                # Metoda 2: Fallback do .dump (może odzyskać częściowe dane)
+                try:
+                    result = subprocess.run(
+                        ['sqlite3', str(self.db_path), '.dump'],
+                        capture_output=True,
+                        text=True,
+                        timeout=60
+                    )
+
+                    if result.returncode == 0 and result.stdout:
+                        with open(recovered_data_path, 'w', encoding='utf-8') as f:
+                            f.write(result.stdout)
+                        logger.info(f"✓ Odzyskano dane używając .dump ({len(result.stdout)} bajtów)")
+                        recovery_method = 'dump'
+                    else:
+                        raise Exception("Dump failed or returned no data")
+
+                except Exception as dump_error:
+                    logger.error(f".dump nie powiodło się: {dump_error}")
+                    logger.warning("Nie udało się odzyskać danych, tworzę pustą bazę")
+                    recovery_method = None
+
+            # Usuń uszkodzoną bazę i pliki WAL
+            logger.info("Usuwam uszkodzoną bazę danych...")
+            if self.db_path.exists():
+                self.db_path.unlink()
+
+            # Usuń też pliki WAL i SHM jeśli istnieją
+            wal_path = self.db_path.with_suffix('.db-wal')
+            shm_path = self.db_path.with_suffix('.db-shm')
+            if wal_path.exists():
+                wal_path.unlink()
+                logger.info("✓ Usunięto plik WAL")
+            if shm_path.exists():
+                shm_path.unlink()
+                logger.info("✓ Usunięto plik SHM")
+
+            # Jeśli udało się odzyskać dane, importuj je do nowej bazy
+            if recovery_method and recovered_data_path.exists():
+                logger.info("Importuję odzyskane dane do nowej bazy...")
+                try:
+                    result = subprocess.run(
+                        ['sqlite3', str(self.db_path)],
+                        input=open(recovered_data_path, 'r', encoding='utf-8').read(),
+                        capture_output=True,
+                        text=True,
+                        timeout=120
+                    )
+
+                    if result.returncode == 0:
+                        logger.info(f"✓ Pomyślnie zaimportowano odzyskane dane (metoda: {recovery_method})")
+                        # Usuń plik SQL po udanym imporcie
+                        recovered_data_path.unlink()
+                    else:
+                        logger.error(f"Błąd importu: {result.stderr}")
+                        logger.warning("Tworzę pustą bazę zamiast tego")
+                        if self.db_path.exists():
+                            self.db_path.unlink()
+
+                except Exception as import_error:
+                    logger.error(f"Błąd podczas importu: {import_error}")
+                    logger.warning("Tworzę pustą bazę zamiast tego")
+                    if self.db_path.exists():
+                        self.db_path.unlink()
+
+            logger.info(f"✓ Odzyskiwanie zakończone. Backup: {backup_path}")
+
+        except Exception as e:
+            logger.error(f"Błąd krytyczny podczas odzyskiwania bazy: {e}")
+            # Ostateczna próba - po prostu usuń bazę i zacznij od nowa
+            try:
+                if self.db_path.exists():
+                    backup_path = self.db_path.with_suffix('.corrupted.emergency.db')
+                    shutil.copy2(self.db_path, backup_path)
+                    self.db_path.unlink()
+                    logger.warning(f"Awaryjny backup zapisany jako: {backup_path}")
+            except Exception as emergency_error:
+                logger.error(f"Nie udało się utworzyć awaryjnego backupu: {emergency_error}")
 
     # Typy wiadomości, których nie zapisujemy w bazie (możesz edytować tę listę)
     IGNORED_MESSAGE_TYPES = {
@@ -2093,11 +2206,53 @@ class MeshtasticDatabase:
             logger.error(f"Błąd pobierania połączeń hexów: {e}")
             return []
 
+    def checkpoint_wal(self):
+        """Wykonuje checkpoint WAL dla zapewnienia spójności danych"""
+        try:
+            if self.conn:
+                cursor = self.conn.cursor()
+                cursor.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+                logger.debug("WAL checkpoint wykonany pomyślnie")
+                return True
+        except sqlite3.Error as e:
+            logger.error(f"Błąd podczas WAL checkpoint: {e}")
+            return False
+
+    def verify_integrity(self) -> bool:
+        """
+        Sprawdza integralność bazy danych
+
+        Returns:
+            True jeśli baza jest OK, False jeśli jest uszkodzona
+        """
+        try:
+            if self.conn:
+                cursor = self.conn.cursor()
+                result = cursor.execute("PRAGMA integrity_check").fetchone()
+                if result and result[0] == "ok":
+                    logger.debug("Integralność bazy danych: OK")
+                    return True
+                else:
+                    logger.error(f"Integralność bazy danych: BŁĄD - {result[0] if result else 'brak odpowiedzi'}")
+                    return False
+        except sqlite3.Error as e:
+            logger.error(f"Błąd sprawdzania integralności: {e}")
+            return False
+
     def close(self):
-        """Zamyka połączenie z bazą danych"""
+        """Zamyka połączenie z bazą danych po wykonaniu checkpoint"""
         if self.conn:
-            self.conn.close()
-            logger.info("Połączenie z bazą danych zamknięte")
+            try:
+                # Wykonaj checkpoint przed zamknięciem
+                self.checkpoint_wal()
+                self.conn.close()
+                logger.info("Połączenie z bazą danych zamknięte bezpiecznie")
+            except Exception as e:
+                logger.error(f"Błąd podczas zamykania bazy danych: {e}")
+                try:
+                    self.conn.close()
+                except:
+                    pass
 
     def __enter__(self):
         """Context manager support"""

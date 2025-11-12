@@ -926,6 +926,48 @@ def health():
     return jsonify({'status': 'ok'})
 
 
+@app.route('/api/database/health')
+def database_health():
+    """Database health check endpoint - checks integrity and returns status"""
+    try:
+        db = MeshtasticDatabase(DB_PATH)
+
+        # Verify database integrity
+        is_healthy = db.verify_integrity()
+
+        # Get database file size
+        import os
+        db_size = os.path.getsize(DB_PATH) if os.path.exists(DB_PATH) else 0
+        db_size_mb = round(db_size / (1024 * 1024), 2)
+
+        # Get WAL file size if exists
+        wal_path = DB_PATH.replace('.db', '.db-wal')
+        wal_size = os.path.getsize(wal_path) if os.path.exists(wal_path) else 0
+        wal_size_mb = round(wal_size / (1024 * 1024), 2)
+
+        # Perform checkpoint to minimize WAL size
+        if wal_size_mb > 10:  # If WAL is larger than 10MB
+            db.checkpoint_wal()
+
+        db.close()
+
+        return jsonify({
+            'success': True,
+            'database_healthy': is_healthy,
+            'database_size_mb': db_size_mb,
+            'wal_size_mb': wal_size_mb,
+            'status': 'healthy' if is_healthy else 'corrupted'
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'database_healthy': False,
+            'error': str(e),
+            'status': 'error'
+        }), 500
+
+
 # === CACHE MANAGEMENT ENDPOINTS ===
 
 @app.route('/api/cache/clear', methods=['POST'])
