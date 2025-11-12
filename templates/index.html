@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>meshscout.guru</title>
 
+    <!-- Google Fonts - Pixel/Retro fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Leaflet.markercluster CSS -->
@@ -19,121 +22,209 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a2e;
-            color: #eee;
-        }
-
-        #header {
-            background: #16213e;
-            padding: 10px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            z-index: 2000;
-            position: relative;
-        }
-
-        .header-top {
+            font-family: 'Share Tech Mono', 'Courier Prime', monospace;
+            background: #2c2416;
+            color: #d4c5a0;
+            font-size: 14px;
+            line-height: 1.6;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.1) 2px,
+                    rgba(0, 0, 0, 0.1) 4px
+                );
+            height: 100vh;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+        }
+
+        /* Header with Hero Character */
+        #header {
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border-bottom: 4px solid #8b7355;
+            padding: 12px 20px;
+            box-shadow:
+                0 4px 0 #1a1410,
+                0 4px 15px rgba(0, 0, 0, 0.5),
+                inset 0 2px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2000;
+            flex-shrink: 0;
+        }
+
+        .header-content {
+            max-width: 100%;
+            display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
-        #header h1 {
-            font-size: 22px;
-            color: #0f4c75;
+        /* Hero Character - Pixel Art */
+        .hero-character {
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+        }
+
+        .logo-section {
             flex: 1;
+            min-width: 200px;
         }
 
+        .logo-title {
+            font-family: 'VT323', monospace;
+            font-size: 28px;
+            color: #ff6b35;
+            text-shadow:
+                0 0 10px rgba(255, 107, 53, 0.8),
+                2px 2px 0 rgba(0, 0, 0, 0.5);
+            letter-spacing: 3px;
+            line-height: 1;
+            margin-bottom: 3px;
+        }
+
+        .logo-subtitle {
+            font-size: 10px;
+            color: #8b7355;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Header Stats */
+        .header-stats {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .quick-stat {
+            text-align: center;
+            padding: 6px 12px;
+            background: rgba(26, 20, 16, 0.5);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+        }
+
+        .quick-stat-value {
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            color: #ff6b35;
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.6);
+            line-height: 1;
+        }
+
+        .quick-stat-label {
+            font-size: 9px;
+            color: #8b7355;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Language Switcher */
         .language-switcher {
             display: flex;
             gap: 5px;
         }
 
         .lang-btn {
-            background: #0f4c75;
-            color: white;
-            border: 2px solid #3282b8;
-            padding: 5px 12px;
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: #d4c5a0;
             cursor: pointer;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: bold;
             transition: all 0.2s;
         }
 
         .lang-btn:hover {
-            background: #3282b8;
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
         }
 
         .lang-btn.active {
-            background: #d4af37;
-            border-color: #d4af37;
-            color: #1a1a2e;
+            background: #ff6b35;
+            color: #1a1410;
+            border-color: #ff6b35;
         }
 
-        #stats {
-            display: flex;
-            gap: 20px;
-            font-size: 13px;
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .stat-value {
-            font-weight: bold;
-            color: #3282b8;
-        }
-
+        /* Navigation Buttons */
         .header-panels {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+            width: 100%;
         }
 
-        .panel-toggle {
-            background: #0f4c75;
-            color: white;
-            border: none;
+        .panel-toggle,
+        .toggle-button {
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
             padding: 8px 15px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: #d4c5a0;
             cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: bold;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
 
-        .panel-toggle:hover {
-            background: #3282b8;
+        .panel-toggle::before,
+        .toggle-button::before {
+            content: "";
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: #ff6b35;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255, 107, 53, 0.8);
         }
 
-        .panel-toggle.active {
-            background: #3282b8;
+        .panel-toggle:hover,
+        .toggle-button:hover {
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
+            transform: translateY(-2px);
+        }
+
+        .panel-toggle.active::before,
+        .toggle-button.active::before {
+            background: #00ff00;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
         }
 
         .panel-toggle.gold {
-            background: #d4af37;
-            color: #1a1a2e;
+            border-color: #ffa500;
         }
 
-        .panel-toggle.gold:hover,
-        .panel-toggle.gold.active {
-            background: #f4d66f;
+        .panel-toggle.gold::before {
+            background: #ffa500;
+            box-shadow: 0 0 8px rgba(255, 165, 0, 0.8);
         }
 
+        /* Dropdown Panel */
         .dropdown-panel {
-            background: #1a1a2e;
-            border-radius: 5px;
+            display: none;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border: 3px solid #8b7355;
+            border-radius: 4px;
             padding: 15px;
             margin-top: 10px;
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
-            display: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
 
         .dropdown-panel.open {
@@ -141,232 +232,182 @@
         }
 
         .dropdown-panel h3 {
-            color: #3282b8;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
-        .device-list-item,
-        .highscore-item {
-            background: #16213e;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .device-list-item:hover,
-        .highscore-item:hover {
-            background: #0f4c75;
-        }
-
-        .device-list-item .name,
-        .highscore-name {
-            font-weight: bold;
-            color: #3282b8;
-        }
-
-        .device-list-item .node-id,
-        .highscore-node {
-            font-size: 11px;
-            color: #888;
-        }
-
-        .highscore-item {
-            gap: 10px;
-        }
-
-        .highscore-rank {
+            font-family: 'VT323', monospace;
             font-size: 20px;
-            min-width: 35px;
+            color: #ff6b35;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #8b7355;
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.5);
         }
 
-        .highscore-info {
-            flex: 1;
+        .dropdown-panel h3::before {
+            content: "▶ ";
         }
 
-        .highscore-points {
-            font-size: 18px;
-            font-weight: bold;
-            color: #d4af37;
-        }
-
-        .highscore-stats {
-            font-size: 11px;
-            color: #888;
-        }
-
+        /* Game Info */
         .game-info {
-            background: #0f4c75;
+            background: rgba(26, 20, 16, 0.5);
+            border-left: 3px solid #ff6b35;
             padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-size: 12px;
-            line-height: 1.6;
-        }
-
-        #map {
-            height: calc(100vh - 150px);
-            width: 100%;
-        }
-
-        .battery-good { color: #4caf50; }
-        .battery-medium { color: #ff9800; }
-        .battery-low { color: #f44336; }
-
-        .leaflet-popup-content {
-            color: #333;
-            min-width: 250px;
-        }
-
-        .device-popup h3 {
-            margin: 0 0 10px 0;
-            color: #0f4c75;
-            font-size: 16px;
-        }
-
-        .device-popup .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .device-popup .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .device-popup .label {
-            font-weight: bold;
-            color: #555;
-        }
-
-        .device-popup .value {
-            color: #333;
-        }
-
-        #loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(15, 76, 117, 0.9);
-            padding: 20px 40px;
-            border-radius: 10px;
-            z-index: 10000;
-            display: none;
-        }
-
-        #loading.show {
-            display: block;
-        }
-
-        #footer {
-            background: #16213e;
-            padding: 8px 20px;
-            text-align: center;
+            margin-bottom: 12px;
             font-size: 11px;
-            color: #888;
+            line-height: 1.6;
+            border-radius: 2px;
         }
 
+        .game-info strong {
+            color: #ff6b35;
+        }
+
+        .game-info a {
+            color: #ffa500;
+            text-decoration: none;
+        }
+
+        .game-info a:hover {
+            text-decoration: underline;
+        }
+
+        /* Period Tabs */
         .period-tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
+            gap: 6px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
         }
 
         .period-tab {
-            background: #16213e;
-            color: #888;
-            border: 1px solid #3282b8;
+            background: #1a1410;
+            color: #8b7355;
+            border: 2px solid #8b7355;
             padding: 6px 12px;
             cursor: pointer;
-            border-radius: 5px;
-            font-size: 12px;
+            border-radius: 4px;
+            font-size: 11px;
             font-weight: bold;
             transition: all 0.2s;
             flex: 1;
+            text-align: center;
         }
 
         .period-tab:hover {
-            background: #0f4c75;
-            color: #eee;
+            background: #3d3020;
+            color: #d4c5a0;
         }
 
         .period-tab.active {
-            background: #d4af37;
-            color: #1a1a2e;
-            border-color: #d4af37;
+            background: #ff6b35;
+            color: #1a1410;
+            border-color: #ff6b35;
         }
 
-        .toggle-button {
-            background: #2d5f3e;
-            color: white;
-            border: none;
-            padding: 8px 15px;
+        /* Highscore Item */
+        .highscore-item {
+            background: linear-gradient(180deg, #2c2416 0%, #1a1410 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             cursor: pointer;
-            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .highscore-item:hover {
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            transform: translateX(3px);
+        }
+
+        .highscore-rank {
+            font-family: 'VT323', monospace;
+            font-size: 24px;
+            color: #ffa500;
+            min-width: 40px;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.6);
+        }
+
+        .highscore-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .highscore-name {
+            color: #d4c5a0;
             font-size: 14px;
             font-weight: bold;
-            transition: background 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .toggle-button:hover {
-            background: #3d7f5e;
+        .highscore-node {
+            font-size: 10px;
+            color: #8b7355;
+            font-family: 'VT323', monospace;
         }
 
-        .toggle-button.active {
-            background: #4a9d68;
-            box-shadow: 0 0 10px rgba(74, 157, 104, 0.5);
+        .highscore-points {
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            color: #ff6b35;
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.6);
+            text-align: right;
         }
 
-        .all-devices-link {
-            display: block;
-            text-align: center;
-            padding: 10px;
-            margin: 10px 0;
-            background: #0f4c75;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 13px;
-            font-weight: bold;
-            transition: background 0.2s;
+        .highscore-stats {
+            font-size: 10px;
+            color: #8b7355;
+            text-align: right;
         }
 
-        .all-devices-link:hover {
-            background: #3282b8;
+        /* Main Container */
+        #main-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
         }
 
+        /* Map */
+        #map {
+            height: 100%;
+            width: 100%;
+            background: #1a1410;
+            position: relative;
+        }
+
+        /* Map Legend */
         .map-legend {
             position: absolute;
             bottom: 20px;
             right: 20px;
-            background: rgba(22, 33, 62, 0.95);
+            background: rgba(44, 36, 22, 0.95);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
             padding: 12px;
-            border-radius: 8px;
             z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             font-size: 11px;
-            max-width: 250px;
         }
 
         .map-legend h4 {
-            color: #3282b8;
-            margin: 0 0 8px 0;
-            font-size: 12px;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
+            gap: 8px;
             margin-bottom: 6px;
-            color: #eee;
+            color: #d4c5a0;
         }
 
         .legend-item:last-child {
@@ -377,8 +418,41 @@
             width: 20px;
             height: 12px;
             border-radius: 2px;
-            margin-right: 8px;
-            border: 1px solid #666;
+            border: 1px solid #8b7355;
+        }
+
+        /* Footer */
+        #footer {
+            background: linear-gradient(180deg, #2c2416 0%, #1a1410 100%);
+            border-top: 2px solid #8b7355;
+            padding: 8px 20px;
+            text-align: center;
+            font-size: 10px;
+            color: #8b7355;
+            flex-shrink: 0;
+        }
+
+        /* Loading */
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(61, 48, 32, 0.95);
+            border: 3px solid #ff6b35;
+            padding: 20px 40px;
+            border-radius: 8px;
+            z-index: 10000;
+            display: none;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            color: #ff6b35;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.6);
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
+        }
+
+        #loading.show {
+            display: block;
         }
 
         /* Hex Details Modal */
@@ -399,12 +473,14 @@
         }
 
         .modal-content {
-            background: #1a1a2e;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border: 4px solid #8b7355;
             margin: 20px auto;
             padding: 20px;
             max-width: 1000px;
-            border-radius: 10px;
+            border-radius: 8px;
             position: relative;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
         }
 
         .modal-close {
@@ -412,26 +488,29 @@
             top: 10px;
             right: 15px;
             font-size: 30px;
-            color: #888;
+            color: #8b7355;
             cursor: pointer;
             background: none;
             border: none;
+            transition: color 0.2s;
         }
 
         .modal-close:hover {
-            color: #fff;
+            color: #ff6b35;
         }
 
         .modal-header {
-            border-bottom: 2px solid #0f4c75;
+            border-bottom: 2px solid #8b7355;
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
 
         .modal-header h2 {
-            color: #3282b8;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
             margin: 0;
-            font-size: 20px;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
         }
 
         .modal-section {
@@ -439,61 +518,74 @@
         }
 
         .modal-section h3 {
-            color: #3282b8;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
             margin-bottom: 15px;
-            font-size: 16px;
-            border-bottom: 1px solid #333;
+            font-size: 18px;
+            border-bottom: 1px solid #8b7355;
             padding-bottom: 8px;
         }
 
         .hex-stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
             margin-bottom: 20px;
         }
 
         .hex-stat-box {
-            background: #16213e;
-            padding: 15px;
-            border-radius: 5px;
+            background: #1a1410;
+            border: 2px solid #8b7355;
+            padding: 12px;
+            border-radius: 4px;
             text-align: center;
         }
 
         .hex-stat-box .value {
+            font-family: 'VT323', monospace;
             font-size: 28px;
             font-weight: bold;
-            color: #d4af37;
+            color: #ffa500;
             display: block;
+            text-shadow: 0 0 8px rgba(255, 165, 0, 0.6);
         }
 
         .hex-stat-box .label {
-            font-size: 12px;
-            color: #ccc;
+            font-size: 11px;
+            color: #8b7355;
             margin-top: 5px;
+            text-transform: uppercase;
         }
 
         .data-table {
             width: 100%;
-            border-collapse: collapse;
-            background: #16213e;
-            border-radius: 5px;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #1a1410;
+            border: 2px solid #8b7355;
+            border-radius: 4px;
             overflow: hidden;
         }
 
+        .data-table thead {
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 100%);
+        }
+
         .data-table th {
-            background: #0f4c75;
-            color: white;
-            padding: 12px 8px;
+            color: #ff6b35;
+            padding: 10px 8px;
             text-align: left;
-            font-size: 13px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #8b7355;
         }
 
         .data-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #2a2a3e;
+            padding: 8px;
+            border-bottom: 1px solid #3d3020;
+            color: #d4c5a0;
             font-size: 12px;
-            color: #ddd;
         }
 
         .data-table tr:last-child td {
@@ -501,18 +593,18 @@
         }
 
         .data-table tr:hover {
-            background: #1e1e30;
+            background: rgba(255, 107, 53, 0.1);
         }
 
         .no-data {
             text-align: center;
             padding: 20px;
-            color: #888;
+            color: #8b7355;
             font-style: italic;
         }
 
         .player-link {
-            color: #3282b8;
+            color: #ff6b35;
             text-decoration: none;
         }
 
@@ -520,159 +612,108 @@
             text-decoration: underline;
         }
 
-        /* RESPONSYWNOŚĆ DLA TELEFONÓW */
+        /* Leaflet Popup Overrides */
+        .leaflet-popup-content-wrapper {
+            background: #3d3020;
+            color: #d4c5a0;
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+        }
+
+        .leaflet-popup-content {
+            font-family: 'Share Tech Mono', monospace;
+            margin: 10px;
+            min-width: 200px;
+        }
+
+        .device-popup h3 {
+            font-family: 'VT323', monospace;
+            margin: 0 0 10px 0;
+            color: #ff6b35;
+            font-size: 18px;
+        }
+
+        .device-popup .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #8b7355;
+            font-size: 12px;
+        }
+
+        .device-popup .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .device-popup .label {
+            font-weight: bold;
+            color: #8b7355;
+        }
+
+        .device-popup .value {
+            color: #d4c5a0;
+        }
+
+        .battery-good { color: #00ff00; }
+        .battery-medium { color: #ffa500; }
+        .battery-low { color: #ff6b35; }
+
+        /* Scrollbar */
+        .dropdown-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .dropdown-panel::-webkit-scrollbar-track {
+            background: #1a1410;
+            border-radius: 4px;
+        }
+
+        .dropdown-panel::-webkit-scrollbar-thumb {
+            background: #8b7355;
+            border-radius: 4px;
+        }
+
+        .dropdown-panel::-webkit-scrollbar-thumb:hover {
+            background: #a08868;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            body {
-                font-size: 14px;
+            .hero-character {
+                width: 40px;
+                height: 40px;
             }
 
-            #header {
-                padding: 10px 15px;
+            .logo-title {
+                font-size: 20px;
             }
 
-            .header-top {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+            .logo-subtitle {
+                font-size: 8px;
             }
 
-            #header h1 {
-                font-size: 16px;
-                width: 100%;
-            }
-
-            #stats {
-                flex-direction: column;
-                gap: 8px;
-                font-size: 12px;
-                width: 100%;
-            }
-
-            .stat-item {
-                font-size: 12px;
+            .header-stats {
+                display: none;
             }
 
             .header-panels {
                 flex-direction: column;
+            }
+
+            .panel-toggle,
+            .toggle-button {
                 width: 100%;
-            }
-
-            .panel-toggle {
-                width: 100%;
-                padding: 10px 15px;
-                font-size: 13px;
-            }
-
-            .dropdown-panel {
-                max-height: 60vh;
-                padding: 12px;
-            }
-
-            .dropdown-panel h3 {
-                font-size: 14px;
-                margin-bottom: 10px;
-            }
-
-            .game-info {
-                font-size: 11px;
-                padding: 8px;
-            }
-
-            .period-tabs {
-                gap: 5px;
-            }
-
-            .period-tab {
-                font-size: 11px;
-                padding: 5px 8px;
-            }
-
-            .device-list-item,
-            .highscore-item {
-                padding: 8px;
-                margin-bottom: 6px;
-                font-size: 12px;
-            }
-
-            .device-list-item .name,
-            .highscore-name {
-                font-size: 13px;
-            }
-
-            .device-list-item .node-id,
-            .highscore-node {
-                font-size: 10px;
-            }
-
-            .highscore-rank {
-                font-size: 18px;
-                min-width: 30px;
-            }
-
-            .highscore-points {
-                font-size: 16px;
-            }
-
-            .highscore-stats {
-                font-size: 10px;
             }
 
             #map {
                 height: calc(100vh - 200px);
             }
 
-            #footer {
-                font-size: 10px;
-                padding: 6px 15px;
-            }
-
-            /* Lepsza widoczność popupów na telefonie */
-            .device-popup {
-                font-size: 12px;
-            }
-
-            .device-popup h3 {
-                font-size: 14px;
-            }
-
-            .leaflet-popup-content {
-                min-width: 200px;
-            }
-
-            /* Większe przyciski do klikania */
-            .device-list-item,
-            .highscore-item {
-                min-height: 50px;
-                touch-action: manipulation;
-            }
-        }
-
-        /* Bardzo małe telefony */
-        @media (max-width: 480px) {
-            #header h1 {
-                font-size: 14px;
-            }
-
-            #stats {
-                font-size: 11px;
-            }
-
-            .panel-toggle {
-                font-size: 12px;
-                padding: 8px 12px;
-            }
-
-            .dropdown-panel {
-                max-height: 50vh;
-            }
-
-            .period-tab {
-                font-size: 10px;
-                padding: 4px 6px;
-            }
-
-            #map {
-                height: calc(100vh - 180px);
+            .map-legend {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                font-size: 9px;
             }
         }
     </style>
@@ -680,75 +721,139 @@
 <body>
     <div id="loading" class="show">⏳ Ładowanie danych...</div>
 
+    <!-- Header with Hero Character -->
     <div id="header">
-        <div class="header-top">
-            <h1 data-i18n="header.title">📡 meshscout.guru - najdłuższy traceroute wygrywa ;)</h1>
+        <div class="header-content">
+            <!-- Main Hero Character -->
+            <svg class="hero-character" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <!-- Character Head -->
+                <rect x="11" y="4" width="10" height="6" fill="#d4c5a0"/>
+                <!-- Eyes -->
+                <rect x="13" y="6" width="2" height="2" fill="#3d3020"/>
+                <rect x="17" y="6" width="2" height="2" fill="#3d3020"/>
+                <!-- Body -->
+                <rect x="10" y="10" width="12" height="8" fill="#4a3f2e"/>
+                <!-- Arms -->
+                <rect x="7" y="12" width="3" height="6" fill="#4a3f2e"/>
+                <rect x="22" y="12" width="3" height="6" fill="#4a3f2e"/>
+                <!-- Hands -->
+                <rect x="7" y="18" width="3" height="3" fill="#d4c5a0"/>
+                <rect x="22" y="18" width="3" height="3" fill="#d4c5a0"/>
+                <!-- Radio Pack on Back -->
+                <rect x="23" y="10" width="7" height="8" fill="#8b7355"/>
+                <!-- Radio Display -->
+                <rect x="24" y="12" width="5" height="2" fill="#ff6b35"/>
+                <rect x="24" y="15" width="2" height="1" fill="#00ff00"/>
+                <rect x="27" y="15" width="2" height="1" fill="#ffa500"/>
+                <!-- Antenna -->
+                <rect x="27" y="3" width="2" height="7" fill="#8b7355"/>
+                <!-- Antenna Top -->
+                <circle cx="28" cy="2" r="2" fill="#ff6b35" opacity="0.8"/>
+                <circle cx="28" cy="2" r="3" fill="none" stroke="#ff6b35" stroke-width="0.5" opacity="0.4"/>
+                <!-- Legs -->
+                <rect x="11" y="18" width="4" height="8" fill="#3d3020"/>
+                <rect x="17" y="18" width="4" height="8" fill="#3d3020"/>
+                <!-- Boots -->
+                <rect x="10" y="26" width="5" height="4" fill="#1a1410"/>
+                <rect x="17" y="26" width="5" height="4" fill="#1a1410"/>
+            </svg>
+
+            <!-- Logo and Title -->
+            <div class="logo-section">
+                <div class="logo-title" data-i18n="header.title">MESHSCOUT.GURU</div>
+                <div class="logo-subtitle">◆ HAM Radio Mesh Network ◆</div>
+            </div>
+
+            <!-- Language Switcher -->
             <div class="language-switcher">
                 <button class="lang-btn" data-lang="pl">🇵🇱</button>
                 <button class="lang-btn" data-lang="en">🇬🇧</button>
             </div>
+
+            <!-- Quick Stats -->
+            <div class="header-stats">
+                <div class="quick-stat">
+                    <div class="quick-stat-value" id="stats-devices">0</div>
+                    <div class="quick-stat-label" data-i18n="stats.devices">Devices</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value" id="players-count">0</div>
+                    <div class="quick-stat-label" data-i18n="stats.players">Operators</div>
+                </div>
+            </div>
         </div>
 
+        <!-- Navigation Panels -->
         <div class="header-panels">
-            <button id="highscore-toggle" class="panel-toggle gold"><span data-i18n="nav.ranking">🏆 Ranking Graczy</span> (<span id="players-count">0</span>)</button>
-            <button id="connections-toggle" class="toggle-button" data-i18n="nav.connections">🔗 Pokaż Połączenia</button>
-            <a href="/rules" class="panel-toggle" style="text-decoration: none; text-align: center;" data-i18n="nav.rules">📜 Zasady Gry</a>
+            <button id="highscore-toggle" class="panel-toggle gold">
+                <span data-i18n="nav.ranking">🏆 Ranking</span> (<span id="players-count-inline">0</span>)
+            </button>
+            <button id="connections-toggle" class="toggle-button" data-i18n="nav.connections">
+                🔗 Connections
+            </button>
+            <a href="/rules" class="panel-toggle" data-i18n="nav.rules">📜 Rules</a>
         </div>
 
+        <!-- Highscore Dropdown Panel -->
         <div id="highscore-panel" class="dropdown-panel">
-            <h3 data-i18n="highscore.title">🏆 Highscore - Top 20</h3>
+            <h3 data-i18n="highscore.title">Top Operators</h3>
             <div class="game-info">
                 <p>
-                    <span data-i18n-html="highscore.register_info">🎯 Zarejestruj się: wyślij "registerme" na publicznym kanale Primary Channel, który jest w zasięgu serwera mqtt.meshtastic.info.pl</span><br>
-                    <span data-i18n="highscore.send_traceroutes">📡 Wysyłaj pakiety traceroute</span><br>
-                    <span data-i18n-html="highscore.scoring">📊 Punktacja: <strong>1 km = 1 punkt</strong> (0.01 pkt = 10 m)</span><br>
-                    <span data-i18n-html="highscore.hex_bonus">🗺️ Za każdy odwiedzony heksagon H3: <strong>50 punktów (bonus)</strong></span><br>
-                    🏅 <a href="/winners" style="color: gold; text-decoration: none;" data-i18n="highscore.see_winners">Zobacz zwycięzców »</a>
+                    <span data-i18n-html="highscore.register_info">🎯 Register: send "registerme" on Primary Channel</span><br>
+                    <span data-i18n="highscore.send_traceroutes">📡 Send traceroute packets</span><br>
+                    <span data-i18n-html="highscore.scoring">📊 Scoring: <strong>1 km = 1 point</strong></span><br>
+                    <span data-i18n-html="highscore.hex_bonus">🗺️ New hex bonus: <strong>+50 points</strong></span><br>
+                    🏅 <a href="/winners" data-i18n="highscore.see_winners">See winners »</a>
                 </p>
             </div>
             <div class="period-tabs">
-                <button class="period-tab active" data-period="all" data-i18n="highscore.period_all">Wszystko</button>
-                <button class="period-tab" data-period="month" data-i18n="highscore.period_month">Miesiąc</button>
-                <button class="period-tab" data-period="week" data-i18n="highscore.period_week">Tydzień</button>
-                <button class="period-tab" data-period="today" data-i18n="highscore.period_today">Dziś</button>
+                <button class="period-tab active" data-period="all" data-i18n="highscore.period_all">All Time</button>
+                <button class="period-tab" data-period="month" data-i18n="highscore.period_month">Month</button>
+                <button class="period-tab" data-period="week" data-i18n="highscore.period_week">Week</button>
+                <button class="period-tab" data-period="today" data-i18n="highscore.period_today">Today</button>
             </div>
             <div id="highscore-list"></div>
         </div>
     </div>
 
-    <div id="map">
-        <div class="map-legend">
-            <h4 data-i18n="legend.title">🗺️ Heksagony H3</h4>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #FFFF00;"></div>
-                <span data-i18n="legend.players_1_2">Gracze: 1-2 wizyty</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #FFA500;"></div>
-                <span data-i18n="legend.players_3_19">Gracze: 3-19 wizyt</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #DC143C;"></div>
-                <span data-i18n="legend.players_20_99">Gracze: 20-99 wizyt</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: #8B0000;"></div>
-                <span data-i18n="legend.players_100_plus">Gracze: 100+ wizyt</span>
+    <!-- Main Container - Map -->
+    <div id="main-container">
+        <div id="map">
+            <div class="map-legend">
+                <h4 data-i18n="legend.title">H3 Hexagons</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFFF00;"></div>
+                    <span data-i18n="legend.players_1_2">1-2 visits</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFA500;"></div>
+                    <span data-i18n="legend.players_3_19">3-19 visits</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #DC143C;"></div>
+                    <span data-i18n="legend.players_20_99">20-99 visits</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #8B0000;"></div>
+                    <span data-i18n="legend.players_100_plus">100+ visits</span>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Footer -->
     <div id="footer">
-        <span data-i18n="footer.copyright">Copyright by meshtastic.info.pl © 2025</span> | <span data-i18n="footer.version">Wersja:</span> {{ version }}
+        <span data-i18n="footer.copyright">Copyright by meshtastic.info.pl © 2025</span> | 
+        <span data-i18n="footer.version">Version:</span> {{ version }}
     </div>
 
-    <!-- Modal ze szczegółami heksagonu -->
+    <!-- Modal with Hexagon Details -->
     <div id="hexDetailsModal">
         <div class="modal-content">
             <button class="modal-close" id="modalCloseBtn">&times;</button>
             <div id="hexDetailsContent">
                 <div class="modal-header">
-                    <h2>⏳ Ładowanie szczegółów...</h2>
+                    <h2>⏳ Loading...</h2>
                 </div>
             </div>
         </div>
@@ -759,6 +864,7 @@
     <!-- Leaflet.markercluster JS -->
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
+    <script>
     <script>
         // === TRANSLATION SYSTEM ===
         let currentLang = '{{ lang }}' || 'pl';
