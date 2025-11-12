@@ -74,9 +74,12 @@ class MeshtasticDatabase:
     def _init_database(self):
         """Inicjalizuje bazę danych i tworzy tabele jeśli nie istnieją"""
         try:
+            # Upewnij się, że katalog nadrzędny istnieje
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
+
             # Połączenie z bazą danych z obsługą współbieżności
             self.conn = sqlite3.connect(
-                self.db_path, 
+                self.db_path,
                 check_same_thread=False,
                 timeout=30.0  # 30 sekund timeout dla locków
             )

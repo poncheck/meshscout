@@ -313,6 +313,45 @@ Sprawdź:
 - Czy wiadomość rzeczywiście jest zaszyfrowana tym kluczem
 - Czy kanał używa tego samego klucza co twój dekoder
 
+### Błąd: "Nie udało się zapisać do bazy"
+
+Problem z zapisem do bazy danych SQLite. Sprawdź:
+
+1. **Katalog `data/` istnieje i ma odpowiednie uprawnienia**:
+   ```bash
+   # Utwórz katalog jeśli nie istnieje
+   mkdir -p data
+
+   # Ustaw odpowiednie uprawnienia (755 = rwxr-xr-x)
+   chmod 755 data
+
+   # Sprawdź uprawnienia
+   ls -la data/
+   ```
+
+2. **Plik bazy danych ma uprawnienia do zapisu**:
+   ```bash
+   # Ustaw uprawnienia dla pliku bazy (jeśli istnieje)
+   chmod 644 data/mesh_scout.db
+   ```
+
+3. **Użytkownik ma prawa do zapisu**:
+   ```bash
+   # Sprawdź bieżącego użytkownika
+   whoami
+
+   # Opcjonalnie zmień właściciela katalogu
+   sudo chown -R $USER:$USER data/
+   ```
+
+**Wymagane uprawnienia:**
+- Katalog `data/`: `755` (rwxr-xr-x) - odczyt, zapis, wykonywanie dla właściciela
+- Plik bazy `mesh_scout.db`: `644` (rw-r--r--) - odczyt/zapis dla właściciela, odczyt dla innych
+- WAL files (`mesh_scout.db-wal`, `mesh_scout.db-shm`): `644`
+
+**Automatyczne tworzenie katalogu:**
+Od wersji z poprawkami, `database.py` automatycznie tworzy katalog `data/` jeśli nie istnieje. Jeśli używasz starszej wersji, zaktualizuj kod lub utwórz katalog ręcznie.
+
 ## Struktura projektu
 
 ```
