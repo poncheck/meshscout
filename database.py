@@ -86,17 +86,74 @@ class MeshtasticDatabase:
             self.conn.row_factory = sqlite3.Row  # Zwraca wyniki jako dict
 
             cursor = self.conn.cursor()
-            
+
+            # Sprawdź integralność bazy danych (tylko jeśli plik już istnieje i ma rozmiar > 0)
+            if self.db_path.exists() and self.db_path.stat().st_size > 0:
+                try:
+                    result = cursor.execute("PRAGMA integrity_check").fetchone()
+                    if result and result[0] != "ok":
+                        logger.error(f"Baza danych jest uszkodzona: {result[0]}")
+                        # Spróbuj naprawić używając PRAGMA
+                        logger.warning("Próba naprawy bazy danych...")
+                        try:
+                            cursor.execute("PRAGMA writable_schema=ON")
+                            cursor.execute("PRAGMA integrity_check")
+                            cursor.execute("PRAGMA writable_schema=OFF")
+                            logger.info("Próba naprawy zakończona")
+                        except sqlite3.Error as repair_error:
+                            logger.error(f"Nie udało się naprawić bazy: {repair_error}")
+                            # Utwórz backup uszkodzonej bazy
+                            backup_path = self.db_path.with_suffix('.db.corrupted')
+                            import shutil
+                            shutil.copy2(self.db_path, backup_path)
+                            logger.warning(f"Uszkodzona baza zapisana jako: {backup_path}")
+                            # Usuń uszkodzoną bazę i utwórz nową
+                            self.conn.close()
+                            self.db_path.unlink()
+                            logger.info("Tworzenie nowej bazy danych...")
+                            self.conn = sqlite3.connect(
+                                self.db_path,
+                                check_same_thread=False,
+                                timeout=30.0
+                            )
+                            self.conn.row_factory = sqlite3.Row
+                            cursor = self.conn.cursor()
+                    else:
+                        logger.debug("Integralność bazy danych: OK")
+                except sqlite3.DatabaseError as e:
+                    logger.error(f"Błąd sprawdzania integralności bazy: {e}")
+                    # Jeśli nie można sprawdzić integralności, utwórz backup i nową bazę
+                    if "malformed" in str(e).lower() or "corrupt" in str(e).lower():
+                        logger.warning("Wykryto uszkodzoną bazę danych, tworzenie backupu...")
+                        backup_path = self.db_path.with_suffix('.db.corrupted')
+                        import shutil
+                        try:
+                            self.conn.close()
+                            shutil.copy2(self.db_path, backup_path)
+                            self.db_path.unlink()
+                            logger.warning(f"Uszkodzona baza zapisana jako: {backup_path}")
+                            logger.info("Tworzenie nowej bazy danych...")
+                            self.conn = sqlite3.connect(
+                                self.db_path,
+                                check_same_thread=False,
+                                timeout=30.0
+                            )
+                            self.conn.row_factory = sqlite3.Row
+                            cursor = self.conn.cursor()
+                        except Exception as backup_error:
+                            logger.error(f"Błąd tworzenia backupu: {backup_error}")
+                            raise
+
             # Włącz WAL (Write-Ahead Logging) dla pełnej współbieżności
             # WAL pozwala na jednoczesne czytanie i pisanie do bazy
             cursor.execute("PRAGMA journal_mode=WAL")
-            
+
             # Optymalizacje dla współbieżności
             cursor.execute("PRAGMA synchronous=NORMAL")  # Balans między wydajnością a bezpieczeństwem
             cursor.execute("PRAGMA cache_size=-64000")    # 64MB cache
             cursor.execute("PRAGMA temp_store=MEMORY")    # Tymczasowe dane w pamięci
             cursor.execute("PRAGMA busy_timeout=30000")   # 30 sekund timeout
-            
+
             logger.info("Włączono tryb WAL dla współbieżnego dostępu do bazy danych")
 
             # Tabela główna dla wiadomości

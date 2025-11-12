@@ -352,6 +352,38 @@ Problem z zapisem do bazy danych SQLite. Sprawdź:
 **Automatyczne tworzenie katalogu:**
 Od wersji z poprawkami, `database.py` automatycznie tworzy katalog `data/` jeśli nie istnieje. Jeśli używasz starszej wersji, zaktualizuj kod lub utwórz katalog ręcznie.
 
+### Błąd: "database disk image is malformed"
+
+Baza danych jest uszkodzona. Może to być spowodowane nieprawidłowym zakończeniem procesu lub problemem z systemem plików.
+
+**Automatyczna naprawa:**
+Od najnowszej wersji, `database.py` automatycznie:
+- Wykrywa uszkodzoną bazę przy starcie
+- Tworzy backup uszkodzonej bazy jako `mesh_scout.db.corrupted`
+- Tworzy nową, czystą bazę danych
+
+**Ręczna naprawa:**
+```bash
+# 1. Zatrzymaj wszystkie procesy
+docker compose down
+
+# 2. Utwórz backup uszkodzonej bazy
+mv data/mesh_scout.db data/mesh_scout.db.corrupted
+
+# 3. Usuń pliki WAL
+rm -f data/mesh_scout.db-wal data/mesh_scout.db-shm
+
+# 4. Uruchom aplikację - utworzy nową bazę
+docker compose up -d
+```
+
+**Zapobieganie:**
+- Używaj graceful shutdown (`docker compose stop` zamiast `docker compose kill`)
+- Regularnie twórz backupy bazy danych
+- Monitoruj miejsce na dysku
+
+Więcej informacji w [DATABASE.md](DATABASE.md)
+
 ## Struktura projektu
 
 ```

@@ -167,6 +167,91 @@ rm -f data/mesh_scout.db-shm
 docker compose up -d
 ```
 
+### Błąd: "database disk image is malformed"
+
+**Przyczyna:** Plik bazy danych jest uszkodzony. Może to być spowodowane:
+- Nieprawidłowym zakończeniem procesu (kill -9, utrata zasilania)
+- Problemem z systemem plików
+- Zapisem przez wiele procesów jednocześnie bez odpowiedniej synchronizacji
+
+**Automatyczna naprawa:**
+
+Od najnowszej wersji, `database.py` automatycznie wykrywa uszkodzoną bazę i:
+1. Tworzy backup uszkodzonej bazy jako `mesh_scout.db.corrupted`
+2. Tworzy nową, czystą bazę danych
+3. Loguje wszystkie operacje
+
+**Ręczna naprawa:**
+
+Jeśli automatyczna naprawa nie zadziała:
+
+```bash
+# 1. Zatrzymaj wszystkie procesy
+docker compose down
+# lub
+pkill -f meshtastic_mqtt_decoder
+
+# 2. Sprawdź integralność bazy (wymaga sqlite3)
+sqlite3 data/mesh_scout.db "PRAGMA integrity_check;"
+
+# 3. Spróbuj wyeksportować dane z uszkodzonej bazy
+sqlite3 data/mesh_scout.db ".dump" > backup.sql 2>/dev/null
+
+# 4. Utwórz backup uszkodzonej bazy
+mv data/mesh_scout.db data/mesh_scout.db.corrupted.$(date +%Y%m%d_%H%M%S)
+
+# 5. Usuń pliki WAL
+rm -f data/mesh_scout.db-wal data/mesh_scout.db-shm
+
+# 6. Jeśli udało się wyeksportować dane, odtwórz bazę
+sqlite3 data/mesh_scout_new.db < backup.sql
+
+# 7. Lub po prostu uruchom aplikację - utworzy nową bazę
+docker compose up -d
+```
+
+**Odzyskiwanie danych z uszkodzonej bazy:**
+
+Jeśli masz uszkodzoną bazę i chcesz spróbować odzyskać dane:
+
+```bash
+# 1. Spróbuj wyeksportować tylko określone tabele
+sqlite3 data/mesh_scout.db.corrupted <<EOF
+.mode insert
+.output devices_backup.sql
+SELECT * FROM devices;
+.output messages_backup.sql
+SELECT * FROM messages;
+.quit
+EOF
+
+# 2. Import do nowej bazy
+sqlite3 data/mesh_scout.db < devices_backup.sql
+sqlite3 data/mesh_scout.db < messages_backup.sql
+```
+
+**Zapobieganie uszkodzeniom:**
+
+1. **Używaj graceful shutdown**:
+   ```bash
+   # Zamiast kill -9 użyj:
+   docker compose stop  # Zamiast docker compose kill
+   # lub
+   kill -TERM <pid>     # Zamiast kill -9 <pid>
+   ```
+
+2. **Regularnie twórz backupy**:
+   ```bash
+   # Codziennie o 3:00
+   0 3 * * * sqlite3 /path/to/data/mesh_scout.db ".backup /path/to/backups/mesh_scout.db.$(date +\%Y\%m\%d)"
+   ```
+
+3. **Monitoruj system plików**:
+   ```bash
+   # Sprawdź czy nie kończy się miejsce
+   df -h /path/to/data/
+   ```
+
 ### Błąd: "unable to open database file"
 
 **Przyczyna:** Brak uprawnień do odczytu/zapisu lub katalog nie istnieje.
