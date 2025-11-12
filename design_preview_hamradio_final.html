@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>meshscout.guru - HAM Radio Design with Hero Character</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', 'Courier Prime', monospace;
+            background: #2c2416;
+            color: #d4c5a0;
+            font-size: 16px;
+            line-height: 1.6;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.1) 2px,
+                    rgba(0, 0, 0, 0.1) 4px
+                );
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header with Hero Character */
+        .header {
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border-bottom: 4px solid #8b7355;
+            padding: 15px 20px;
+            box-shadow:
+                0 4px 0 #1a1410,
+                0 4px 15px rgba(0, 0, 0, 0.5),
+                inset 0 2px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Hero Character - Large Pixel Art */
+        .hero-character {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+        }
+
+        .logo-section {
+            flex: 1;
+        }
+
+        .logo-title {
+            font-family: 'VT323', monospace;
+            font-size: 36px;
+            color: #ff6b35;
+            text-shadow:
+                0 0 10px rgba(255, 107, 53, 0.8),
+                2px 2px 0 rgba(0, 0, 0, 0.5);
+            letter-spacing: 4px;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: #8b7355;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Quick Stats in Header */
+        .header-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .quick-stat {
+            text-align: center;
+            padding: 8px 15px;
+            background: rgba(26, 20, 16, 0.5);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+        }
+
+        .quick-stat-value {
+            font-family: 'VT323', monospace;
+            font-size: 24px;
+            color: #ff6b35;
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.6);
+            line-height: 1;
+        }
+
+        .quick-stat-label {
+            font-size: 10px;
+            color: #8b7355;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: #d4c5a0;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .nav-btn::before {
+            content: "";
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: #ff6b35;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255, 107, 53, 0.8);
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active::before {
+            background: #00ff00;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+        }
+
+        /* Main Layout - Map Centered */
+        .main-layout {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 15px;
+            padding: 15px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* Side Panels */
+        .side-panel {
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border: 3px solid #8b7355;
+            border-radius: 6px;
+            padding: 15px;
+            overflow-y: auto;
+            box-shadow:
+                0 3px 0 #1a1410,
+                0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .panel-title {
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            color: #ff6b35;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #8b7355;
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.5);
+        }
+
+        .panel-title::before {
+            content: "▶ ";
+        }
+
+        /* Map Container - MAIN FOCUS */
+        .map-container {
+            background: #1a1410;
+            border: 4px solid #8b7355;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 4px 0 #1a1410,
+                0 8px 20px rgba(0, 0, 0, 0.6),
+                inset 0 2px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .map-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(139, 115, 85, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139, 115, 85, 0.08) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .map-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #8b7355;
+        }
+
+        .map-placeholder svg {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Map Legend - Bottom Right */
+        .map-legend {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(44, 36, 22, 0.95);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 11px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .legend-title {
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            color: #d4c5a0;
+        }
+
+        /* Player Card - Compact */
+        .player-card-compact {
+            background: linear-gradient(180deg, #2c2416 0%, #1a1410 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .player-card-compact:hover {
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            transform: translateX(3px);
+        }
+
+        .player-rank-small {
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            color: #ffa500;
+            min-width: 30px;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.6);
+        }
+
+        .player-avatar-small {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ff6b35;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1410;
+        }
+
+        .player-info-compact {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .player-name-small {
+            color: #d4c5a0;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-points-small {
+            font-family: 'VT323', monospace;
+            font-size: 16px;
+            color: #ff6b35;
+            text-align: right;
+        }
+
+        /* Activity Feed */
+        .activity-item {
+            background: rgba(26, 20, 16, 0.5);
+            border-left: 3px solid #ff6b35;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            border-radius: 2px;
+        }
+
+        .activity-item .time {
+            color: #8b7355;
+            font-size: 10px;
+        }
+
+        .activity-item .detail {
+            color: #d4c5a0;
+            margin-top: 3px;
+        }
+
+        /* Meter - Compact Version */
+        .meter-compact {
+            background: linear-gradient(180deg, #2c2416 0%, #1a1410 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .meter-compact-label {
+            font-size: 10px;
+            color: #8b7355;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .meter-compact-value {
+            font-family: 'VT323', monospace;
+            font-size: 24px;
+            color: #ff6b35;
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.6);
+        }
+
+        .meter-bar-small {
+            height: 6px;
+            background: #1a1410;
+            border: 1px solid #8b7355;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .meter-bar-fill-small {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35 0%, #ffa500 100%);
+            box-shadow: 0 0 8px rgba(255, 107, 53, 0.8);
+        }
+
+        /* Scrollbar Styling */
+        .side-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .side-panel::-webkit-scrollbar-track {
+            background: #1a1410;
+            border-radius: 4px;
+        }
+
+        .side-panel::-webkit-scrollbar-thumb {
+            background: #8b7355;
+            border-radius: 4px;
+        }
+
+        .side-panel::-webkit-scrollbar-thumb:hover {
+            background: #a08868;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 250px 1fr;
+            }
+            .side-panel.right {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            .side-panel {
+                max-height: 200px;
+            }
+            .header-stats {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with Hero Character -->
+    <div class="header">
+        <div class="header-content">
+            <!-- Main Hero Character -->
+            <svg class="hero-character" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <!-- Character Head -->
+                <rect x="11" y="4" width="10" height="6" fill="#d4c5a0"/>
+                <!-- Eyes -->
+                <rect x="13" y="6" width="2" height="2" fill="#3d3020"/>
+                <rect x="17" y="6" width="2" height="2" fill="#3d3020"/>
+                <!-- Body -->
+                <rect x="10" y="10" width="12" height="8" fill="#4a3f2e"/>
+                <!-- Arms -->
+                <rect x="7" y="12" width="3" height="6" fill="#4a3f2e"/>
+                <rect x="22" y="12" width="3" height="6" fill="#4a3f2e"/>
+                <!-- Hands -->
+                <rect x="7" y="18" width="3" height="3" fill="#d4c5a0"/>
+                <rect x="22" y="18" width="3" height="3" fill="#d4c5a0"/>
+                <!-- Radio Pack on Back -->
+                <rect x="23" y="10" width="7" height="8" fill="#8b7355"/>
+                <!-- Radio Display -->
+                <rect x="24" y="12" width="5" height="2" fill="#ff6b35"/>
+                <rect x="24" y="15" width="2" height="1" fill="#00ff00"/>
+                <rect x="27" y="15" width="2" height="1" fill="#ffa500"/>
+                <!-- Antenna -->
+                <rect x="27" y="3" width="2" height="7" fill="#8b7355"/>
+                <!-- Antenna Top -->
+                <circle cx="28" cy="2" r="2" fill="#ff6b35" opacity="0.8"/>
+                <circle cx="28" cy="2" r="3" fill="none" stroke="#ff6b35" stroke-width="0.5" opacity="0.4"/>
+                <!-- Legs -->
+                <rect x="11" y="18" width="4" height="8" fill="#3d3020"/>
+                <rect x="17" y="18" width="4" height="8" fill="#3d3020"/>
+                <!-- Boots -->
+                <rect x="10" y="26" width="5" height="4" fill="#1a1410"/>
+                <rect x="17" y="26" width="5" height="4" fill="#1a1410"/>
+            </svg>
+
+            <!-- Logo and Title -->
+            <div class="logo-section">
+                <div class="logo-title">MESHSCOUT.GURU</div>
+                <div class="logo-subtitle">◆ HAM Radio Mesh Network ◆</div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="header-stats">
+                <div class="quick-stat">
+                    <div class="quick-stat-value">142</div>
+                    <div class="quick-stat-label">Devices</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value">89</div>
+                    <div class="quick-stat-label">Operators</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value">2.5K</div>
+                    <div class="quick-stat-label">Signals</div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-buttons">
+                <button class="nav-btn active">Map</button>
+                <button class="nav-btn">Ranking</button>
+                <button class="nav-btn">Rules</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Layout: Sidebars + Map -->
+    <div class="main-layout">
+        <!-- Left Sidebar - Top Operators -->
+        <div class="side-panel left">
+            <div class="panel-title">Top Operators</div>
+
+            <div class="player-card-compact">
+                <div class="player-rank-small">01</div>
+                <div class="player-avatar-small">
+                    <svg width="24" height="24" viewBox="0 0 16 16">
+                        <rect x="6" y="4" width="4" height="2" fill="#d4c5a0"/>
+                        <rect x="5" y="6" width="6" height="4" fill="#4a3f2e"/>
+                        <rect x="10" y="6" width="4" height="3" fill="#8b7355"/>
+                        <rect x="11" y="7" width="2" height="1" fill="#ff6b35"/>
+                        <rect x="12" y="3" width="1" height="3" fill="#8b7355"/>
+                    </svg>
+                </div>
+                <div class="player-info-compact">
+                    <div class="player-name-small">RadioMaster</div>
+                </div>
+                <div class="player-points-small">1247</div>
+            </div>
+
+            <div class="player-card-compact">
+                <div class="player-rank-small">02</div>
+                <div class="player-avatar-small">
+                    <svg width="24" height="24" viewBox="0 0 16 16">
+                        <rect x="6" y="4" width="4" height="2" fill="#d4c5a0"/>
+                        <rect x="5" y="6" width="6" height="4" fill="#4a3f2e"/>
+                        <rect x="10" y="6" width="4" height="3" fill="#8b7355"/>
+                        <rect x="11" y="7" width="2" height="1" fill="#ffa500"/>
+                        <rect x="12" y="3" width="1" height="3" fill="#8b7355"/>
+                    </svg>
+                </div>
+                <div class="player-info-compact">
+                    <div class="player-name-small">MeshNinja</div>
+                </div>
+                <div class="player-points-small">1089</div>
+            </div>
+
+            <div class="player-card-compact">
+                <div class="player-rank-small">03</div>
+                <div class="player-avatar-small">
+                    <svg width="24" height="24" viewBox="0 0 16 16">
+                        <rect x="6" y="4" width="4" height="2" fill="#d4c5a0"/>
+                        <rect x="5" y="6" width="6" height="4" fill="#4a3f2e"/>
+                        <rect x="10" y="6" width="4" height="3" fill="#8b7355"/>
+                        <rect x="11" y="7" width="2" height="1" fill="#00ff00"/>
+                        <rect x="12" y="3" width="1" height="3" fill="#8b7355"/>
+                    </svg>
+                </div>
+                <div class="player-info-compact">
+                    <div class="player-name-small">SignalHunter</div>
+                </div>
+                <div class="player-points-small">892</div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <div class="panel-title">Network Stats</div>
+
+                <div class="meter-compact">
+                    <div class="meter-compact-label">◆ Coverage</div>
+                    <div class="meter-compact-value">324 km²</div>
+                    <div class="meter-bar-small">
+                        <div class="meter-bar-fill-small" style="width: 75%;"></div>
+                    </div>
+                </div>
+
+                <div class="meter-compact">
+                    <div class="meter-compact-label">◆ Active Nodes</div>
+                    <div class="meter-compact-value">142</div>
+                    <div class="meter-bar-small">
+                        <div class="meter-bar-fill-small" style="width: 85%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center - MAP (Main Focus) -->
+        <div class="map-container">
+            <div class="map-grid"></div>
+
+            <div class="map-placeholder">
+                <!-- Large pixel art scene -->
+                <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Network visualization -->
+
+                    <!-- Operator 1 -->
+                    <g transform="translate(30, 50)">
+                        <rect x="12" y="8" width="8" height="4" fill="#d4c5a0"/>
+                        <rect x="10" y="12" width="12" height="8" fill="#4a3f2e"/>
+                        <rect x="20" y="12" width="8" height="6" fill="#8b7355"/>
+                        <rect x="22" y="14" width="4" height="2" fill="#ff6b35"/>
+                        <rect x="24" y="6" width="2" height="6" fill="#8b7355"/>
+                        <circle cx="25" cy="5" r="2" fill="#ff6b35" opacity="0.8"/>
+                        <rect x="8" y="20" width="6" height="12" fill="#3d3020"/>
+                        <rect x="14" y="20" width="6" height="12" fill="#3d3020"/>
+                    </g>
+
+                    <!-- Antenna Tower -->
+                    <g transform="translate(100, 60)">
+                        <rect x="14" y="20" width="4" height="20" fill="#8b7355"/>
+                        <polygon points="16,5 8,20 24,20" fill="#8b7355"/>
+                        <circle cx="16" cy="12" r="3" fill="#ffa500" opacity="0.6"/>
+                        <circle cx="16" cy="12" r="5" fill="none" stroke="#ffa500" stroke-width="0.5" opacity="0.3"/>
+                    </g>
+
+                    <!-- Operator 2 -->
+                    <g transform="translate(150, 55)">
+                        <rect x="12" y="8" width="8" height="4" fill="#d4c5a0"/>
+                        <rect x="10" y="12" width="12" height="8" fill="#4a3f2e"/>
+                        <rect x="20" y="12" width="8" height="6" fill="#8b7355"/>
+                        <rect x="22" y="14" width="4" height="2" fill="#00ff00"/>
+                        <rect x="24" y="6" width="2" height="6" fill="#8b7355"/>
+                        <circle cx="25" cy="5" r="2" fill="#00ff00" opacity="0.8"/>
+                        <rect x="8" y="20" width="6" height="12" fill="#3d3020"/>
+                        <rect x="14" y="20" width="6" height="12" fill="#3d3020"/>
+                    </g>
+
+                    <!-- Connection Lines -->
+                    <line x1="50" y1="70" x2="110" y2="75" stroke="#ff6b35" stroke-width="2" stroke-dasharray="4,4" opacity="0.6"/>
+                    <line x1="120" y1="75" x2="165" y2="72" stroke="#ff6b35" stroke-width="2" stroke-dasharray="4,4" opacity="0.6"/>
+
+                    <!-- Signal circles -->
+                    <circle cx="50" cy="70" r="15" fill="none" stroke="#ff6b35" stroke-width="1" opacity="0.3"/>
+                    <circle cx="116" cy="75" r="20" fill="none" stroke="#ffa500" stroke-width="1" opacity="0.3"/>
+                    <circle cx="165" cy="72" r="15" fill="none" stroke="#00ff00" stroke-width="1" opacity="0.3"/>
+                </svg>
+
+                <div style="font-size: 14px; margin-top: 10px;">
+                    [ Interactive Mesh Network Map ]
+                </div>
+                <div style="font-size: 12px; color: #8b7355; margin-top: 5px;">
+                    Leaflet map with pixel art markers
+                </div>
+            </div>
+
+            <!-- Map Legend -->
+            <div class="map-legend">
+                <div class="legend-title">Legend</div>
+                <div class="legend-item">
+                    <svg width="16" height="16" viewBox="0 0 16 16">
+                        <rect x="6" y="4" width="4" height="2" fill="#d4c5a0"/>
+                        <rect x="10" y="5" width="4" height="3" fill="#8b7355"/>
+                        <rect x="12" y="2" width="1" height="3" fill="#ff6b35"/>
+                    </svg>
+                    <span>Radio Operator</span>
+                </div>
+                <div class="legend-item">
+                    <svg width="16" height="16" viewBox="0 0 16 16">
+                        <rect x="7" y="10" width="2" height="6" fill="#8b7355"/>
+                        <polygon points="8,4 4,10 12,10" fill="#8b7355"/>
+                    </svg>
+                    <span>Antenna Tower</span>
+                </div>
+                <div class="legend-item">
+                    <svg width="16" height="16" viewBox="0 0 16 16">
+                        <line x1="2" y1="8" x2="14" y2="8" stroke="#ff6b35" stroke-width="2" stroke-dasharray="2,2"/>
+                    </svg>
+                    <span>Active Signal</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Recent Activity -->
+        <div class="side-panel right">
+            <div class="panel-title">Live Activity</div>
+
+            <div class="activity-item">
+                <div class="time">14:23:45</div>
+                <div class="detail">
+                    <strong style="color: #ff6b35;">RadioMaster</strong> → Antenna_08<br>
+                    <span style="color: #ffa500;">+15.5 pts</span> • 15.5 km
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="time">14:22:31</div>
+                <div class="detail">
+                    <strong style="color: #ff6b35;">MeshNinja</strong> → Antenna_12<br>
+                    <span style="color: #ffa500;">+23.2 pts</span> • 23.2 km
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="time">14:20:18</div>
+                <div class="detail">
+                    <strong style="color: #ff6b35;">SignalHunter</strong> discovered new hex!<br>
+                    <span style="color: #00ff00;">+50 bonus</span>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="time">14:18:55</div>
+                <div class="detail">
+                    <strong style="color: #ff6b35;">WaveRider</strong> → Antenna_03<br>
+                    <span style="color: #ffa500;">+8.7 pts</span> • 8.7 km
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="time">14:15:42</div>
+                <div class="detail">
+                    New operator registered:<br>
+                    <strong style="color: #00ff00;">PacketMaster</strong>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <div class="panel-title">Quick Info</div>
+                <div style="font-size: 12px; line-height: 1.8; color: #d4c5a0;">
+                    <p><strong style="color: #ff6b35;">To Start:</strong><br>
+                    Send "registerme" on Primary Channel</p>
+
+                    <p style="margin-top: 10px;"><strong style="color: #ff6b35;">Scoring:</strong><br>
+                    1 km = 1 point<br>
+                    New hex = +50 bonus</p>
+
+                    <p style="margin-top: 10px;"><strong style="color: #ff6b35;">Status:</strong><br>
+                    ✓ QSL = Confirmed signal</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
