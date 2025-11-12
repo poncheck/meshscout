@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>meshscout.guru - Pixel Art Matrix Design Preview</title>
+
+    <!-- Google Fonts - Pixel/Retro fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #00ff41;
+            font-size: 20px;
+            line-height: 1.4;
+            overflow-x: hidden;
+        }
+
+        /* Matrix Rain Effect */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        /* Scanlines Effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15) 0px,
+                transparent 1px,
+                transparent 2px,
+                rgba(0, 0, 0, 0.15) 3px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            animation: scanlines 8s linear infinite;
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(10px); }
+        }
+
+        /* CRT Flicker */
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            5% { opacity: 0.95; }
+            10% { opacity: 0.98; }
+            15% { opacity: 0.96; }
+            20% { opacity: 0.99; }
+            25% { opacity: 0.97; }
+            100% { opacity: 0.97; }
+        }
+
+        body {
+            animation: flicker 0.15s infinite;
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: #0d0d0d;
+            border: 3px solid #00ff41;
+            border-radius: 0;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            position: relative;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #00ff41, #00cc33, #00ff41);
+            z-index: -1;
+            opacity: 0.5;
+            filter: blur(10px);
+        }
+
+        .header h1 {
+            font-family: 'Press Start 2P', 'VT323', monospace;
+            font-size: 28px;
+            color: #00ff41;
+            text-shadow:
+                0 0 5px #00ff41,
+                0 0 10px #00ff41,
+                0 0 20px #00ff41,
+                0 0 40px #00cc33;
+            text-align: center;
+            letter-spacing: 2px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow:
+                    0 0 5px #00ff41,
+                    0 0 10px #00ff41,
+                    0 0 20px #00ff41,
+                    0 0 40px #00cc33;
+            }
+            to {
+                text-shadow:
+                    0 0 10px #00ff41,
+                    0 0 20px #00ff41,
+                    0 0 30px #00ff41,
+                    0 0 50px #00cc33,
+                    0 0 60px #008f11;
+            }
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: #00cc33;
+            margin-top: 10px;
+            text-shadow: 0 0 5px #00cc33;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            background: #0d0d0d;
+            border: 2px solid #008f11;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: 150px;
+            background: #1a1a1a;
+            border: 2px solid #00ff41;
+            padding: 10px;
+            text-align: center;
+            position: relative;
+            clip-path: polygon(
+                0 0,
+                calc(100% - 10px) 0,
+                100% 10px,
+                100% 100%,
+                10px 100%,
+                0 calc(100% - 10px)
+            );
+        }
+
+        .stat-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 255, 65, 0.1) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: #00cc33;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            color: #00ff41;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        /* Buttons */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .pixel-button {
+            background: #0d0d0d;
+            color: #00ff41;
+            border: 3px solid #00ff41;
+            padding: 15px 20px;
+            font-family: 'VT323', monospace;
+            font-size: 22px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            clip-path: polygon(
+                10px 0,
+                calc(100% - 10px) 0,
+                100% 10px,
+                100% calc(100% - 10px),
+                calc(100% - 10px) 100%,
+                10px 100%,
+                0 calc(100% - 10px),
+                0 10px
+            );
+        }
+
+        .pixel-button::before {
+            content: "▶ ";
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pixel-button:hover {
+            background: #00ff41;
+            color: #0a0a0a;
+            box-shadow:
+                0 0 20px #00ff41,
+                inset 0 0 20px rgba(0, 255, 65, 0.3);
+            transform: scale(1.05);
+        }
+
+        .pixel-button:hover::before {
+            opacity: 1;
+        }
+
+        .pixel-button.active {
+            background: #00cc33;
+            color: #0a0a0a;
+            border-color: #00ff41;
+        }
+
+        /* Panel */
+        .panel {
+            background: #0d0d0d;
+            border: 2px solid #008f11;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                #00ff41 50%,
+                transparent 100%);
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .panel h2 {
+            color: #00ff41;
+            font-size: 28px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px #00ff41;
+            border-bottom: 2px solid #008f11;
+            padding-bottom: 10px;
+        }
+
+        .panel h2::before {
+            content: "■ ";
+            color: #00ff41;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #1a1a1a;
+            border: 2px solid #008f11;
+        }
+
+        .data-table th {
+            background: #003b00;
+            color: #00ff41;
+            padding: 12px;
+            text-align: left;
+            font-size: 20px;
+            border-bottom: 2px solid #00ff41;
+            text-shadow: 0 0 5px #00ff41;
+        }
+
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #004400;
+            color: #00cc33;
+        }
+
+        .data-table tr:hover {
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.2);
+        }
+
+        /* Player Card */
+        .player-card {
+            background: #1a1a1a;
+            border: 3px solid #00ff41;
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .player-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: #00ff41;
+            box-shadow: 0 0 10px #00ff41;
+        }
+
+        .player-card:hover {
+            background: rgba(0, 255, 65, 0.1);
+            transform: translateX(5px);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .player-rank {
+            font-size: 32px;
+            color: #ffff00;
+            text-shadow: 0 0 10px #ffff00;
+            display: inline-block;
+            min-width: 60px;
+        }
+
+        .player-name {
+            color: #00ff41;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .player-points {
+            color: #ffff00;
+            font-size: 28px;
+            text-shadow: 0 0 10px #ffff00;
+        }
+
+        /* ASCII Art Decorations */
+        .ascii-corner {
+            font-family: 'VT323', monospace;
+            color: #008f11;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .top-left { position: absolute; top: 5px; left: 5px; }
+        .top-right { position: absolute; top: 5px; right: 5px; }
+        .bottom-left { position: absolute; bottom: 5px; left: 5px; }
+        .bottom-right { position: absolute; bottom: 5px; right: 5px; }
+
+        /* Loading Animation */
+        .loading {
+            text-align: center;
+            font-size: 24px;
+            color: #00ff41;
+            padding: 20px;
+        }
+
+        .loading::after {
+            content: "...";
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: "."; }
+            40% { content: ".."; }
+            60%, 100% { content: "..."; }
+        }
+
+        /* Map Preview */
+        .map-preview {
+            background: #0a0a0a;
+            border: 3px solid #00ff41;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+
+        .map-preview::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .map-preview .grid-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ff41;
+            font-size: 20px;
+            text-align: center;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        /* Color Palette Display */
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .color-box {
+            height: 80px;
+            border: 2px solid #00ff41;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .color-box span {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 10px;
+            border: 1px solid #00ff41;
+        }
+
+        /* Terminal Style */
+        .terminal {
+            background: #0a0a0a;
+            border: 2px solid #00ff41;
+            padding: 20px;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            color: #00cc33;
+            margin: 20px 0;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .terminal .prompt::before {
+            content: "root@meshscout:~$ ";
+            color: #00ff41;
+        }
+
+        .terminal .output {
+            color: #00cc33;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Background -->
+    <canvas id="matrix-bg"></canvas>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="ascii-corner top-left">┌─────</div>
+            <div class="ascii-corner top-right">─────┐</div>
+            <h1>MESHSCOUT.GURU</h1>
+            <div class="subtitle">[ LONGEST TRACEROUTE WINS ]</div>
+            <div class="ascii-corner bottom-left">└─────</div>
+            <div class="ascii-corner bottom-right">─────┘</div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-label">◆ Devices</div>
+                <div class="stat-value">142</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">◆ Players</div>
+                <div class="stat-value">89</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">◆ Traceroutes</div>
+                <div class="stat-value">2,547</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">◆ Coverage</div>
+                <div class="stat-value">324 km²</div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="button-grid">
+            <button class="pixel-button active">Ranking</button>
+            <button class="pixel-button">Connections</button>
+            <button class="pixel-button">Coverage</button>
+            <button class="pixel-button">Rules</button>
+        </div>
+
+        <!-- Panel with Players -->
+        <div class="panel">
+            <h2>TOP PLAYERS</h2>
+
+            <div class="player-card">
+                <span class="player-rank">01.</span>
+                <span class="player-name">PlayerOne</span>
+                <span style="float: right;">
+                    <span class="player-points">1,247 pts</span>
+                </span>
+            </div>
+
+            <div class="player-card">
+                <span class="player-rank">02.</span>
+                <span class="player-name">MeshMaster</span>
+                <span style="float: right;">
+                    <span class="player-points">1,089 pts</span>
+                </span>
+            </div>
+
+            <div class="player-card">
+                <span class="player-rank">03.</span>
+                <span class="player-name">RadioNinja</span>
+                <span style="float: right;">
+                    <span class="player-points">892 pts</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="panel">
+            <h2>RECENT TRACEROUTES</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>FROM</th>
+                        <th>TO</th>
+                        <th>DISTANCE</th>
+                        <th>POINTS</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>!a1b2c3d4</td>
+                        <td>!e5f6g7h8</td>
+                        <td>15.5 km</td>
+                        <td style="color: #ffff00;">+15.5</td>
+                        <td style="color: #00ff41;">✓ CONFIRMED</td>
+                    </tr>
+                    <tr>
+                        <td>!x9y8z7w6</td>
+                        <td>!m5n4o3p2</td>
+                        <td>23.2 km</td>
+                        <td style="color: #ffff00;">+23.2</td>
+                        <td style="color: #00ff41;">✓ CONFIRMED</td>
+                    </tr>
+                    <tr>
+                        <td>!q1r2s3t4</td>
+                        <td>!u5v6w7x8</td>
+                        <td>8.7 km</td>
+                        <td style="color: #888;">0.0</td>
+                        <td style="color: #ff9800;">⧗ PENDING</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Map Preview -->
+        <div class="panel">
+            <h2>NETWORK MAP</h2>
+            <div class="map-preview">
+                <div class="grid-overlay">
+                    <div style="font-size: 48px; margin-bottom: 20px;">◆</div>
+                    <div>MAP VISUALIZATION</div>
+                    <div style="font-size: 16px; margin-top: 10px; color: #008f11;">
+                        [ Dark tiles with green markers ]<br>
+                        [ Glowing connection lines ]<br>
+                        [ Pixel-style icons ]
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal Style Info -->
+        <div class="terminal">
+            <div class="prompt">status</div>
+            <div class="output">► System: ONLINE</div>
+            <div class="output">► MQTT Connection: ACTIVE</div>
+            <div class="output">► Database: CONNECTED</div>
+            <div class="output">► Mesh Network: SCANNING...</div>
+            <div class="prompt">registerme</div>
+            <div class="output" style="color: #00ff41;">✓ Registration successful! Welcome to the game.</div>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="panel">
+            <h2>COLOR PALETTE</h2>
+            <div class="color-palette">
+                <div class="color-box" style="background: #0a0a0a;"><span>#0a0a0a</span></div>
+                <div class="color-box" style="background: #00ff41;"><span style="color: #0a0a0a;">#00ff41</span></div>
+                <div class="color-box" style="background: #00cc33;"><span>#00cc33</span></div>
+                <div class="color-box" style="background: #008f11;"><span>#008f11</span></div>
+                <div class="color-box" style="background: #003b00;"><span>#003b00</span></div>
+                <div class="color-box" style="background: #ffff00;"><span style="color: #0a0a0a;">#ffff00</span></div>
+                <div class="color-box" style="background: #00ffff;"><span style="color: #0a0a0a;">#00ffff</span></div>
+                <div class="color-box" style="background: #ff0055;"><span>#ff0055</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Matrix Rain Effect
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                const x = i * fontSize;
+                const y = drops[i] * fontSize;
+
+                ctx.fillStyle = i % 2 === 0 ? '#00ff41' : '#00cc33';
+                ctx.fillText(char, x, y);
+
+                if (y > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 50);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
