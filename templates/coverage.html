@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="coverage_page.title">Mapa Zasięgu - meshscout.guru</title>
 
+    <!-- Google Fonts - HAM Radio Vintage -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -16,15 +19,27 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a2e;
-            color: #eee;
+            font-family: 'Share Tech Mono', 'Courier Prime', monospace;
+            background: #2c2416;
+            color: #d4c5a0;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.1) 2px,
+                    rgba(0, 0, 0, 0.1) 4px
+                );
         }
 
         #header {
-            background: #16213e;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border-bottom: 4px solid #8b7355;
             padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            box-shadow:
+                0 4px 0 #1a1410,
+                0 4px 15px rgba(0, 0, 0, 0.5),
+                inset 0 2px 0 rgba(255, 255, 255, 0.1);
             z-index: 2000;
             position: relative;
         }
@@ -38,9 +53,14 @@
         }
 
         #header h1 {
-            font-size: 24px;
-            color: #0f4c75;
+            font-family: 'VT323', monospace;
+            font-size: 28px;
+            color: #ff6b35;
             margin: 0;
+            text-shadow:
+                0 0 10px rgba(255, 107, 53, 0.8),
+                2px 2px 0 rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
         }
 
         .nav-buttons {
@@ -49,86 +69,99 @@
             flex-wrap: wrap;
         }
 
-        .nav-button {
-            background: #0f4c75;
-            color: white;
-            border: none;
+        .nav-button,
+        .toggle-button {
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            color: #d4c5a0;
             padding: 10px 20px;
             cursor: pointer;
-            border-radius: 5px;
             font-size: 14px;
             font-weight: bold;
             text-decoration: none;
             display: inline-block;
-            transition: background 0.2s;
-        }
-
-        .nav-button:hover {
-            background: #3282b8;
-        }
-
-        .lang-button {
-            background: #0f4c75;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 12px;
-            cursor: pointer;
             transition: all 0.2s;
+            font-family: 'Share Tech Mono', monospace;
+            position: relative;
         }
 
-        .lang-button:hover {
-            background: #3282b8;
+        .nav-button::before,
+        .toggle-button::before {
+            content: "";
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: #ff6b35;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(255, 107, 53, 0.8);
         }
 
-        .lang-button.active {
-            background: #d4af37;
-            color: #1a1a2e;
-            font-weight: bold;
-        }
-
-        .toggle-button {
-            background: #2d5f3e;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
+        .nav-button:hover,
         .toggle-button:hover {
-            background: #3d7f5e;
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
+            transform: translateY(-2px);
         }
 
         .toggle-button.active {
-            background: #4a9d68;
-            box-shadow: 0 0 10px rgba(74, 157, 104, 0.5);
+            background: #ff6b35;
+            color: #1a1410;
+            border-color: #ff6b35;
+        }
+
+        .toggle-button.active::before {
+            background: #00ff00;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+        }
+
+        .lang-button {
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            color: #d4c5a0;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .lang-button:hover {
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
+        }
+
+        .lang-button.active {
+            background: #ff6b35;
+            color: #1a1410;
+            border-color: #ff6b35;
+            font-weight: bold;
         }
 
         .legend-toggle {
-            background: #3d5a80;
-            color: white;
-            border: none;
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            color: #d4c5a0;
             padding: 8px 15px;
             cursor: pointer;
-            border-radius: 5px;
             font-size: 12px;
             font-weight: bold;
             margin-top: 8px;
             width: 100%;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            font-family: 'Share Tech Mono', monospace;
         }
 
         .legend-toggle:hover {
-            background: #5d7a9a;
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
         }
 
         .legend-toggle.active {
-            background: #5d7a9a;
+            background: #ff6b35;
+            color: #1a1410;
         }
 
         .legends-container {
@@ -142,36 +175,41 @@
         }
 
         .info-panel {
-            background: #1a1a2e;
+            background: rgba(26, 20, 16, 0.8);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
             padding: 10px;
             margin: 8px 0;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
         .info-panel h3 {
-            color: #3282b8;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
             margin-bottom: 8px;
-            font-size: 14px;
+            font-size: 16px;
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.5);
         }
 
         .info-panel p {
             font-size: 11px;
             line-height: 1.4;
-            color: #ccc;
+            color: #d4c5a0;
         }
 
         .legend {
-            background: #16213e;
+            background: rgba(61, 48, 32, 0.9);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
             padding: 8px 10px;
-            border-radius: 5px;
             margin-top: 8px;
         }
 
         .legend h4 {
-            color: #3282b8;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
             margin-bottom: 6px;
-            font-size: 12px;
+            font-size: 14px;
         }
 
         .legend-item {
@@ -186,11 +224,12 @@
             height: 12px;
             border-radius: 2px;
             margin-right: 6px;
-            border: 1px solid #666;
+            border: 1px solid #8b7355;
         }
 
         #stats-bar {
-            background: #0f4c75;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border-bottom: 2px solid #8b7355;
             padding: 10px 20px;
             display: flex;
             justify-content: space-around;
@@ -203,15 +242,18 @@
         }
 
         .stat-value {
-            font-size: 24px;
+            font-family: 'VT323', monospace;
+            font-size: 28px;
             font-weight: bold;
-            color: #d4af37;
+            color: #ffa500;
             display: block;
+            text-shadow: 0 0 8px rgba(255, 165, 0, 0.6);
         }
 
         .stat-label {
-            font-size: 12px;
-            color: #ccc;
+            font-size: 11px;
+            color: #8b7355;
+            text-transform: uppercase;
         }
 
         #map {
@@ -224,33 +266,50 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(15, 76, 117, 0.9);
+            background: rgba(61, 48, 32, 0.95);
+            border: 3px solid #ff6b35;
             padding: 20px 40px;
-            border-radius: 10px;
+            border-radius: 8px;
             z-index: 10000;
             display: none;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            color: #ff6b35;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.6);
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
         }
 
         #loading.show {
             display: block;
         }
 
+        /* Leaflet Popup Overrides */
+        .leaflet-popup-content-wrapper {
+            background: #3d3020;
+            color: #d4c5a0;
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+        }
+
         .leaflet-popup-content {
-            color: #333;
+            font-family: 'Share Tech Mono', monospace;
+            margin: 10px;
             min-width: 250px;
         }
 
         .hex-popup h3 {
+            font-family: 'VT323', monospace;
             margin: 0 0 10px 0;
-            color: #0f4c75;
-            font-size: 16px;
+            color: #ff6b35;
+            font-size: 18px;
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.5);
         }
 
         .hex-popup .info-row {
             display: flex;
             justify-content: space-between;
             padding: 5px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #8b7355;
         }
 
         .hex-popup .info-row:last-child {
@@ -259,19 +318,20 @@
 
         .hex-popup .label {
             font-weight: bold;
-            color: #555;
+            color: #8b7355;
         }
 
         .hex-popup .value {
-            color: #333;
+            color: #d4c5a0;
         }
 
         #footer {
-            background: #16213e;
+            background: linear-gradient(180deg, #2c2416 0%, #1a1410 100%);
+            border-top: 2px solid #8b7355;
             padding: 10px 20px;
             text-align: center;
-            font-size: 11px;
-            color: #888;
+            font-size: 10px;
+            color: #8b7355;
         }
 
         /* MODAL Z SZCZEGÓŁAMI HEKSAGONU */
@@ -292,12 +352,14 @@
         }
 
         .modal-content {
-            background: #1a1a2e;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border: 4px solid #8b7355;
             margin: 20px auto;
             padding: 20px;
             max-width: 1000px;
-            border-radius: 10px;
+            border-radius: 8px;
             position: relative;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
         }
 
         .modal-close {
@@ -305,26 +367,29 @@
             top: 10px;
             right: 15px;
             font-size: 30px;
-            color: #888;
+            color: #8b7355;
             cursor: pointer;
             background: none;
             border: none;
+            transition: color 0.2s;
         }
 
         .modal-close:hover {
-            color: #fff;
+            color: #ff6b35;
         }
 
         .modal-header {
-            border-bottom: 2px solid #0f4c75;
+            border-bottom: 2px solid #8b7355;
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
 
         .modal-header h2 {
-            color: #3282b8;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
             margin: 0;
-            font-size: 20px;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
         }
 
         .modal-section {
@@ -332,61 +397,74 @@
         }
 
         .modal-section h3 {
-            color: #3282b8;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
             margin-bottom: 15px;
-            font-size: 16px;
-            border-bottom: 1px solid #333;
+            font-size: 18px;
+            border-bottom: 1px solid #8b7355;
             padding-bottom: 8px;
         }
 
         .hex-stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
             margin-bottom: 20px;
         }
 
         .hex-stat-box {
-            background: #16213e;
-            padding: 15px;
-            border-radius: 5px;
+            background: #1a1410;
+            border: 2px solid #8b7355;
+            padding: 12px;
+            border-radius: 4px;
             text-align: center;
         }
 
         .hex-stat-box .value {
+            font-family: 'VT323', monospace;
             font-size: 28px;
             font-weight: bold;
-            color: #d4af37;
+            color: #ffa500;
             display: block;
+            text-shadow: 0 0 8px rgba(255, 165, 0, 0.6);
         }
 
         .hex-stat-box .label {
-            font-size: 12px;
-            color: #ccc;
+            font-size: 11px;
+            color: #8b7355;
             margin-top: 5px;
+            text-transform: uppercase;
         }
 
         .data-table {
             width: 100%;
-            border-collapse: collapse;
-            background: #16213e;
-            border-radius: 5px;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #1a1410;
+            border: 2px solid #8b7355;
+            border-radius: 4px;
             overflow: hidden;
         }
 
+        .data-table thead {
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 100%);
+        }
+
         .data-table th {
-            background: #0f4c75;
-            color: white;
-            padding: 12px 8px;
+            color: #ff6b35;
+            padding: 10px 8px;
             text-align: left;
-            font-size: 13px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #8b7355;
         }
 
         .data-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #2a2a3e;
+            padding: 8px;
+            border-bottom: 1px solid #3d3020;
+            color: #d4c5a0;
             font-size: 12px;
-            color: #ddd;
         }
 
         .data-table tr:last-child td {
@@ -394,18 +472,18 @@
         }
 
         .data-table tr:hover {
-            background: #1e1e30;
+            background: rgba(255, 107, 53, 0.1);
         }
 
         .no-data {
             text-align: center;
             padding: 20px;
-            color: #888;
+            color: #8b7355;
             font-style: italic;
         }
 
         .player-link {
-            color: #3282b8;
+            color: #ff6b35;
             text-decoration: none;
         }
 
@@ -416,14 +494,15 @@
         /* RESPONSYWNOŚĆ DLA TELEFONÓW */
         @media (max-width: 768px) {
             #header h1 {
-                font-size: 18px;
+                font-size: 20px;
             }
 
             .nav-buttons {
                 width: 100%;
             }
 
-            .nav-button {
+            .nav-button,
+            .toggle-button {
                 flex: 1;
                 padding: 8px 12px;
                 font-size: 12px;
@@ -438,7 +517,7 @@
             }
 
             .info-panel p {
-                font-size: 12px;
+                font-size: 10px;
             }
 
             #stats-bar {
@@ -447,11 +526,11 @@
             }
 
             .stat-value {
-                font-size: 20px;
+                font-size: 22px;
             }
 
             .stat-label {
-                font-size: 11px;
+                font-size: 10px;
             }
 
             #map {
@@ -459,7 +538,7 @@
             }
 
             .legend-item {
-                font-size: 11px;
+                font-size: 9px;
             }
         }
     </style>
@@ -506,7 +585,7 @@
                     <div class="legend-color" style="background: #DEB887; border: 2px solid #CD853F;"></div>
                     <span><strong>🔀 Mieszane</strong> (brązowy)</span>
                 </div>
-                <p style="font-size: 11px; color: #999; margin-top: 8px;">
+                <p style="font-size: 11px; color: #8b7355; margin-top: 8px;">
                     💡 <strong>Gracze</strong> = zarejestrowane urządzenia (registerme), zdobywają punkty<br>
                     💡 <strong>Urządzenia</strong> = zwykłe urządzenia z GPS, tylko wizualizacja
                 </p>
@@ -548,7 +627,7 @@
                     <div class="legend-color" style="background: #8B0000; height: 8px;"></div>
                     <span>50+ traceroutes (silne połączenie)</span>
                 </div>
-                <p style="font-size: 11px; color: #999; margin-top: 8px;">
+                <p style="font-size: 11px; color: #8b7355; margin-top: 8px;">
                     💡 Kliknij przycisk "🔗 Pokaż Połączenia" aby zobaczyć linie łączące heksagony
                 </p>
             </div>
@@ -597,6 +676,69 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
+        // Translation system
+        let currentLang = '{{ lang }}' || 'pl';
+        let translations = {};
+
+        async function loadTranslations(lang) {
+            try {
+                const response = await fetch(`/api/translations/${lang}`);
+                const data = await response.json();
+                if (data.success) {
+                    translations = data.translations;
+                    applyTranslations();
+                }
+            } catch (error) {
+                console.error('Error loading translations:', error);
+            }
+        }
+
+        function t(key, params = {}) {
+            const keys = key.split('.');
+            let value = translations;
+            for (const k of keys) {
+                value = value?.[k];
+            }
+            if (!value) return key;
+
+            let result = value;
+            for (const [param, val] of Object.entries(params)) {
+                result = result.replace(new RegExp(`\\{${param}\\}`, 'g'), val);
+            }
+            return result;
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                const translation = t(key);
+                element.textContent = translation;
+            });
+
+            document.title = t('coverage_page.title');
+
+            document.querySelectorAll('.lang-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`lang-${currentLang}`)?.classList.add('active');
+        }
+
+        async function switchLanguage(lang) {
+            if (lang === currentLang) return;
+
+            try {
+                const response = await fetch(`/api/set-language/${lang}`);
+                const data = await response.json();
+                if (data.success) {
+                    currentLang = lang;
+                    await loadTranslations(lang);
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Error switching language:', error);
+            }
+        }
+
         // Inicjalizacja mapy
         const map = L.map('map').setView([52.2297, 21.0122], 6);
 
@@ -612,7 +754,7 @@
         function getHexColor(hexData) {
             const activity = hexData.total_activity || 0;
             const hexType = hexData.hex_type || 'player';
-            
+
             // Szare kolory dla zwykłych urządzeń (bez graczy)
             if (hexType === 'device') {
                 if (activity >= 20) return '#404040';  // ciemno szary
@@ -620,7 +762,7 @@
                 if (activity >= 5) return '#808080';   // średni szary
                 return '#A9A9A9';                      // jasno szary
             }
-            
+
             // Mieszane (gracze + urządzenia) - pomarańczowo-brązowe
             if (hexType === 'mixed') {
                 if (activity >= 100) return '#8B4513'; // siodłowy brąz
@@ -631,7 +773,7 @@
                 if (activity >= 3) return '#F4A460';   // piasek
                 return '#FFE4B5';                       // moccasin
             }
-            
+
             // Żółto-czerwone kolory dla graczy (tylko gracze)
             if (activity >= 100) return '#8B0000'; // ciemny czerwony
             if (activity >= 50) return '#DC143C';  // czerwony
@@ -670,7 +812,7 @@
 
                 // Aktualizuj statystyki
                 document.getElementById('stat-hexagons').textContent = data.total;
-                
+
                 // Oblicz statystyki z danych
                 let totalActivity = 0;
                 let uniquePlayers = new Set();
@@ -684,7 +826,7 @@
 
                 document.getElementById('stat-total-activity').textContent = totalActivity;
                 document.getElementById('stat-players').textContent = uniquePlayers.size || data.hexagons.length;
-                
+
                 // Każdy heksagon H3 na rozdzielczości 8 ma ~0.46 km²
                 const areaPerHex = 0.46;
                 const totalArea = (data.total * areaPerHex).toFixed(2);
@@ -776,30 +918,30 @@
         async function showHexDetails(h3Index) {
             const modal = document.getElementById('hexDetailsModal');
             const content = document.getElementById('hexDetailsContent');
-            
+
             // Pokaż modal z loadingiem
             modal.classList.add('show');
             content.innerHTML = '<div class="modal-header"><h2>⏳ Ładowanie szczegółów...</h2></div>';
-            
+
             try {
                 const response = await fetch(`/api/hex/${h3Index}/details?limit_traceroutes=50&limit_players=100`);
                 const data = await response.json();
-                
+
                 if (!data.success) {
                     content.innerHTML = `<div class="modal-header"><h2>❌ Błąd: ${data.error}</h2></div>`;
                     return;
                 }
-                
+
                 const hex = data.hexagon;
                 const stats = hex.statistics;
-                
+
                 // Renderuj szczegóły
                 let html = `
                     <div class="modal-header">
                         <h2>🗺️ Szczegóły Heksagonu H3</h2>
                         <p style="font-size: 11px; color: #888; margin-top: 5px;">${h3Index}</p>
                     </div>
-                    
+
                     <!-- Statystyki -->
                     <div class="hex-stats-grid">
                         <div class="hex-stat-box">
@@ -823,12 +965,12 @@
                             <span class="label">🏆 Punkty</span>
                         </div>
                     </div>
-                    
+
                     <p style="text-align: center; color: #888; font-size: 12px; margin-bottom: 20px;">
                         Ostatnia aktywność: ${formatTime(stats.last_activity)}
                     </p>
                 `;
-                
+
                 // Tabela urządzeń (gracze + zwykłe urządzenia)
                 html += '<div class="modal-section"><h3>👥 Urządzenia odwiedzające ten heksagon</h3>';
                 if (hex.devices && hex.devices.length > 0) {
@@ -847,7 +989,7 @@
                     `;
                     hex.devices.forEach(device => {
                         const icon = device.is_player ? '🎮' : '📡';
-                        const nameCell = device.is_player 
+                        const nameCell = device.is_player
                             ? `<a href="/player/${device.node_id}" class="player-link">${icon} ${device.display_name}</a>`
                             : `${icon} ${device.display_name}`;
                         html += `
@@ -865,7 +1007,7 @@
                     html += '<p class="no-data">Brak danych o urządzeniach</p>';
                 }
                 html += '</div>';
-                
+
                 // Tabela traceroutes
                 html += '<div class="modal-section"><h3>📡 Traceroutes z tego heksagonu</h3>';
                 if (hex.traceroutes && hex.traceroutes.length > 0) {
@@ -905,9 +1047,9 @@
                     html += '<p class="no-data">Brak traceroutes z tego heksagonu</p>';
                 }
                 html += '</div>';
-                
+
                 content.innerHTML = html;
-                
+
             } catch (error) {
                 console.error('Błąd ładowania szczegółów heksagonu:', error);
                 content.innerHTML = `<div class="modal-header"><h2>❌ Błąd: ${error.message}</h2></div>`;
@@ -1038,7 +1180,7 @@
                             </div>
                         </div>
                     `;
-                    
+
                     polyline.bindPopup(popupContent);
 
                     // Highlight na hover
@@ -1086,7 +1228,7 @@
                     // Jeśli nie załadowano jeszcze połączeń, załaduj je
                     await loadHexConnections();
                 }
-                
+
                 if (connectionsLayer) {
                     connectionsLayer.addTo(map);
                     connectionsVisible = true;
@@ -1108,7 +1250,7 @@
         function toggleLegend() {
             const container = document.getElementById('legendsContainer');
             const button = document.getElementById('legendToggle');
-            
+
             if (container.classList.contains('show')) {
                 container.classList.remove('show');
                 button.classList.remove('active');
@@ -1130,7 +1272,10 @@
         document.getElementById('modalCloseBtn').addEventListener('click', closeHexDetails);
 
         // Załaduj mapę przy starcie
-        loadCoverageMap().then(() => {
+        async function init() {
+            await loadTranslations(currentLang);
+            await loadCoverageMap();
+
             // Sprawdź czy jest parametr highlight w URL
             const highlightH3 = getUrlParameter('highlight');
             if (highlightH3) {
@@ -1138,7 +1283,7 @@
                 // Poczekaj chwilę na pełne załadowanie mapy, potem pokaż szczegóły
                 setTimeout(() => {
                     showHexDetails(highlightH3);
-                    
+
                     // Spróbuj znaleźć i wyróżnić hex na mapie
                     if (h3Layer) {
                         h3Layer.eachLayer(layer => {
@@ -1147,13 +1292,13 @@
                                 layer.setStyle({
                                     weight: 4,
                                     opacity: 1,
-                                    color: '#d4af37',
+                                    color: '#ffa500',
                                     fillOpacity: 0.8
                                 });
                                 // Wycentruj mapę na hexie
                                 const bounds = layer.getBounds();
                                 if (bounds.isValid()) {
-                                    map.fitBounds(bounds, { 
+                                    map.fitBounds(bounds, {
                                         padding: [100, 100],
                                         maxZoom: 12
                                     });
@@ -1163,7 +1308,9 @@
                     }
                 }, 500);
             }
-        });
+        }
+
+        init();
     </script>
 </body>
 </html>
