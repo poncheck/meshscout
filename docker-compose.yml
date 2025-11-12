@@ -1,0 +1,69 @@
+services:
+  # MQTT Decoder - zbiera dane z MQTT i zapisuje do bazy
+  mqtt-decoder:
+    build: .
+    image: mesh-scout:latest
+    container_name: mesh-scout-decoder
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+      - ./config.json:/app/config.json:ro
+    environment:
+      - TZ=Europe/Warsaw
+      - DB_PATH=/data/mesh_scout.db
+    command: ["python", "meshtastic_mqtt_decoder.py", "--config", "/app/config.json"]
+    networks:
+      - mesh-scout
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Web Server - wyświetla urządzenia na mapie
+  web-server:
+    build: .
+    image: mesh-scout:latest
+    container_name: mesh-scout-web
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/data
+    environment:
+      - TZ=Europe/Warsaw
+      - DB_PATH=/data/mesh_scout.db
+      - PORT=5000
+      - DEBUG=False
+    command: ["python", "web_server.py"]
+    depends_on:
+      - mqtt-decoder
+    networks:
+      - mesh-scout
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Opcjonalnie: własny broker MQTT
+  # mosquitto:
+  #   image: eclipse-mosquitto:latest
+  #   container_name: mosquitto
+  #   restart: unless-stopped
+  #   ports:
+  #     - "1883:1883"
+  #     - "9001:9001"
+  #   volumes:
+  #     - ./mosquitto/config:/mosquitto/config:ro
+  #     - ./mosquitto/data:/mosquitto/data
+  #     - ./mosquitto/log:/mosquitto/log
+  #   networks:
+  #     - mesh-scout
+
+networks:
+  mesh-scout:
+    driver: bridge
+
+volumes:
+  data:

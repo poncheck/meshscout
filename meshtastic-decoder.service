@@ -1,0 +1,61 @@
+# Systemd service file dla Meshtastic MQTT Decoder
+#
+# Instalacja:
+# 1. Skopiuj ten plik do /etc/systemd/system/
+#    sudo cp meshtastic-decoder.service /etc/systemd/system/
+#
+# 2. Edytuj ścieżki w sekcji [Service]
+#    sudo nano /etc/systemd/system/meshtastic-decoder.service
+#
+# 3. Aktywuj usługę
+#    sudo systemctl daemon-reload
+#    sudo systemctl enable meshtastic-decoder
+#    sudo systemctl start meshtastic-decoder
+#
+# 4. Sprawdź status
+#    sudo systemctl status meshtastic-decoder
+#    sudo journalctl -u meshtastic-decoder -f
+
+[Unit]
+Description=Meshtastic MQTT Decoder Service
+Documentation=https://github.com/twoje-repo/mesh-scout
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+# Użytkownik (zmień na swojego użytkownika)
+User=meshuser
+Group=meshuser
+
+# Katalog roboczy (zmień na swoją ścieżkę)
+WorkingDirectory=/home/meshuser/mesh-scout
+
+# Komenda (zmień ścieżki)
+ExecStart=/usr/bin/python3 /home/meshuser/mesh-scout/meshtastic_mqtt_decoder.py --config /home/meshuser/mesh-scout/config.json
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=200
+StartLimitBurst=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=meshtastic-decoder
+
+# Security hardening (opcjonalne)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/meshuser/mesh-scout
+
+# Environment (opcjonalne)
+Environment="PYTHONUNBUFFERED=1"
+Environment="TZ=Europe/Warsaw"
+
+[Install]
+WantedBy=multi-user.target

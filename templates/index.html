@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>meshscout.guru</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet.markercluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+        }
+
+        #header {
+            background: #16213e;
+            padding: 10px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            z-index: 2000;
+            position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #header h1 {
+            font-size: 22px;
+            color: #0f4c75;
+            flex: 1;
+        }
+
+        .language-switcher {
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            background: #0f4c75;
+            color: white;
+            border: 2px solid #3282b8;
+            padding: 5px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover {
+            background: #3282b8;
+        }
+
+        .lang-btn.active {
+            background: #d4af37;
+            border-color: #d4af37;
+            color: #1a1a2e;
+        }
+
+        #stats {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #3282b8;
+        }
+
+        .header-panels {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .panel-toggle {
+            background: #0f4c75;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .panel-toggle:hover {
+            background: #3282b8;
+        }
+
+        .panel-toggle.active {
+            background: #3282b8;
+        }
+
+        .panel-toggle.gold {
+            background: #d4af37;
+            color: #1a1a2e;
+        }
+
+        .panel-toggle.gold:hover,
+        .panel-toggle.gold.active {
+            background: #f4d66f;
+        }
+
+        .dropdown-panel {
+            background: #1a1a2e;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .dropdown-panel.open {
+            display: block;
+        }
+
+        .dropdown-panel h3 {
+            color: #3282b8;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .device-list-item,
+        .highscore-item {
+            background: #16213e;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .device-list-item:hover,
+        .highscore-item:hover {
+            background: #0f4c75;
+        }
+
+        .device-list-item .name,
+        .highscore-name {
+            font-weight: bold;
+            color: #3282b8;
+        }
+
+        .device-list-item .node-id,
+        .highscore-node {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .highscore-item {
+            gap: 10px;
+        }
+
+        .highscore-rank {
+            font-size: 20px;
+            min-width: 35px;
+        }
+
+        .highscore-info {
+            flex: 1;
+        }
+
+        .highscore-points {
+            font-size: 18px;
+            font-weight: bold;
+            color: #d4af37;
+        }
+
+        .highscore-stats {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .game-info {
+            background: #0f4c75;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        #map {
+            height: calc(100vh - 150px);
+            width: 100%;
+        }
+
+        .battery-good { color: #4caf50; }
+        .battery-medium { color: #ff9800; }
+        .battery-low { color: #f44336; }
+
+        .leaflet-popup-content {
+            color: #333;
+            min-width: 250px;
+        }
+
+        .device-popup h3 {
+            margin: 0 0 10px 0;
+            color: #0f4c75;
+            font-size: 16px;
+        }
+
+        .device-popup .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .device-popup .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .device-popup .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .device-popup .value {
+            color: #333;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 76, 117, 0.9);
+            padding: 20px 40px;
+            border-radius: 10px;
+            z-index: 10000;
+            display: none;
+        }
+
+        #loading.show {
+            display: block;
+        }
+
+        #footer {
+            background: #16213e;
+            padding: 8px 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .period-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .period-tab {
+            background: #16213e;
+            color: #888;
+            border: 1px solid #3282b8;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .period-tab:hover {
+            background: #0f4c75;
+            color: #eee;
+        }
+
+        .period-tab.active {
+            background: #d4af37;
+            color: #1a1a2e;
+            border-color: #d4af37;
+        }
+
+        .toggle-button {
+            background: #2d5f3e;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .toggle-button:hover {
+            background: #3d7f5e;
+        }
+
+        .toggle-button.active {
+            background: #4a9d68;
+            box-shadow: 0 0 10px rgba(74, 157, 104, 0.5);
+        }
+
+        .all-devices-link {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            margin: 10px 0;
+            background: #0f4c75;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .all-devices-link:hover {
+            background: #3282b8;
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(22, 33, 62, 0.95);
+            padding: 12px;
+            border-radius: 8px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            font-size: 11px;
+            max-width: 250px;
+        }
+
+        .map-legend h4 {
+            color: #3282b8;
+            margin: 0 0 8px 0;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            color: #eee;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 8px;
+            border: 1px solid #666;
+        }
+
+        /* Hex Details Modal */
+        #hexDetailsModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            overflow-y: auto;
+        }
+
+        #hexDetailsModal.show {
+            display: block;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 1000px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 30px;
+            color: #888;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-header {
+            border-bottom: 2px solid #0f4c75;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #3282b8;
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .modal-section {
+            margin-bottom: 25px;
+        }
+
+        .modal-section h3 {
+            color: #3282b8;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+        }
+
+        .hex-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .hex-stat-box {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .hex-stat-box .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d4af37;
+            display: block;
+        }
+
+        .hex-stat-box .label {
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #16213e;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: #0f4c75;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #2a2a3e;
+            font-size: 12px;
+            color: #ddd;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background: #1e1e30;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-style: italic;
+        }
+
+        .player-link {
+            color: #3282b8;
+            text-decoration: none;
+        }
+
+        .player-link:hover {
+            text-decoration: underline;
+        }
+
+        /* RESPONSYWNOŚĆ DLA TELEFONÓW */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            #header {
+                padding: 10px 15px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            #header h1 {
+                font-size: 16px;
+                width: 100%;
+            }
+
+            #stats {
+                flex-direction: column;
+                gap: 8px;
+                font-size: 12px;
+                width: 100%;
+            }
+
+            .stat-item {
+                font-size: 12px;
+            }
+
+            .header-panels {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .panel-toggle {
+                width: 100%;
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+
+            .dropdown-panel {
+                max-height: 60vh;
+                padding: 12px;
+            }
+
+            .dropdown-panel h3 {
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+
+            .game-info {
+                font-size: 11px;
+                padding: 8px;
+            }
+
+            .period-tabs {
+                gap: 5px;
+            }
+
+            .period-tab {
+                font-size: 11px;
+                padding: 5px 8px;
+            }
+
+            .device-list-item,
+            .highscore-item {
+                padding: 8px;
+                margin-bottom: 6px;
+                font-size: 12px;
+            }
+
+            .device-list-item .name,
+            .highscore-name {
+                font-size: 13px;
+            }
+
+            .device-list-item .node-id,
+            .highscore-node {
+                font-size: 10px;
+            }
+
+            .highscore-rank {
+                font-size: 18px;
+                min-width: 30px;
+            }
+
+            .highscore-points {
+                font-size: 16px;
+            }
+
+            .highscore-stats {
+                font-size: 10px;
+            }
+
+            #map {
+                height: calc(100vh - 200px);
+            }
+
+            #footer {
+                font-size: 10px;
+                padding: 6px 15px;
+            }
+
+            /* Lepsza widoczność popupów na telefonie */
+            .device-popup {
+                font-size: 12px;
+            }
+
+            .device-popup h3 {
+                font-size: 14px;
+            }
+
+            .leaflet-popup-content {
+                min-width: 200px;
+            }
+
+            /* Większe przyciski do klikania */
+            .device-list-item,
+            .highscore-item {
+                min-height: 50px;
+                touch-action: manipulation;
+            }
+        }
+
+        /* Bardzo małe telefony */
+        @media (max-width: 480px) {
+            #header h1 {
+                font-size: 14px;
+            }
+
+            #stats {
+                font-size: 11px;
+            }
+
+            .panel-toggle {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+
+            .dropdown-panel {
+                max-height: 50vh;
+            }
+
+            .period-tab {
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+
+            #map {
+                height: calc(100vh - 180px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="show">⏳ Ładowanie danych...</div>
+
+    <div id="header">
+        <div class="header-top">
+            <h1 data-i18n="header.title">📡 meshscout.guru - najdłuższy traceroute wygrywa ;)</h1>
+            <div class="language-switcher">
+                <button class="lang-btn" data-lang="pl">🇵🇱</button>
+                <button class="lang-btn" data-lang="en">🇬🇧</button>
+            </div>
+        </div>
+
+        <div class="header-panels">
+            <button id="highscore-toggle" class="panel-toggle gold"><span data-i18n="nav.ranking">🏆 Ranking Graczy</span> (<span id="players-count">0</span>)</button>
+            <button id="connections-toggle" class="toggle-button" data-i18n="nav.connections">🔗 Pokaż Połączenia</button>
+            <a href="/rules" class="panel-toggle" style="text-decoration: none; text-align: center;" data-i18n="nav.rules">📜 Zasady Gry</a>
+        </div>
+
+        <div id="highscore-panel" class="dropdown-panel">
+            <h3 data-i18n="highscore.title">🏆 Highscore - Top 20</h3>
+            <div class="game-info">
+                <p>
+                    <span data-i18n-html="highscore.register_info">🎯 Zarejestruj się: wyślij "registerme" na publicznym kanale Primary Channel, który jest w zasięgu serwera mqtt.meshtastic.info.pl</span><br>
+                    <span data-i18n="highscore.send_traceroutes">📡 Wysyłaj pakiety traceroute</span><br>
+                    <span data-i18n-html="highscore.scoring">📊 Punktacja: <strong>1 km = 1 punkt</strong> (0.01 pkt = 10 m)</span><br>
+                    <span data-i18n-html="highscore.hex_bonus">🗺️ Za każdy odwiedzony heksagon H3: <strong>50 punktów (bonus)</strong></span><br>
+                    🏅 <a href="/winners" style="color: gold; text-decoration: none;" data-i18n="highscore.see_winners">Zobacz zwycięzców »</a>
+                </p>
+            </div>
+            <div class="period-tabs">
+                <button class="period-tab active" data-period="all" data-i18n="highscore.period_all">Wszystko</button>
+                <button class="period-tab" data-period="month" data-i18n="highscore.period_month">Miesiąc</button>
+                <button class="period-tab" data-period="week" data-i18n="highscore.period_week">Tydzień</button>
+                <button class="period-tab" data-period="today" data-i18n="highscore.period_today">Dziś</button>
+            </div>
+            <div id="highscore-list"></div>
+        </div>
+    </div>
+
+    <div id="map">
+        <div class="map-legend">
+            <h4 data-i18n="legend.title">🗺️ Heksagony H3</h4>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FFFF00;"></div>
+                <span data-i18n="legend.players_1_2">Gracze: 1-2 wizyty</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FFA500;"></div>
+                <span data-i18n="legend.players_3_19">Gracze: 3-19 wizyt</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #DC143C;"></div>
+                <span data-i18n="legend.players_20_99">Gracze: 20-99 wizyt</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8B0000;"></div>
+                <span data-i18n="legend.players_100_plus">Gracze: 100+ wizyt</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer">
+        <span data-i18n="footer.copyright">Copyright by meshtastic.info.pl © 2025</span> | <span data-i18n="footer.version">Wersja:</span> {{ version }}
+    </div>
+
+    <!-- Modal ze szczegółami heksagonu -->
+    <div id="hexDetailsModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalCloseBtn">&times;</button>
+            <div id="hexDetailsContent">
+                <div class="modal-header">
+                    <h2>⏳ Ładowanie szczegółów...</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet.markercluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+    <script>
+        // === TRANSLATION SYSTEM ===
+        let currentLang = '{{ lang }}' || 'pl';
+        let translations = {};
+
+        // Load translations
+        async function loadTranslations(lang) {
+            try {
+                const response = await fetch(`/api/translations/${lang}`);
+                const data = await response.json();
+                if (data.success) {
+                    translations = data.translations;
+                    applyTranslations();
+                    updateActiveLanguage(lang);
+                }
+            } catch (error) {
+                console.error('Error loading translations:', error);
+            }
+        }
+
+        // Apply translations to page
+        function applyTranslations() {
+            // Handle data-i18n (textContent)
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                const translation = getTranslation(key);
+                if (translation) {
+                    element.textContent = translation;
+                }
+            });
+
+            // Handle data-i18n-html (innerHTML for HTML content)
+            document.querySelectorAll('[data-i18n-html]').forEach(element => {
+                const key = element.getAttribute('data-i18n-html');
+                const translation = getTranslation(key);
+                if (translation) {
+                    element.innerHTML = translation;
+                }
+            });
+
+            // Update connections toggle button text
+            if (connectionsVisible) {
+                document.getElementById('connections-toggle').setAttribute('data-i18n', 'nav.hide_connections');
+            } else {
+                document.getElementById('connections-toggle').setAttribute('data-i18n', 'nav.connections');
+            }
+        }
+
+        // Get translation by key (supports nested keys like "nav.ranking")
+        function getTranslation(key) {
+            const keys = key.split('.');
+            let value = translations;
+            for (const k of keys) {
+                if (value && typeof value === 'object') {
+                    value = value[k];
+                } else {
+                    return null;
+                }
+            }
+            return value;
+        }
+
+        // Update active language button
+        function updateActiveLanguage(lang) {
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // Change language
+        async function changeLanguage(lang) {
+            try {
+                const response = await fetch(`/api/set-language/${lang}`);
+                const data = await response.json();
+                if (data.success) {
+                    currentLang = lang;
+                    await loadTranslations(lang);
+                }
+            } catch (error) {
+                console.error('Error changing language:', error);
+            }
+        }
+
+        // Setup language switcher
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const lang = btn.getAttribute('data-lang');
+                    changeLanguage(lang);
+                });
+            });
+
+            // Load initial translations
+            loadTranslations(currentLang);
+        });
+
+        // === MAP INITIALIZATION ===
+        // Inicjalizacja mapy
+        const map = L.map('map').setView([52.2297, 21.0122], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Przechowywanie markerów
+        let markers = {};
+        let devices = [];
+        let players = [];
+        let h3Layer = null;
+        let h3Data = null;
+        let connectionsLayer = null;
+        let connectionsVisible = false;
+        let markerClusterGroup = null; // Grupa dla klastrów
+
+        // Custom ikona dla zwykłych urządzeń - kropki 16px
+        const deviceIcon = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background: #0f4c75; border-radius: 50%; width: 16px; height: 16px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>',
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+        });
+
+        // Custom ikona dla graczy - złote kropki 24px
+        const playerIcon = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background: #d4af37; border-radius: 50%; width: 24px; height: 24px; border: 3px solid #FFD700; box-shadow: 0 3px 6px rgba(212,175,55,0.6);"></div>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+
+        // Toggle panel
+        document.getElementById('highscore-toggle').addEventListener('click', function() {
+            const panel = document.getElementById('highscore-panel');
+            panel.classList.toggle('open');
+            this.classList.toggle('active');
+        });
+
+        function formatTime(isoString) {
+            if (!isoString) return 'nieznany';
+            try {
+                const date = new Date(isoString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+
+                if (diffMins < 1) return 'teraz';
+                if (diffMins < 60) return `${diffMins} min temu`;
+                const diffHours = Math.floor(diffMins / 60);
+                if (diffHours < 24) return `${diffHours}h temu`;
+                const diffDays = Math.floor(diffHours / 24);
+                return `${diffDays}d temu`;
+            } catch (e) {
+                return 'nieznany';
+            }
+        }
+
+        function getBatteryClass(level) {
+            if (!level) return '';
+            if (level > 80) return 'battery-good';
+            if (level > 30) return 'battery-medium';
+            return 'battery-low';
+        }
+
+        function formatBattery(level, voltage) {
+            if (!level && !voltage) return 'brak danych';
+            let text = '';
+            if (level) text += `${level}%`;
+            if (voltage) text += ` (${voltage.toFixed(2)}V)`;
+            const cssClass = getBatteryClass(level);
+            return `<span class="${cssClass}">${text}</span>`;
+        }
+
+        function createPopup(device) {
+            const name = device.user_longname || device.node_id;
+            const shortname = device.user_shortname ? ` (${device.user_shortname})` : '';
+            const nameWithLink = device.is_player ?
+                `<a href="/player/${device.node_id}" style="color: #d4af37; text-decoration: none;">${name}${shortname}</a>` :
+                `${name}${shortname}`;
+
+            return `
+                <div class="device-popup">
+                    <h3>${nameWithLink}</h3>
+                    <div class="info-row">
+                        <span class="label">Node ID:</span>
+                        <span class="value">${device.node_id}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Kanał:</span>
+                        <span class="value">${device.channel_id || 'nieznany'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Typ:</span>
+                        <span class="value">${device.is_player ? '🎮 Gracz' : '📡 Urządzenie'}</span>
+                    </div>
+                    ${device.last_battery_level || device.last_voltage ? `
+                    <div class="info-row">
+                        <span class="label">Bateria:</span>
+                        <span class="value">${formatBattery(device.last_battery_level, device.last_voltage)}</span>
+                    </div>` : ''}
+                    <div class="info-row">
+                        <span class="label">Wiadomości:</span>
+                        <span class="value">${device.total_messages || 0}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Ostatnio:</span>
+                        <span class="value">${formatTime(device.last_seen)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadDevices() {
+            try {
+                const response = await fetch('/api/devices');
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.error('Błąd ładowania urządzeń:', data.error);
+                    return;
+                }
+
+                devices = data.devices || [];
+
+                // Utwórz grupę klastrów jeśli nie istnieje
+                if (!markerClusterGroup) {
+                    markerClusterGroup = L.markerClusterGroup({
+                        maxClusterRadius: 80,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                        zoomToBoundsOnClick: true,
+                        iconCreateFunction: function(cluster) {
+                            const count = cluster.getChildCount();
+                            let size = 'small';
+                            if (count > 10) size = 'medium';
+                            if (count > 50) size = 'large';
+
+                            return L.divIcon({
+                                html: '<div><span>' + count + '</span></div>',
+                                className: 'marker-cluster marker-cluster-' + size,
+                                iconSize: L.point(40, 40)
+                            });
+                        }
+                    });
+                    map.addLayer(markerClusterGroup);
+                }
+
+                // Wyczyść istniejące markery
+                markerClusterGroup.clearLayers();
+                markers = {};
+
+                // Filtruj urządzenia aktywne w ciągu 48h
+                const now = new Date();
+                const hours48 = 48 * 60 * 60 * 1000; // 48 godzin w milisekundach
+
+                // Dodaj markery dla urządzeń z GPS i aktywnych w ciągu 48h
+                const bounds = [];
+                const markersToAdd = [];
+
+                devices.forEach(device => {
+                    if (device.last_latitude && device.last_longitude && device.last_seen) {
+                        const lastSeen = new Date(device.last_seen);
+                        const timeDiff = now - lastSeen;
+
+                        // Wyświetl tylko urządzenia aktywne w ciągu 48h
+                        if (timeDiff <= hours48) {
+                            const latLng = [device.last_latitude, device.last_longitude];
+                            bounds.push(latLng);
+
+                            // Wybierz ikonę w zależności od statusu gracza
+                            const icon = device.is_player ? playerIcon : deviceIcon;
+
+                            const marker = L.marker(latLng, { icon: icon })
+                                .bindPopup(createPopup(device));
+
+                            markers[device.node_id] = marker;
+                            markersToAdd.push(marker);
+                        }
+                    }
+                });
+
+                // Dodaj wszystkie markery do grupy klastrów (jednorazowo dla lepszej wydajności)
+                markerClusterGroup.addLayers(markersToAdd);
+
+                // Dopasuj mapę do markerów
+                if (bounds.length > 0) {
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+
+            } catch (error) {
+                console.error('Błąd ładowania urządzeń:', error);
+            }
+        }
+
+        async function loadHighscore(period = 'all') {
+            try {
+                const response = await fetch(`/api/highscore/${period}?limit=20`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.error('Błąd ładowania highscore:', data.error);
+                    return;
+                }
+
+                players = data.highscore || [];
+                document.getElementById('players-count').textContent = data.total;
+
+                const list = document.getElementById('highscore-list');
+                list.innerHTML = '';
+
+                if (players.length === 0) {
+                    list.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">Brak graczy w tym okresie</div>';
+                    return;
+                }
+
+                players.forEach((entry, index) => {
+                    const item = document.createElement('div');
+                    item.className = `highscore-item rank-${entry.rank}`;
+
+                    const rankEmoji = entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`;
+                    const name = entry.user_longname || entry.node_id;
+
+                    item.innerHTML = `
+                        <div class="highscore-rank">${rankEmoji}</div>
+                        <div class="highscore-info">
+                            <div class="highscore-name">${name}</div>
+                            <div class="highscore-node">${entry.node_id}</div>
+                        </div>
+                        <div>
+                            <div class="highscore-points">${entry.total_points} pkt</div>
+                            <div class="highscore-stats">${entry.total_traceroutes} traces</div>
+                        </div>
+                    `;
+
+                    item.addEventListener('click', () => {
+                        // Przekieruj do strony gracza
+                        window.location.href = `/player/${entry.node_id}`;
+                    });
+
+                    list.appendChild(item);
+                });
+
+            } catch (error) {
+                console.error('Błąd ładowania highscore:', error);
+            }
+        }
+
+        // Funkcje H3
+        function getHexColor(hexData) {
+            const activity = hexData.total_activity || 0;
+            // Żółto-czerwone kolory dla graczy
+            if (activity >= 100) return '#8B0000'; // ciemny czerwony
+            if (activity >= 50) return '#DC143C';  // czerwony
+            if (activity >= 20) return '#FF6347';  // pomidorowy
+            if (activity >= 10) return '#FF8C00';  // ciemny pomarańczowy
+            if (activity >= 5) return '#FFA500';   // pomarańczowy
+            if (activity >= 3) return '#FFD700';   // złoty
+            return '#FFFF00';                       // żółty
+        }
+
+        async function loadH3Coverage() {
+            try {
+                const response = await fetch('/api/coverage?limit=50000');
+                const data = await response.json();
+
+                if (!data.success || !data.geojson) {
+                    console.log('Brak danych H3');
+                    return;
+                }
+
+                h3Data = data.geojson;
+
+                // Wyświetl warstwę H3
+                h3Layer = L.geoJSON(h3Data, {
+                    style: function(feature) {
+                        const props = feature.properties;
+                        return {
+                            fillColor: getHexColor(props),
+                            weight: 1,
+                            opacity: 0.6,
+                            color: '#666',
+                            fillOpacity: 0.4
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const props = feature.properties;
+                        const h3Index = props.h3_index || 'nieznany';
+                        const shortH3 = h3Index.length > 20 ? h3Index.substring(0, 17) + '...' : h3Index;
+                        const popupContent = `
+                            <div class="device-popup">
+                                <h3 style="font-size: 11px; word-break: break-all;">🗺️ ${shortH3}</h3>
+                                <div class="info-row">
+                                    <span class="label">Aktywność:</span>
+                                    <span class="value">${props.total_activity || 0}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Gracze:</span>
+                                    <span class="value">${props.unique_players || 0}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Traceroutes:</span>
+                                    <span class="value">${props.traceroute_count || 0}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Ostatnia aktywność:</span>
+                                    <span class="value">${props.last_activity ? formatTime(props.last_activity) : 'brak danych'}</span>
+                                </div>
+                                <div style="margin-top: 10px; text-align: center;">
+                                    <a href="#" onclick="showHexDetails('${h3Index}'); return false;" style="color: #0f4c75; text-decoration: none; font-weight: bold; padding: 5px 10px; background: #e0e0e0; border-radius: 3px; display: inline-block; cursor: pointer;">
+                                        🔍 Zobacz szczegóły
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                        layer.bindPopup(popupContent);
+
+                        layer.on('mouseover', function() {
+                            this.setStyle({ weight: 2, opacity: 1, fillOpacity: 0.6 });
+                        });
+
+                        layer.on('mouseout', function() {
+                            h3Layer.resetStyle(this);
+                        });
+                    }
+                }).addTo(map);
+
+                // Przenieś markery na wierzch używając setZIndexOffset
+                Object.values(markers).forEach(marker => {
+                    if (marker.setZIndexOffset) {
+                        marker.setZIndexOffset(1000);
+                    }
+                });
+
+            } catch (error) {
+                console.error('Błąd ładowania H3:', error);
+            }
+        }
+
+        // Funkcje połączeń
+        function getConnectionColor(count) {
+            if (count >= 50) return '#8B0000';
+            if (count >= 20) return '#A52A2A';
+            if (count >= 10) return '#B22222';
+            if (count >= 5) return '#CD5C5C';
+            return '#DC143C';
+        }
+
+        function getConnectionWeight(count) {
+            if (count >= 50) return 4;
+            if (count >= 20) return 3;
+            if (count >= 10) return 2.5;
+            if (count >= 5) return 2;
+            return 1.5;
+        }
+
+        async function loadHexConnections() {
+            try {
+                const response = await fetch('/api/hex/connections?days=31&min_traceroutes=1');
+                const data = await response.json();
+
+                if (!data.success || !data.connections || data.total === 0) {
+                    console.log('Brak połączeń');
+                    return;
+                }
+
+                if (connectionsLayer) {
+                    map.removeLayer(connectionsLayer);
+                }
+
+                connectionsLayer = L.layerGroup();
+
+                data.connections.forEach(conn => {
+                    const latlngs = [
+                        [conn.sender_lat, conn.sender_lon],
+                        [conn.hop_lat, conn.hop_lon]
+                    ];
+
+                    const color = getConnectionColor(conn.traceroute_count);
+                    const weight = getConnectionWeight(conn.traceroute_count);
+
+                    const polyline = L.polyline(latlngs, {
+                        color: color,
+                        weight: weight,
+                        opacity: 0.6,
+                        dashArray: '5, 5'
+                    });
+
+                    const popupContent = `
+                        <div class="device-popup">
+                            <h3>🔗 Połączenie</h3>
+                            <div class="info-row">
+                                <span class="label">Traceroutes:</span>
+                                <span class="value">${conn.traceroute_count}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Nadawcy:</span>
+                                <span class="value">${conn.unique_senders}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Średnia odległość:</span>
+                                <span class="value">${conn.avg_distance} km</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+
+                    polyline.on('mouseover', function() {
+                        this.setStyle({ weight: weight + 2, opacity: 1 });
+                    });
+
+                    polyline.on('mouseout', function() {
+                        this.setStyle({ weight: weight, opacity: 0.6 });
+                    });
+
+                    connectionsLayer.addLayer(polyline);
+                });
+
+                if (connectionsVisible) {
+                    connectionsLayer.addTo(map);
+                }
+
+            } catch (error) {
+                console.error('Błąd ładowania połączeń:', error);
+            }
+        }
+
+        // Toggle połączeń
+        document.getElementById('connections-toggle').addEventListener('click', async function() {
+            connectionsVisible = !connectionsVisible;
+            this.classList.toggle('active');
+
+            if (connectionsVisible) {
+                this.innerHTML = '🔗 Ukryj Połączenia';
+                if (!connectionsLayer) {
+                    await loadHexConnections();
+                } else {
+                    connectionsLayer.addTo(map);
+                }
+            } else {
+                this.innerHTML = '🔗 Pokaż Połączenia';
+                if (connectionsLayer) {
+                    map.removeLayer(connectionsLayer);
+                }
+            }
+        });
+
+        // Początkowe ładowanie danych
+        async function init() {
+            await loadDevices();
+            await loadHighscore();
+            await loadH3Coverage();
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        // Funkcja wyświetlania szczegółów heksagonu
+        async function showHexDetails(h3Index) {
+            const modal = document.getElementById('hexDetailsModal');
+            const content = document.getElementById('hexDetailsContent');
+
+            // Pokaż modal z loadingiem
+            modal.classList.add('show');
+            content.innerHTML = '<div class="modal-header"><h2>⏳ Ładowanie szczegółów...</h2></div>';
+
+            try {
+                const response = await fetch(`/api/hex/${h3Index}/details?limit_traceroutes=50&limit_players=100`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    content.innerHTML = `<div class="modal-header"><h2>❌ Błąd: ${data.error}</h2></div>`;
+                    return;
+                }
+
+                const hex = data.hexagon;
+                const stats = hex.statistics;
+
+                // Renderuj szczegóły
+                let html = `
+                    <div class="modal-header">
+                        <h2>🗺️ Szczegóły Heksagonu H3</h2>
+                        <p style="font-size: 11px; color: #888; margin-top: 5px;">${h3Index}</p>
+                    </div>
+
+                    <!-- Statystyki -->
+                    <div class="hex-stats-grid">
+                        <div class="hex-stat-box">
+                            <span class="value">${stats.unique_players || 0}</span>
+                            <span class="label">🎮 Gracze</span>
+                        </div>
+                        <div class="hex-stat-box">
+                            <span class="value">${stats.unique_devices || 0}</span>
+                            <span class="label">📡 Urządzenia</span>
+                        </div>
+                        <div class="hex-stat-box">
+                            <span class="value">${stats.total_visits || 0}</span>
+                            <span class="label">📊 Wizyty</span>
+                        </div>
+                        <div class="hex-stat-box">
+                            <span class="value">${stats.traceroutes_from_hex || 0}</span>
+                            <span class="label">📡 Traceroutes</span>
+                        </div>
+                        <div class="hex-stat-box">
+                            <span class="value">${stats.total_points || 0}</span>
+                            <span class="label">🏆 Punkty</span>
+                        </div>
+                    </div>
+
+                    <p style="text-align: center; color: #888; font-size: 12px; margin-bottom: 20px;">
+                        Ostatnia aktywność: ${formatTime(stats.last_activity)}
+                    </p>
+                `;
+
+                // Tabela urządzeń (gracze + zwykłe urządzenia)
+                html += '<div class="modal-section"><h3>👥 Urządzenia odwiedzające ten heksagon</h3>';
+                if (hex.devices && hex.devices.length > 0) {
+                    html += `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Gracz</th>
+                                    <th>Pierwsza wizyta</th>
+                                    <th>Ostatnia wizyta</th>
+                                    <th>Wizyty</th>
+                                    <th>Punkty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    hex.devices.forEach(device => {
+                        const icon = device.is_player ? '🎮' : '📡';
+                        const nameCell = device.is_player
+                            ? `<a href="/player/${device.node_id}" class="player-link">${icon} ${device.display_name}</a>`
+                            : `${icon} ${device.display_name}`;
+                        html += `
+                            <tr>
+                                <td>${nameCell}</td>
+                                <td>${formatTime(device.first_visit)}</td>
+                                <td>${formatTime(device.last_visit)}</td>
+                                <td>${device.visit_count || 0}</td>
+                                <td>${device.points_earned || 0}</td>
+                            </tr>
+                        `;
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html += '<p class="no-data">Brak danych o urządzeniach</p>';
+                }
+                html += '</div>';
+
+                // Tabela traceroutes
+                html += '<div class="modal-section"><h3>📡 Traceroutes z tego heksagonu</h3>';
+                if (hex.traceroutes && hex.traceroutes.length > 0) {
+                    html += `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Od</th>
+                                    <th>Do</th>
+                                    <th>Odległość</th>
+                                    <th>Punkty</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    hex.traceroutes.forEach(tr => {
+                        const status = tr.is_confirmed ? '✅' : '⏳';
+                        html += `
+                            <tr>
+                                <td>
+                                    <a href="/player/${tr.sender_node}" class="player-link">
+                                        ${tr.sender_display}
+                                    </a>
+                                </td>
+                                <td>${tr.hop_display}</td>
+                                <td>${tr.distance_km} km</td>
+                                <td>${tr.points}</td>
+                                <td>${formatTime(tr.received_at)}</td>
+                                <td>${status}</td>
+                            </tr>
+                        `;
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html += '<p class="no-data">Brak traceroutes z tego heksagonu</p>';
+                }
+                html += '</div>';
+
+                content.innerHTML = html;
+
+            } catch (error) {
+                console.error('Błąd ładowania szczegółów heksagonu:', error);
+                content.innerHTML = `<div class="modal-header"><h2>❌ Błąd: ${error.message}</h2></div>`;
+            }
+        }
+
+        // Funkcja zamykania modalu
+        function closeHexDetails() {
+            document.getElementById('hexDetailsModal').classList.remove('show');
+        }
+
+        // Obsługa przycisku zamknięcia
+        document.getElementById('modalCloseBtn').addEventListener('click', closeHexDetails);
+
+        // Zamknij modal po kliknięciu ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeHexDetails();
+            }
+        });
+
+        // Zamknij modal po kliknięciu poza nim
+        document.getElementById('hexDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeHexDetails();
+            }
+        });
+
+        // Obsługa tabs dla okresów
+        document.querySelectorAll('.period-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Usuń active ze wszystkich
+                document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+                // Dodaj active do klikniętego
+                tab.classList.add('active');
+                // Załaduj highscore dla tego okresu
+                const period = tab.getAttribute('data-period');
+                loadHighscore(period);
+            });
+        });
+
+        // Początkowe ładowanie danych (auto-refresh wyłączony)
+        init();
+    </script>
+</body>
+</html>

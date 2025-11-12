@@ -1,0 +1,91 @@
+{
+  "_comment": "Przykładowa konfiguracja dla Meshtastic MQTT Decoder",
+
+  "broker": "mqtt.meshtastic.org",
+  "port": 1883,
+  "topic": "msh/EU_868/2/e/#",
+
+  "channel_key": null,
+  "mesh_scout_key": null,
+
+  "username": null,
+  "password": null,
+
+  "database": {
+    "enabled": false,
+    "path": "data/mesh_scout.db"
+  },
+
+  "filter": {
+    "enabled": false,
+    "channel_ids": ["mesh-scout"],
+    "hashtags": ["#countme"],
+    "message_types": ["TEXT_MESSAGE_APP"],
+    "save_all": false,
+    "require_position": false
+  },
+
+  "_examples": {
+    "public_meshtastic": {
+      "broker": "mqtt.meshtastic.org",
+      "port": 1883,
+      "topic": "msh/EU_868/2/e/#",
+      "channel_key": null,
+      "_comment": "Publiczny serwer Meshtastic - tylko niezaszyfrowane wiadomości"
+    },
+
+    "private_channel": {
+      "broker": "mqtt.meshtastic.org",
+      "port": 1883,
+      "topic": "msh/EU_868/2/e/LongFast/!abcd1234",
+      "channel_key": "1PG7OiApB1nwvP+rz05pAQ==",
+      "_comment": "Prywatny kanał z kluczem AES - zastąp swoim kluczem"
+    },
+
+    "local_broker": {
+      "broker": "192.168.1.100",
+      "port": 1883,
+      "topic": "mesh/#",
+      "channel_key": "YourBase64KeyHere==",
+      "username": "your_username",
+      "password": "your_password",
+      "_comment": "Lokalny broker MQTT z autoryzacją"
+    },
+
+    "all_regions": {
+      "broker": "mqtt.meshtastic.org",
+      "port": 1883,
+      "topic": "msh/+/2/e/#",
+      "_comment": "Wszystkie regiony (US, EU, etc.) - wildcard '+' dla jednego poziomu"
+    },
+
+    "mesh_scout_with_database": {
+      "broker": "mqtt.meshtastic.org",
+      "port": 1883,
+      "topic": "msh/EU_868/2/e/#",
+      "database": {
+        "enabled": true,
+        "path": "data/mesh_scout.db"
+      },
+      "filter": {
+        "enabled": true,
+        "channel_ids": ["mesh-scout"],
+        "hashtags": ["#countme"],
+        "message_types": ["TEXT_MESSAGE_APP"],
+        "save_all": false,
+        "require_position": false
+      },
+      "_comment": "Filtruje i zapisuje tylko wiadomości #countme z kanału mesh-scout"
+    }
+  },
+
+  "_notes": {
+    "docker_db_path": "W Dockerze użyj '/data/mesh_scout.db' jako ścieżki bazy danych (jest to katalog montowany przez docker-compose). Lokalnie używaj 'data/mesh_scout.db'.",
+    "regions": "Dostępne regiony: US, EU_433, EU_868, CN, JP, ANZ, KR, TW, RU, IN, NZ_865, TH, UA_433, UA_868, MY_433, MY_919, SG_923, LORA_24",
+    "channel_key": "Klucz domyślny w formacie base64 (domyślnie 'AQ=='), pakiety najpierw próbowane tym kluczem",
+    "mesh_scout_key": "Klucz kanału mesh-scout w formacie base64, używany jako drugi przy podwójnym dekodowaniu",
+    "default_key": "Domyślny klucz 'AQ==' to brak szyfrowania (publiczny)",
+    "topic_format": "Format: msh/<region>/<version>/e/<channel>/<node_id>",
+    "wildcards": "Użyj '#' dla wszystkich poziomów lub '+' dla jednego poziomu"
+  }
+}

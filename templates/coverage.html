@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="coverage_page.title">Mapa Zasięgu - meshscout.guru</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+        }
+
+        #header {
+            background: #16213e;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            z-index: 2000;
+            position: relative;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        #header h1 {
+            font-size: 24px;
+            color: #0f4c75;
+            margin: 0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            background: #0f4c75;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .nav-button:hover {
+            background: #3282b8;
+        }
+
+        .lang-button {
+            background: #0f4c75;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-button:hover {
+            background: #3282b8;
+        }
+
+        .lang-button.active {
+            background: #d4af37;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        .toggle-button {
+            background: #2d5f3e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .toggle-button:hover {
+            background: #3d7f5e;
+        }
+
+        .toggle-button.active {
+            background: #4a9d68;
+            box-shadow: 0 0 10px rgba(74, 157, 104, 0.5);
+        }
+
+        .legend-toggle {
+            background: #3d5a80;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 8px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .legend-toggle:hover {
+            background: #5d7a9a;
+        }
+
+        .legend-toggle.active {
+            background: #5d7a9a;
+        }
+
+        .legends-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .legends-container.show {
+            max-height: 1000px;
+        }
+
+        .info-panel {
+            background: #1a1a2e;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .info-panel h3 {
+            color: #3282b8;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-panel p {
+            font-size: 11px;
+            line-height: 1.4;
+            color: #ccc;
+        }
+
+        .legend {
+            background: #16213e;
+            padding: 8px 10px;
+            border-radius: 5px;
+            margin-top: 8px;
+        }
+
+        .legend h4 {
+            color: #3282b8;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            font-size: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 6px;
+            border: 1px solid #666;
+        }
+
+        #stats-bar {
+            background: #0f4c75;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d4af37;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        #map {
+            height: calc(100vh - 200px);
+            width: 100%;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 76, 117, 0.9);
+            padding: 20px 40px;
+            border-radius: 10px;
+            z-index: 10000;
+            display: none;
+        }
+
+        #loading.show {
+            display: block;
+        }
+
+        .leaflet-popup-content {
+            color: #333;
+            min-width: 250px;
+        }
+
+        .hex-popup h3 {
+            margin: 0 0 10px 0;
+            color: #0f4c75;
+            font-size: 16px;
+        }
+
+        .hex-popup .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .hex-popup .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .hex-popup .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .hex-popup .value {
+            color: #333;
+        }
+
+        #footer {
+            background: #16213e;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #888;
+        }
+
+        /* MODAL Z SZCZEGÓŁAMI HEKSAGONU */
+        #hexDetailsModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            overflow-y: auto;
+        }
+
+        #hexDetailsModal.show {
+            display: block;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 1000px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 30px;
+            color: #888;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-header {
+            border-bottom: 2px solid #0f4c75;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #3282b8;
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .modal-section {
+            margin-bottom: 25px;
+        }
+
+        .modal-section h3 {
+            color: #3282b8;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+        }
+
+        .hex-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .hex-stat-box {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .hex-stat-box .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d4af37;
+            display: block;
+        }
+
+        .hex-stat-box .label {
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #16213e;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: #0f4c75;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .data-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #2a2a3e;
+            font-size: 12px;
+            color: #ddd;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background: #1e1e30;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-style: italic;
+        }
+
+        .player-link {
+            color: #3282b8;
+            text-decoration: none;
+        }
+
+        .player-link:hover {
+            text-decoration: underline;
+        }
+
+        /* RESPONSYWNOŚĆ DLA TELEFONÓW */
+        @media (max-width: 768px) {
+            #header h1 {
+                font-size: 18px;
+            }
+
+            .nav-buttons {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .info-panel {
+                padding: 10px;
+            }
+
+            .info-panel h3 {
+                font-size: 14px;
+            }
+
+            .info-panel p {
+                font-size: 12px;
+            }
+
+            #stats-bar {
+                padding: 8px 15px;
+                gap: 10px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .stat-label {
+                font-size: 11px;
+            }
+
+            #map {
+                height: calc(100vh - 250px);
+            }
+
+            .legend-item {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="show" data-i18n="coverage_page.loading">⏳ Ładowanie mapy zasięgu...</div>
+
+    <div id="header">
+        <div class="header-content">
+            <h1 data-i18n="coverage_page.header_title">📊 meshscout.guru - Mapa Zasięgu</h1>
+            <div class="nav-buttons">
+                <button id="lang-pl" class="lang-button {{ 'active' if lang == 'pl' else '' }}" onclick="switchLanguage('pl')">🇵🇱</button>
+                <button id="lang-en" class="lang-button {{ 'active' if lang == 'en' else '' }}" onclick="switchLanguage('en')">🇬🇧</button>
+                <a href="/" class="nav-button" data-i18n="coverage_page.nav.home">🏠 Strona Główna</a>
+                <a href="/rules" class="nav-button" data-i18n="coverage_page.nav.rules">📜 Zasady</a>
+                <button id="toggleConnections" class="toggle-button" data-i18n="coverage_page.nav.show_connections">
+                    🔗 Pokaż Połączenia
+                </button>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>ℹ️ O Mapie Zasięgu</h3>
+            <p>
+                Mapa pokazuje zasięg sieci Meshtastic w oparciu o heksagony H3 (rozdzielczość 8, ~0.46 km²).
+                Każdy heksagon reprezentuje obszar, w którym odnotowano aktywność graczy.
+                Im cieplejszy kolor (żółty → pomarańczowy → czerwony), tym więcej aktywności w danym obszarze.
+            </p>
+            <button id="legendToggle" class="legend-toggle">
+                ▼ Pokaż/Ukryj Legenda
+            </button>
+            <div id="legendsContainer" class="legends-container">
+                <div class="legend">
+                <h4>Typy heksagonów:</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FFD700; border: 2px solid #FFA500;"></div>
+                    <span><strong>🎮 Gracze</strong> (żółty → czerwony)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #808080; border: 2px solid #666;"></div>
+                    <span><strong>📡 Urządzenia</strong> (szary)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #DEB887; border: 2px solid #CD853F;"></div>
+                    <span><strong>🔀 Mieszane</strong> (brązowy)</span>
+                </div>
+                <p style="font-size: 11px; color: #999; margin-top: 8px;">
+                    💡 <strong>Gracze</strong> = zarejestrowane urządzenia (registerme), zdobywają punkty<br>
+                    💡 <strong>Urządzenia</strong> = zwykłe urządzenia z GPS, tylko wizualizacja
+                </p>
+            </div>
+            <div class="legend" style="margin-top: 10px;">
+                <h4>🎨 Intensywność aktywności:</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(to right, #FFFF00, #FFD700, #FFA500);"></div>
+                    <span>Gracze: 1-9 wizyt (jasne)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(to right, #FF8C00, #FF6347, #DC143C);"></div>
+                    <span>Gracze: 10-99 wizyt (średnie)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #8B0000;"></div>
+                    <span>Gracze: 100+ wizyt (wysokie)</span>
+                </div>
+            </div>
+            <div class="legend" style="margin-top: 10px;">
+                <h4>🔗 Legenda połączeń traceroute:</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #DC143C; height: 3px;"></div>
+                    <span>1-4 traceroutes</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #CD5C5C; height: 4px;"></div>
+                    <span>5-9 traceroutes</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #B22222; height: 5px;"></div>
+                    <span>10-19 traceroutes</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #A52A2A; height: 6px;"></div>
+                    <span>20-49 traceroutes</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #8B0000; height: 8px;"></div>
+                    <span>50+ traceroutes (silne połączenie)</span>
+                </div>
+                <p style="font-size: 11px; color: #999; margin-top: 8px;">
+                    💡 Kliknij przycisk "🔗 Pokaż Połączenia" aby zobaczyć linie łączące heksagony
+                </p>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="stats-bar">
+        <div class="stat-item">
+            <span class="stat-value" id="stat-hexagons">0</span>
+            <span class="stat-label">Aktywne heksagony</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="stat-players">0</span>
+            <span class="stat-label">Unikalni gracze</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="stat-total-activity">0</span>
+            <span class="stat-label">Całkowita aktywność</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="stat-area">0</span>
+            <span class="stat-label">Pokryty obszar (km²)</span>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="footer">
+        Copyright by meshtastic.info.pl © 2025 | Mapa zasięgu H3 | Wersja: {{ version }}
+    </div>
+
+    <!-- Modal ze szczegółami heksagonu -->
+    <div id="hexDetailsModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalCloseBtn">&times;</button>
+            <div id="hexDetailsContent">
+                <div class="modal-header">
+                    <h2>⏳ Ładowanie szczegółów...</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // Inicjalizacja mapy
+        const map = L.map('map').setView([52.2297, 21.0122], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        let h3Layer = null;
+        let connectionsLayer = null;
+        let connectionsVisible = false;
+
+        function getHexColor(hexData) {
+            const activity = hexData.total_activity || 0;
+            const hexType = hexData.hex_type || 'player';
+            
+            // Szare kolory dla zwykłych urządzeń (bez graczy)
+            if (hexType === 'device') {
+                if (activity >= 20) return '#404040';  // ciemno szary
+                if (activity >= 10) return '#666666';  // szary
+                if (activity >= 5) return '#808080';   // średni szary
+                return '#A9A9A9';                      // jasno szary
+            }
+            
+            // Mieszane (gracze + urządzenia) - pomarańczowo-brązowe
+            if (hexType === 'mixed') {
+                if (activity >= 100) return '#8B4513'; // siodłowy brąz
+                if (activity >= 50) return '#A0522D';  // sienna
+                if (activity >= 20) return '#CD853F';  // peru
+                if (activity >= 10) return '#D2691E';  // czekolada
+                if (activity >= 5) return '#DEB887';   // burlywood
+                if (activity >= 3) return '#F4A460';   // piasek
+                return '#FFE4B5';                       // moccasin
+            }
+            
+            // Żółto-czerwone kolory dla graczy (tylko gracze)
+            if (activity >= 100) return '#8B0000'; // ciemny czerwony
+            if (activity >= 50) return '#DC143C';  // czerwony
+            if (activity >= 20) return '#FF6347';  // pomidorowy
+            if (activity >= 10) return '#FF8C00';  // ciemny pomarańczowy
+            if (activity >= 5) return '#FFA500';   // pomarańczowy
+            if (activity >= 3) return '#FFD700';   // złoty
+            return '#FFFF00';                       // żółty
+        }
+
+        function formatTime(isoString) {
+            if (!isoString) return 'nieznany';
+            try {
+                const date = new Date(isoString);
+                return date.toLocaleString('pl-PL');
+            } catch (e) {
+                return 'nieznany';
+            }
+        }
+
+        async function loadCoverageMap() {
+            try {
+                const response = await fetch('/api/coverage?limit=10000');
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.error('Błąd ładowania mapy:', data.error);
+                    document.getElementById('loading').innerHTML = '❌ Błąd ładowania danych';
+                    return;
+                }
+
+                if (!data.geojson || data.total === 0) {
+                    document.getElementById('loading').innerHTML = '📭 Brak danych H3. Funkcja może być wyłączona lub żaden gracz nie odwiedził jeszcze żadnego heksagonu.';
+                    return;
+                }
+
+                // Aktualizuj statystyki
+                document.getElementById('stat-hexagons').textContent = data.total;
+                
+                // Oblicz statystyki z danych
+                let totalActivity = 0;
+                let uniquePlayers = new Set();
+                data.hexagons.forEach(hex => {
+                    totalActivity += hex.total_activity || 0;
+                    // Jeśli są dane o graczach, dodaj ich do setu
+                    if (hex.unique_players) {
+                        uniquePlayers.add(hex.unique_players);
+                    }
+                });
+
+                document.getElementById('stat-total-activity').textContent = totalActivity;
+                document.getElementById('stat-players').textContent = uniquePlayers.size || data.hexagons.length;
+                
+                // Każdy heksagon H3 na rozdzielczości 8 ma ~0.46 km²
+                const areaPerHex = 0.46;
+                const totalArea = (data.total * areaPerHex).toFixed(2);
+                document.getElementById('stat-area').textContent = totalArea;
+
+                // Wyświetl warstwę H3
+                h3Layer = L.geoJSON(data.geojson, {
+                    style: function(feature) {
+                        const props = feature.properties;
+                        return {
+                            fillColor: getHexColor(props),
+                            weight: 2,
+                            opacity: 0.8,
+                            color: '#333',
+                            fillOpacity: 0.6
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const props = feature.properties;
+                        const popupContent = `
+                            <div class="hex-popup">
+                                <h3>🗺️ Heksagon H3</h3>
+                                <div class="info-row">
+                                    <span class="label">H3 Index:</span>
+                                    <span class="value" style="font-size: 10px;">${props.h3_index}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Aktywność:</span>
+                                    <span class="value">${props.total_activity || 0}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Typ heksagonu:</span>
+                                    <span class="value">${props.hex_type === 'player' ? '🎮 Gracze' : props.hex_type === 'device' ? '📡 Urządzenia' : '🔀 Mieszane'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Gracze:</span>
+                                    <span class="value">${props.unique_players || 0}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Urządzenia:</span>
+                                    <span class="value">${props.unique_devices || 0}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Traceroutes:</span>
+                                    <span class="value">${props.traceroute_count || 0}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Ostatnia aktywność:</span>
+                                    <span class="value">${formatTime(props.last_activity)}</span>
+                                </div>
+                            </div>
+                        `;
+                        layer.bindPopup(popupContent);
+
+                        // Highlight on hover
+                        layer.on('mouseover', function() {
+                            this.setStyle({
+                                weight: 3,
+                                opacity: 1,
+                                fillOpacity: 0.8
+                            });
+                        });
+
+                        layer.on('mouseout', function() {
+                            h3Layer.resetStyle(this);
+                        });
+
+                        // Obsługa kliknięcia - wyświetl szczegóły
+                        layer.on('click', function() {
+                            showHexDetails(props.h3_index);
+                        });
+                    }
+                }).addTo(map);
+
+                // Dopasuj mapę do granic heksagonów
+                if (h3Layer.getBounds().isValid()) {
+                    map.fitBounds(h3Layer.getBounds(), { padding: [50, 50] });
+                }
+
+                document.getElementById('loading').classList.remove('show');
+
+            } catch (error) {
+                console.error('Błąd ładowania mapy zasięgu:', error);
+                document.getElementById('loading').innerHTML = '❌ Błąd: ' + error.message;
+            }
+        }
+
+        // Funkcja do wyświetlania szczegółów heksagonu
+        async function showHexDetails(h3Index) {
+            const modal = document.getElementById('hexDetailsModal');
+            const content = document.getElementById('hexDetailsContent');
+            
+            // Pokaż modal z loadingiem
+            modal.classList.add('show');
+            content.innerHTML = '<div class="modal-header"><h2>⏳ Ładowanie szczegółów...</h2></div>';
+            
+            try {
+                const response = await fetch(`/api/hex/${h3Index}/details?limit_traceroutes=50&limit_players=100`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    content.innerHTML = `<div class="modal-header"><h2>❌ Błąd: ${data.error}</h2></div>`;
+                    return;
+                }
+                
+                const hex = data.hexagon;
+                const stats = hex.statistics;
+                
+                // Renderuj szczegóły
+                let html = `
+                    <div class="modal-header">
+                        <h2>🗺️ Szczegóły Heksagonu H3</h2>
+                        <p style="font-size: 11px; color: #888; margin-top: 5px;">${h3Index}</p>
+                    </div>
+                    
+                    <!-- Statystyki -->
+                    <div class="hex-stats-grid">
+                        <div class="hex-stat-box">
+                            <span class="value">${stats.unique_players || 0}</span>
+                            <span class="label">🎮 Gracze</span>
+                        </div>
+                        <div class="hex-stat-box">
+                            <span class="value">${stats.unique_devices || 0}</span>
+                            <span class="label">📡 Urządzenia</span>
+                        </div>
+                        <div class="hex-stat-box">
+                            <span class="value">${stats.total_visits || 0}</span>
+                            <span class="label">📊 Wizyty</span>
+                        </div>
+                        <div class="hex-stat-box">
+                            <span class="value">${stats.traceroutes_from_hex || 0}</span>
+                            <span class="label">📡 Traceroutes</span>
+                        </div>
+                        <div class="hex-stat-box">
+                            <span class="value">${stats.total_points || 0}</span>
+                            <span class="label">🏆 Punkty</span>
+                        </div>
+                    </div>
+                    
+                    <p style="text-align: center; color: #888; font-size: 12px; margin-bottom: 20px;">
+                        Ostatnia aktywność: ${formatTime(stats.last_activity)}
+                    </p>
+                `;
+                
+                // Tabela urządzeń (gracze + zwykłe urządzenia)
+                html += '<div class="modal-section"><h3>👥 Urządzenia odwiedzające ten heksagon</h3>';
+                if (hex.devices && hex.devices.length > 0) {
+                    html += `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Gracz</th>
+                                    <th>Pierwsza wizyta</th>
+                                    <th>Ostatnia wizyta</th>
+                                    <th>Wizyty</th>
+                                    <th>Punkty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    hex.devices.forEach(device => {
+                        const icon = device.is_player ? '🎮' : '📡';
+                        const nameCell = device.is_player 
+                            ? `<a href="/player/${device.node_id}" class="player-link">${icon} ${device.display_name}</a>`
+                            : `${icon} ${device.display_name}`;
+                        html += `
+                            <tr>
+                                <td>${nameCell}</td>
+                                <td>${formatTime(device.first_visit)}</td>
+                                <td>${formatTime(device.last_visit)}</td>
+                                <td>${device.visit_count || 0}</td>
+                                <td>${device.points_earned || 0}</td>
+                            </tr>
+                        `;
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html += '<p class="no-data">Brak danych o urządzeniach</p>';
+                }
+                html += '</div>';
+                
+                // Tabela traceroutes
+                html += '<div class="modal-section"><h3>📡 Traceroutes z tego heksagonu</h3>';
+                if (hex.traceroutes && hex.traceroutes.length > 0) {
+                    html += `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Od</th>
+                                    <th>Do</th>
+                                    <th>Odległość</th>
+                                    <th>Punkty</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    hex.traceroutes.forEach(tr => {
+                        const status = tr.is_confirmed ? '✅' : '⏳';
+                        html += `
+                            <tr>
+                                <td>
+                                    <a href="/player/${tr.sender_node}" class="player-link">
+                                        ${tr.sender_display}
+                                    </a>
+                                </td>
+                                <td>${tr.hop_display}</td>
+                                <td>${tr.distance_km} km</td>
+                                <td>${tr.points}</td>
+                                <td>${formatTime(tr.received_at)}</td>
+                                <td>${status}</td>
+                            </tr>
+                        `;
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html += '<p class="no-data">Brak traceroutes z tego heksagonu</p>';
+                }
+                html += '</div>';
+                
+                content.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Błąd ładowania szczegółów heksagonu:', error);
+                content.innerHTML = `<div class="modal-header"><h2>❌ Błąd: ${error.message}</h2></div>`;
+            }
+        }
+
+        // Funkcja do zamykania modalu
+        function closeHexDetails() {
+            document.getElementById('hexDetailsModal').classList.remove('show');
+        }
+
+        // Zamknij modal po kliknięciu ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeHexDetails();
+            }
+        });
+
+        // Zamknij modal po kliknięciu poza contentem
+        document.getElementById('hexDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeHexDetails();
+            }
+        });
+
+        // Funkcja do określania koloru linii na podstawie liczby traceroute
+        function getConnectionColor(count) {
+            // Ciemnoczerwone odcienie - im więcej połączeń, tym ciemniejszy kolor
+            if (count >= 50) return '#8B0000';  // ciemnoczerwony (dark red)
+            if (count >= 20) return '#A52A2A';  // brązowoczerwony (brown)
+            if (count >= 10) return '#B22222';  // firebrick
+            if (count >= 5) return '#CD5C5C';   // indian red
+            return '#DC143C';                    // crimson (jaśniejszy czerwony)
+        }
+
+        // Funkcja do określania grubości linii
+        function getConnectionWeight(count) {
+            if (count >= 50) return 4;
+            if (count >= 20) return 3;
+            if (count >= 10) return 2.5;
+            if (count >= 5) return 2;
+            return 1.5;
+        }
+
+        // Funkcja do ładowania połączeń między heksagonami
+        async function loadHexConnections() {
+            try {
+                document.getElementById('loading').classList.add('show');
+                document.getElementById('loading').innerHTML = '⏳ Ładowanie połączeń...';
+
+                const response = await fetch('/api/hex/connections?days=31&min_traceroutes=1');
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.error('Błąd ładowania połączeń:', data.error);
+                    document.getElementById('loading').innerHTML = '❌ Błąd ładowania połączeń';
+                    setTimeout(() => {
+                        document.getElementById('loading').classList.remove('show');
+                    }, 2000);
+                    return;
+                }
+
+                if (!data.connections || data.total === 0) {
+                    console.log('Brak połączeń do wyświetlenia');
+                    document.getElementById('loading').innerHTML = '📭 Brak połączeń traceroute między heksagonami';
+                    setTimeout(() => {
+                        document.getElementById('loading').classList.remove('show');
+                    }, 2000);
+                    return;
+                }
+
+                // Usuń poprzednią warstwę połączeń jeśli istnieje
+                if (connectionsLayer) {
+                    map.removeLayer(connectionsLayer);
+                }
+
+                // Utwórz nową warstwę dla połączeń
+                connectionsLayer = L.layerGroup();
+
+                // Dodaj linie dla każdego połączenia
+                data.connections.forEach(conn => {
+                    const latlngs = [
+                        [conn.sender_lat, conn.sender_lon],
+                        [conn.hop_lat, conn.hop_lon]
+                    ];
+
+                    const color = getConnectionColor(conn.traceroute_count);
+                    const weight = getConnectionWeight(conn.traceroute_count);
+
+                    const polyline = L.polyline(latlngs, {
+                        color: color,
+                        weight: weight,
+                        opacity: 0.6,
+                        dashArray: '5, 5'
+                    });
+
+                    // Popup z informacjami o połączeniu
+                    const popupContent = `
+                        <div class="hex-popup">
+                            <h3>🔗 Połączenie traceroute</h3>
+                            <div class="info-row">
+                                <span class="label">Z heksa:</span>
+                                <span class="value" style="font-size: 10px;">${conn.sender_h3}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Do heksa:</span>
+                                <span class="value" style="font-size: 10px;">${conn.hop_h3}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Liczba traceroutes:</span>
+                                <span class="value">${conn.traceroute_count}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Unikalni nadawcy:</span>
+                                <span class="value">${conn.unique_senders}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Średnia odległość:</span>
+                                <span class="value">${conn.avg_distance} km</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Punkty:</span>
+                                <span class="value">${conn.total_points}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Ostatni traceroute:</span>
+                                <span class="value">${formatTime(conn.last_traceroute)}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent);
+
+                    // Highlight na hover
+                    polyline.on('mouseover', function() {
+                        this.setStyle({
+                            weight: weight + 2,
+                            opacity: 1
+                        });
+                    });
+
+                    polyline.on('mouseout', function() {
+                        this.setStyle({
+                            weight: weight,
+                            opacity: 0.6
+                        });
+                    });
+
+                    connectionsLayer.addLayer(polyline);
+                });
+
+                // Jeśli połączenia były już widoczne, dodaj warstwę do mapy
+                if (connectionsVisible) {
+                    connectionsLayer.addTo(map);
+                }
+
+                console.log(`Załadowano ${data.total} połączeń traceroute`);
+                document.getElementById('loading').classList.remove('show');
+
+            } catch (error) {
+                console.error('Błąd ładowania połączeń:', error);
+                document.getElementById('loading').innerHTML = '❌ Błąd: ' + error.message;
+                setTimeout(() => {
+                    document.getElementById('loading').classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        // Funkcja do przełączania widoczności warstwy połączeń
+        async function toggleConnectionsLayer() {
+            const button = document.getElementById('toggleConnections');
+
+            if (!connectionsVisible) {
+                // Włącz warstwę połączeń
+                if (!connectionsLayer) {
+                    // Jeśli nie załadowano jeszcze połączeń, załaduj je
+                    await loadHexConnections();
+                }
+                
+                if (connectionsLayer) {
+                    connectionsLayer.addTo(map);
+                    connectionsVisible = true;
+                    button.classList.add('active');
+                    button.innerHTML = '🔗 Ukryj Połączenia';
+                }
+            } else {
+                // Wyłącz warstwę połączeń
+                if (connectionsLayer) {
+                    map.removeLayer(connectionsLayer);
+                }
+                connectionsVisible = false;
+                button.classList.remove('active');
+                button.innerHTML = '🔗 Pokaż Połączenia';
+            }
+        }
+
+        // Funkcja do przełączania widoczności legendy
+        function toggleLegend() {
+            const container = document.getElementById('legendsContainer');
+            const button = document.getElementById('legendToggle');
+            
+            if (container.classList.contains('show')) {
+                container.classList.remove('show');
+                button.classList.remove('active');
+            } else {
+                container.classList.add('show');
+                button.classList.add('active');
+            }
+        }
+
+        // Funkcja do pobrania parametrów z URL
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Dodaj event listenery
+        document.getElementById('toggleConnections').addEventListener('click', toggleConnectionsLayer);
+        document.getElementById('legendToggle').addEventListener('click', toggleLegend);
+        document.getElementById('modalCloseBtn').addEventListener('click', closeHexDetails);
+
+        // Załaduj mapę przy starcie
+        loadCoverageMap().then(() => {
+            // Sprawdź czy jest parametr highlight w URL
+            const highlightH3 = getUrlParameter('highlight');
+            if (highlightH3) {
+                console.log('Highlighting hex:', highlightH3);
+                // Poczekaj chwilę na pełne załadowanie mapy, potem pokaż szczegóły
+                setTimeout(() => {
+                    showHexDetails(highlightH3);
+                    
+                    // Spróbuj znaleźć i wyróżnić hex na mapie
+                    if (h3Layer) {
+                        h3Layer.eachLayer(layer => {
+                            if (layer.feature && layer.feature.properties.h3_index === highlightH3) {
+                                // Wyróżnij hex
+                                layer.setStyle({
+                                    weight: 4,
+                                    opacity: 1,
+                                    color: '#d4af37',
+                                    fillOpacity: 0.8
+                                });
+                                // Wycentruj mapę na hexie
+                                const bounds = layer.getBounds();
+                                if (bounds.isValid()) {
+                                    map.fitBounds(bounds, { 
+                                        padding: [100, 100],
+                                        maxZoom: 12
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>

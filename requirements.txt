@@ -1,0 +1,25 @@
+# Wymagane pakiety Python dla Meshtastic MQTT Decoder
+
+# MQTT Client
+paho-mqtt>=1.6.1
+
+# Meshtastic Python Library (zawiera wbudowane protobuf)
+meshtastic>=2.2.0
+
+# Kryptografia (deszyfrowanie AES)
+cryptography>=41.0.0
+
+# Web Server
+Flask>=2.3.0
+Flask-CORS>=4.0.0
+Flask-Caching>=2.1.0
+Flask-Compress>=1.14
+
+# Pomocnicze
+typing-extensions>=4.5.0
+
+# H3 Geospatial Library (opcjonalne, dla geohash features)
+h3>=3.7.6
+
+# PostgreSQL
+psycopg2-binary>=2.9.9

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="winners_page.title">Zwycięzcy - meshscout.guru</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        #header {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        h1 {
+            color: #d4af37;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .lang-button {
+            background: #0f4c75;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 5px;
+        }
+
+        .lang-button:hover {
+            background: #3282b8;
+        }
+
+        .lang-button.active {
+            background: #d4af37;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #3282b8;
+            text-decoration: none;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #5ca3d4;
+        }
+
+        .period-section {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .period-section h2 {
+            color: #3282b8;
+            font-size: 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .period-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .period-tab {
+            background: #0f4c75;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .period-tab:hover {
+            background: #3282b8;
+        }
+
+        .period-tab.active {
+            background: #d4af37;
+            color: #1a1a2e;
+        }
+
+        .winners-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 15px;
+        }
+
+        .winner-card {
+            background: #0f4c75;
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .winner-card:hover {
+            background: #1a5c8a;
+            border-color: #d4af37;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .winner-card.first {
+            background: linear-gradient(135deg, #d4af37 0%, #f4d66f 100%);
+            color: #1a1a2e;
+            border-color: #FFD700;
+        }
+
+        .winner-card.first:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .winner-card .period-date {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .winner-card .winner-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .winner-card .winner-node {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+
+        .winner-card .winner-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .winner-card .stat {
+            text-align: center;
+        }
+
+        .winner-card .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .winner-card .stat-label {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .winner-card.first .winner-stats {
+            border-top-color: rgba(0, 0, 0, 0.2);
+        }
+
+        #loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-size: 18px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-size: 16px;
+        }
+
+        .medal {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        /* RESPONSYWNOŚĆ DLA TELEFONÓW */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+                font-size: 14px;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            #header {
+                padding: 15px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            h1 {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+
+            #header p {
+                font-size: 12px;
+            }
+
+            .back-link {
+                font-size: 14px;
+            }
+
+            .lang-button {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
+            .period-section {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .period-section h2 {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+
+            .period-tabs {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .period-tab {
+                width: 100%;
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+
+            .winners-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .winner-card {
+                padding: 12px;
+            }
+
+            .winner-card .period-date {
+                font-size: 12px;
+            }
+
+            .winner-card .winner-name {
+                font-size: 16px;
+            }
+
+            .winner-card .winner-node {
+                font-size: 11px;
+            }
+
+            .winner-card .stat-value {
+                font-size: 18px;
+            }
+
+            .winner-card .stat-label {
+                font-size: 10px;
+            }
+
+            .medal {
+                font-size: 20px;
+            }
+
+            #loading {
+                font-size: 16px;
+                padding: 30px;
+            }
+
+            .empty-state {
+                font-size: 14px;
+                padding: 30px;
+            }
+        }
+
+        /* Bardzo małe telefony */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            #header {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+
+            .period-section {
+                padding: 12px;
+            }
+
+            .period-section h2 {
+                font-size: 16px;
+            }
+
+            .period-tab {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .winner-card {
+                padding: 10px;
+            }
+
+            .winner-card .winner-name {
+                font-size: 15px;
+            }
+
+            .winner-card .stat-value {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="header">
+            <div class="header-top">
+                <div class="header-left">
+                    <h1 data-i18n="winners_page.header_title">🏆 Zwycięzcy - meshscout.guru</h1>
+                    <p style="color: #888; margin-top: 10px;" data-i18n="winners_page.subtitle">Historia zwycięzców z poszczególnych okresów</p>
+                </div>
+                <div>
+                    <button id="lang-pl" class="lang-button {{ 'active' if lang == 'pl' else '' }}" onclick="switchLanguage('pl')">🇵🇱</button>
+                    <button id="lang-en" class="lang-button {{ 'active' if lang == 'en' else '' }}" onclick="switchLanguage('en')">🇬🇧</button>
+                </div>
+            </div>
+            <a href="/" class="back-link" data-i18n="winners_page.back_button">← Powrót do mapy</a>
+        </div>
+
+        <div class="period-tabs">
+            <button class="period-tab active" data-period="day" data-i18n="winners_page.tabs.days">📅 Dni</button>
+            <button class="period-tab" data-period="week" data-i18n="winners_page.tabs.weeks">📆 Tygodnie</button>
+            <button class="period-tab" data-period="month" data-i18n="winners_page.tabs.months">📊 Miesiące</button>
+        </div>
+
+        <div id="loading" data-i18n="winners_page.loading">⏳ Ładowanie zwycięzców...</div>
+
+        <div id="winners-container"></div>
+    </div>
+
+    <script>
+        // Translation system
+        let currentLang = '{{ lang }}' || 'pl';
+        let translations = {};
+
+        async function loadTranslations(lang) {
+            try {
+                const response = await fetch(`/api/translations/${lang}`);
+                const data = await response.json();
+                if (data.success) {
+                    translations = data.translations;
+                    applyTranslations();
+                }
+            } catch (error) {
+                console.error('Error loading translations:', error);
+            }
+        }
+
+        function t(key, params = {}) {
+            const keys = key.split('.');
+            let value = translations;
+            for (const k of keys) {
+                value = value?.[k];
+            }
+            if (!value) return key;
+
+            // Replace parameters like {week}, {year}
+            let result = value;
+            for (const [param, val] of Object.entries(params)) {
+                result = result.replace(new RegExp(`\\{${param}\\}`, 'g'), val);
+            }
+            return result;
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                const translation = t(key);
+                element.textContent = translation;
+            });
+
+            document.title = t('winners_page.title');
+
+            document.querySelectorAll('.lang-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`lang-${currentLang}`)?.classList.add('active');
+        }
+
+        async function switchLanguage(lang) {
+            if (lang === currentLang) return;
+
+            try {
+                const response = await fetch(`/api/set-language/${lang}`);
+                const data = await response.json();
+                if (data.success) {
+                    currentLang = lang;
+                    await loadTranslations(lang);
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Error switching language:', error);
+            }
+        }
+
+        let currentPeriodType = 'day';
+
+        function formatPeriodDate(period, periodType) {
+            try {
+                const locale = currentLang === 'pl' ? 'pl-PL' : 'en-US';
+
+                if (periodType === 'day') {
+                    // Format: YYYY-MM-DD
+                    const date = new Date(period);
+                    return date.toLocaleDateString(locale, {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                } else if (periodType === 'week') {
+                    // Format: YYYY-WW (year-week)
+                    const [year, week] = period.split('-');
+                    return t('winners_page.week_format', { week: week, year: year });
+                } else if (periodType === 'month') {
+                    // Format: YYYY-MM
+                    const [year, month] = period.split('-');
+                    const date = new Date(year, month - 1, 1);
+                    return date.toLocaleDateString(locale, {
+                        year: 'numeric',
+                        month: 'long'
+                    });
+                }
+                return period;
+            } catch (e) {
+                return period;
+            }
+        }
+
+        async function loadWinners(periodType = 'day') {
+            try {
+                currentPeriodType = periodType;
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('winners-container').innerHTML = '';
+
+                const response = await fetch(`/api/winners/${periodType}?limit=50`);
+                const data = await response.json();
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (!data.success) {
+                    console.error('Błąd ładowania zwycięzców:', data.error);
+                    return;
+                }
+
+                const winners = data.winners || [];
+
+                if (winners.length === 0) {
+                    document.getElementById('winners-container').innerHTML =
+                        `<div class="empty-state">${t('winners_page.no_winners')}</div>`;
+                    return;
+                }
+
+                // Grupuj zwycięzców po okresach (jeśli trzeba)
+                const container = document.getElementById('winners-container');
+
+                const section = document.createElement('div');
+                section.className = 'period-section';
+
+                const periodLabel = periodType === 'day' ? t('winners_page.period_labels.daily') :
+                                  periodType === 'week' ? t('winners_page.period_labels.weekly') :
+                                  t('winners_page.period_labels.monthly');
+
+                section.innerHTML = `<h2><span class="medal">🥇</span>${periodLabel} ${currentLang === 'pl' ? 'Zwycięzcy' : 'Winners'}</h2>`;
+
+                const grid = document.createElement('div');
+                grid.className = 'winners-grid';
+
+                winners.forEach((winner, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'winner-card';
+                    if (index === 0) card.classList.add('first');
+
+                    const name = winner.user_longname || winner.node_id;
+                    const periodDate = formatPeriodDate(winner.period, periodType);
+
+                    card.innerHTML = `
+                        <div class="period-date">${index === 0 ? '👑 ' : ''}${periodDate}</div>
+                        <div class="winner-name">${name}</div>
+                        <div class="winner-node">${winner.node_id}</div>
+                        <div class="winner-stats">
+                            <div class="stat">
+                                <div class="stat-value">${winner.total_points}</div>
+                                <div class="stat-label">${t('winners_page.stats.points')}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${winner.total_traceroutes}</div>
+                                <div class="stat-label">${t('winners_page.stats.traceroutes')}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    card.addEventListener('click', () => {
+                        window.location.href = `/player/${winner.node_id}`;
+                    });
+
+                    grid.appendChild(card);
+                });
+
+                section.appendChild(grid);
+                container.appendChild(section);
+
+            } catch (error) {
+                console.error('Błąd ładowania zwycięzców:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('winners-container').innerHTML =
+                    `<div class="empty-state">${t('winners_page.error_loading')}</div>`;
+            }
+        }
+
+        // Obsługa tabs
+        document.querySelectorAll('.period-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const periodType = tab.getAttribute('data-period');
+                loadWinners(periodType);
+            });
+        });
+
+        // Inicjalizacja
+        async function init() {
+            await loadTranslations(currentLang);
+            loadWinners('day');
+        }
+
+        init();
+    </script>
+
+    <div style="background: #16213e; padding: 8px 20px; text-align: center; font-size: 11px; color: #888; margin-top: 20px;">
+        <span data-i18n="footer.copyright">Copyright by meshtastic.info.pl © 2025</span> | <span data-i18n="footer.version">Wersja:</span> {{ version }}
+    </div>
+</body>
+</html>

@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="player_page.title">Gracz - meshscout.guru</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #header {
+            background: #16213e;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            z-index: 2000;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .back-button {
+            background: #0f4c75;
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .back-button:hover {
+            background: #3282b8;
+        }
+
+        .lang-button {
+            background: #0f4c75;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-button:hover {
+            background: #3282b8;
+        }
+
+        .lang-button.active {
+            background: #d4af37;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        .player-info {
+            flex: 1;
+            margin-left: 20px;
+        }
+
+        .player-name {
+            font-size: 24px;
+            color: #d4af37;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .stat-badge {
+            background: #0f4c75;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .stat-value {
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        #main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #map {
+            flex: 1;
+            height: 100%;
+            position: relative;
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(22, 33, 62, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            font-size: 12px;
+        }
+
+        .map-legend h4 {
+            color: #3282b8;
+            margin: 0 0 10px 0;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            color: #eee;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-line {
+            width: 30px;
+            height: 3px;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .legend-line.dashed {
+            background: repeating-linear-gradient(
+                to right,
+                transparent,
+                transparent 5px,
+                currentColor 5px,
+                currentColor 10px
+            );
+        }
+
+        #sidebar {
+            width: 350px;
+            background: #16213e;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+        }
+
+        #sidebar h2 {
+            color: #3282b8;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .h3-toggle-button {
+            width: 100%;
+            background: #0f4c75;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .h3-toggle-button:hover {
+            background: #3282b8;
+        }
+
+        .h3-toggle-button.active {
+            background: #d4af37;
+            color: #1a1a2e;
+        }
+
+        .hex-history-item {
+            background: #1a1a2e;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #d4af37;
+            font-size: 12px;
+        }
+
+        .hex-history-item .hex-date {
+            color: #d4af37;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .hex-history-item .hex-details {
+            color: #888;
+            font-size: 11px;
+        }
+
+        .traceroute-item {
+            background: #1a1a2e;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid #0f4c75;
+        }
+
+        .traceroute-item:hover {
+            background: #0f4c75;
+            border-left-color: #d4af37;
+        }
+
+        .traceroute-item.active {
+            background: #0f4c75;
+            border-left-color: #d4af37;
+            box-shadow: 0 3px 8px rgba(212,175,55,0.3);
+        }
+
+        .traceroute-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .traceroute-hop {
+            color: #3282b8;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .traceroute-points {
+            color: #d4af37;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .traceroute-details {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .traceroute-time {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .route-info {
+            font-size: 11px;
+            color: #d4af37;
+            margin-top: 5px;
+            padding: 5px 8px;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 3px;
+            border-left: 3px solid #d4af37;
+            font-family: monospace;
+        }
+
+        .snr-info {
+            font-size: 10px;
+            color: #888;
+            margin-left: 5px;
+        }
+
+        .raw-packet-btn {
+            background: #3282b8;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .raw-packet-btn:hover {
+            background: #4a9dbf;
+        }
+
+        .raw-packet-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            overflow-y: auto;
+        }
+
+        .raw-packet-modal.show {
+            display: block;
+        }
+
+        .raw-packet-content {
+            background: #1a1a2e;
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 900px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .raw-packet-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 30px;
+            color: #888;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .raw-packet-close:hover {
+            color: #fff;
+        }
+
+        .raw-packet-header {
+            border-bottom: 2px solid #0f4c75;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .raw-packet-header h2 {
+            color: #3282b8;
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .raw-packet-item {
+            background: #16213e;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #3282b8;
+        }
+
+        .raw-packet-item h4 {
+            color: #d4af37;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .raw-packet-json {
+            background: #0f1419;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #aaa;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .leaflet-popup-content {
+            color: #333;
+            min-width: 200px;
+        }
+
+        .popup h3 {
+            margin: 0 0 10px 0;
+            color: #0f4c75;
+            font-size: 16px;
+        }
+
+        .popup .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .popup .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .popup .label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .popup .value {
+            color: #333;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 76, 117, 0.9);
+            padding: 20px 40px;
+            border-radius: 10px;
+            z-index: 10000;
+            display: none;
+        }
+
+        #loading.show {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* RESPONSYWNOŚĆ DLA TELEFONÓW */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            #header {
+                padding: 10px 15px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .player-info {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .player-name {
+                font-size: 18px;
+            }
+
+            .player-stats {
+                flex-direction: column;
+                gap: 8px;
+                font-size: 12px;
+            }
+
+            .stat-badge {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+
+            #main-container {
+                flex-direction: column;
+            }
+
+            #map {
+                height: 50vh;
+                min-height: 300px;
+            }
+
+            .map-legend {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                padding: 10px;
+                font-size: 10px;
+            }
+
+            .map-legend h4 {
+                font-size: 11px;
+                margin-bottom: 8px;
+            }
+
+            .legend-item {
+                margin-bottom: 5px;
+                font-size: 10px;
+            }
+
+            .legend-line {
+                width: 20px;
+                height: 2px;
+            }
+
+            #sidebar {
+                width: 100%;
+                max-height: 50vh;
+                padding: 15px;
+            }
+
+            #sidebar h2 {
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+
+            .traceroute-item {
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+
+            .traceroute-header {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .traceroute-hop {
+                font-size: 13px;
+            }
+
+            .traceroute-points {
+                font-size: 14px;
+            }
+
+            .traceroute-details {
+                font-size: 11px;
+            }
+
+            .route-info {
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+
+            .back-button {
+                padding: 6px 12px;
+                font-size: 13px;
+                width: 100%;
+                text-align: center;
+            }
+
+            /* Większe przyciski do klikania na telefonie */
+            .traceroute-item {
+                min-height: 60px;
+                touch-action: manipulation;
+            }
+
+            /* Lepsza widoczność na telefonie */
+            .popup {
+                font-size: 12px;
+            }
+
+            .popup h3 {
+                font-size: 14px;
+            }
+        }
+
+        /* Bardzo małe telefony */
+        @media (max-width: 480px) {
+            .player-name {
+                font-size: 16px;
+            }
+
+            .player-stats {
+                font-size: 11px;
+            }
+
+            #map {
+                height: 40vh;
+                min-height: 250px;
+            }
+
+            #sidebar {
+                max-height: 60vh;
+            }
+
+            .map-legend {
+                font-size: 9px;
+                padding: 8px;
+            }
+
+            .legend-line {
+                width: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="show" data-i18n="player_page.loading">⏳ Ładowanie danych gracza...</div>
+
+    <div id="header">
+        <div class="header-top">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="/" class="back-button" data-i18n="player_page.back">← Powrót do mapy</a>
+                <div style="display: flex; gap: 5px;">
+                    <button id="lang-pl" class="lang-button {{ 'active' if lang == 'pl' else '' }}" onclick="switchLanguage('pl')">🇵🇱</button>
+                    <button id="lang-en" class="lang-button {{ 'active' if lang == 'en' else '' }}" onclick="switchLanguage('en')">🇬🇧</button>
+                </div>
+            </div>
+            <div class="player-info">
+                <div class="player-name" id="player-name">Ładowanie...</div>
+                <div class="player-stats">
+                    <div class="stat-badge">
+                        🏆 <span class="stat-value" id="total-points">0</span> <span data-i18n="player_page.total_points">punktów</span>
+                    </div>
+                    <div class="stat-badge">
+                        📡 <span class="stat-value" id="total-traceroutes">0</span> <span data-i18n="player_page.total_traceroutes">traceroutów</span>
+                    </div>
+                    <div class="stat-badge">
+                        📍 <span class="stat-value" id="player-location" data-i18n="player_page.location">brak GPS</span>
+                    </div>
+                    <div class="stat-badge" id="longest-traceroute-badge" style="display: none;">
+                        🎯 <span data-i18n="player_page.longest">Najdłuższy:</span> <span class="stat-value" id="longest-traceroute">-</span>
+                    </div>
+                    <div class="stat-badge">
+                        🗺️ <span class="stat-value" id="hexagons-visited">0</span> <span data-i18n="player_page.hexagons_visited">heksagonów</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-container">
+        <div id="map">
+            <div class="map-legend">
+                <h4 data-i18n="player_page.legend_title">Legenda tras:</h4>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #2196F3;"></div>
+                    <span data-i18n="player_page.legend_direct">Połączenie bezpośrednie (direct)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #4caf50;"></div>
+                    <span data-i18n="player_page.legend_multihop">Przez węzły pośrednie (multi-hop)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line dashed" style="color: #f44336;"></div>
+                    <span data-i18n="player_page.legend_no_gps">Brak GPS węzłów pośrednich</span>
+                </div>
+            </div>
+        </div>
+        <div id="sidebar">
+            <button id="h3-toggle" class="h3-toggle-button">
+                <span data-i18n="player_page.show_hexagons">🗺️ Pokaż Odwiedzone Heksagony</span> (<span id="h3-count">0</span>)
+            </button>
+            <h2 data-i18n="player_page.scoring_history">📊 Historia Punktacji</h2>
+            <div id="scoring-timeline"></div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const NODE_ID = "{{ node_id }}";
+
+        // Translation system
+        let currentLang = '{{ lang }}' || 'pl';
+        let translations = {};
+
+        async function loadTranslations(lang) {
+            try {
+                const response = await fetch(`/api/translations/${lang}`);
+                const data = await response.json();
+                if (data.success) {
+                    translations = data.translations;
+                    applyTranslations();
+                }
+            } catch (error) {
+                console.error('Error loading translations:', error);
+            }
+        }
+
+        function t(key, params = {}) {
+            const keys = key.split('.');
+            let value = translations;
+            for (const k of keys) {
+                value = value?.[k];
+            }
+            if (!value) return key;
+
+            // Replace parameters like {count}, {hops}, etc.
+            let result = value;
+            for (const [param, val] of Object.entries(params)) {
+                result = result.replace(new RegExp(`\\{${param}\\}`, 'g'), val);
+            }
+            return result;
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                const translation = t(key);
+
+                if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                    element.placeholder = translation;
+                } else {
+                    element.textContent = translation;
+                }
+            });
+
+            // Update document title
+            document.title = t('player_page.title');
+
+            // Update language buttons
+            document.querySelectorAll('.lang-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`lang-${currentLang}`)?.classList.add('active');
+        }
+
+        async function switchLanguage(lang) {
+            if (lang === currentLang) return;
+
+            try {
+                const response = await fetch(`/api/set-language/${lang}`);
+                const data = await response.json();
+                if (data.success) {
+                    currentLang = lang;
+                    await loadTranslations(lang);
+                    location.reload(); // Reload to apply language to all content
+                }
+            } catch (error) {
+                console.error('Error switching language:', error);
+            }
+        }
+
+        // Inicjalizacja mapy
+        const map = L.map('map').setView([52.2297, 21.0122], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        let playerData = null;
+        let traceroutes = [];
+        let playerMarker = null;
+        let hopMarkers = {};
+        let routeLines = {};
+        let nodeNamesCache = {}; // Cache dla nazw węzłów
+        let h3Layer = null;
+        let h3Visible = false;
+        let h3Data = null;
+
+        // Custom ikona dla gracza (duża)
+        const playerIcon = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background: #d4af37; color: white; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border: 4px solid #FFD700; box-shadow: 0 4px 12px rgba(212,175,55,0.6); font-size: 24px;">🎮</div>',
+            iconSize: [45, 45],
+            iconAnchor: [22, 22]
+        });
+
+        // Custom ikona dla hopów
+        const hopIcon = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background: #0f4c75; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">📡</div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+        });
+
+        function formatTime(isoString) {
+            if (!isoString) return 'nieznany';
+            try {
+                const date = new Date(isoString);
+                return date.toLocaleString('pl-PL', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return 'nieznany';
+            }
+        }
+
+        async function getNodeName(nodeId) {
+            // Sprawdź cache
+            if (nodeNamesCache[nodeId]) {
+                return nodeNamesCache[nodeId];
+            }
+
+            try {
+                const response = await fetch(`/api/device/${nodeId}`);
+                const data = await response.json();
+                
+                if (data.success && data.device) {
+                    const longname = data.device.user_longname;
+                    const shortname = data.device.user_shortname;
+                    let name = longname || nodeId;
+                    if (shortname) {
+                        name = `${longname} (${shortname})`;
+                    }
+                    nodeNamesCache[nodeId] = name;
+                    return name;
+                }
+            } catch (error) {
+                console.error(`Błąd pobierania nazwy węzła ${nodeId}:`, error);
+            }
+
+            // Fallback - zwróć ID
+            nodeNamesCache[nodeId] = nodeId;
+            return nodeId;
+        }
+
+        async function formatRouteWithNames(route) {
+            if (!route || route.length === 0) {
+                return '';
+            }
+
+            const names = await Promise.all(route.map(nodeId => getNodeName(nodeId)));
+            return names.join(' → ');
+        }
+
+        // Funkcje H3
+        async function loadPlayerHexagons() {
+            try {
+                const response = await fetch(`/api/player/${NODE_ID}/hexagons?limit=1000`);
+                const data = await response.json();
+
+                if (!data.success || !data.geojson) {
+                    console.log('Brak danych H3 dla gracza');
+                    document.getElementById('hexagons-visited').textContent = '0';
+                    return null;
+                }
+
+                h3Data = data.geojson;
+                document.getElementById('hexagons-visited').textContent = data.total;
+                return h3Data;
+
+            } catch (error) {
+                console.error('Błąd ładowania danych H3 gracza:', error);
+                return null;
+            }
+        }
+
+        function getHexColorByVisits(visits) {
+            // Kolory od zielonego (jeden raz) do złotego (często odwiedzany)
+            if (visits >= 50) return '#FFD700'; // złoty
+            if (visits >= 20) return '#FFA500'; // pomarańczowy
+            if (visits >= 10) return '#FF8C00'; // ciemny pomarańczowy
+            if (visits >= 5) return '#32CD32';  // zielony
+            return '#90EE90';                    // jasny zielony
+        }
+
+        function showH3Layer() {
+            if (!h3Data) {
+                console.log('Brak danych H3 do wyświetlenia');
+                return;
+            }
+
+            if (h3Layer) {
+                map.removeLayer(h3Layer);
+            }
+
+            h3Layer = L.geoJSON(h3Data, {
+                style: function(feature) {
+                    const visits = feature.properties.visit_count || 1;
+                    return {
+                        fillColor: getHexColorByVisits(visits),
+                        weight: 2,
+                        opacity: 0.6,
+                        color: '#d4af37',
+                        fillOpacity: 0.3
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    const props = feature.properties;
+                    const popupContent = `
+                        <div class="popup">
+                            <h3>${t('player_page.popup_h3_hex')}</h3>
+                            <div class="info-row">
+                                <span class="label">${t('player_page.popup_h3_index')}</span>
+                                <span class="value" style="font-size: 9px;">${props.h3_index}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">${t('player_page.popup_visits')}</span>
+                                <span class="value">${props.visit_count || 1}x</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">${t('player_page.popup_first_visit')}</span>
+                                <span class="value" style="font-size: 11px;">${formatTime(props.first_visit)}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">${t('player_page.popup_last_visit')}</span>
+                                <span class="value" style="font-size: 11px;">${formatTime(props.last_visit)}</span>
+                            </div>
+                        </div>
+                    `;
+                    layer.bindPopup(popupContent);
+                }
+            }).addTo(map);
+
+            // Przenieś markery na wierzch
+            if (playerMarker) {
+                playerMarker.bringToFront();
+            }
+            Object.values(hopMarkers).forEach(marker => {
+                marker.bringToFront();
+            });
+        }
+
+        function hideH3Layer() {
+            if (h3Layer) {
+                map.removeLayer(h3Layer);
+                h3Layer = null;
+            }
+        }
+
+        async function loadPlayerData() {
+            try {
+                const response = await fetch(`/api/player/${NODE_ID}/details`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.error('Błąd ładowania danych gracza:', data.error);
+                    return;
+                }
+
+                playerData = data.player;
+
+                // Update nagłówek
+                const name = playerData.user_longname || playerData.node_id;
+                const shortname = playerData.user_shortname ? ` (${playerData.user_shortname})` : '';
+                document.getElementById('player-name').textContent = `🎮 ${name}${shortname}`;
+                document.getElementById('total-points').textContent = playerData.total_points || 0;
+                document.getElementById('total-traceroutes').textContent = playerData.total_traceroutes || 0;
+
+                if (playerData.last_latitude && playerData.last_longitude) {
+                    document.getElementById('player-location').textContent =
+                        `${playerData.last_latitude.toFixed(4)}, ${playerData.last_longitude.toFixed(4)}`;
+                    document.getElementById('player-location').removeAttribute('data-i18n');
+
+                    // Dodaj marker gracza
+                    const latLng = [playerData.last_latitude, playerData.last_longitude];
+                    playerMarker = L.marker(latLng, { icon: playerIcon })
+                        .addTo(map)
+                        .bindPopup(createPlayerPopup(playerData));
+
+                    map.setView(latLng, 10);
+                } else {
+                    document.getElementById('player-location').textContent = t('player_page.location');
+                }
+
+                // Wyświetl informację o najdłuższym traceroute
+                if (playerData.longest_traceroute) {
+                    const longest = playerData.longest_traceroute;
+                    const badge = document.getElementById('longest-traceroute-badge');
+                    const valueSpan = document.getElementById('longest-traceroute');
+
+                    valueSpan.textContent = `${longest.distance_km} km ${t('player_page.to')} ${longest.hop_name}`;
+                    badge.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Błąd ładowania danych gracza:', error);
+            }
+        }
+
+        // Funkcja loadTraceroutes została zastąpiona przez loadScoringTimeline
+
+        function createPlayerPopup(player) {
+            const name = player.user_longname || player.node_id;
+            const shortname = player.user_shortname ? ` (${player.user_shortname})` : '';
+
+            return `
+                <div class="popup">
+                    <h3>🎮 ${name}${shortname}</h3>
+                    <div class="info-row">
+                        <span class="label">${t('player_page.popup_node_id')}</span>
+                        <span class="value">${player.node_id}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">${t('player_page.popup_points')}</span>
+                        <span class="value">${player.total_points || 0}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">${t('player_page.popup_traceroutes')}</span>
+                        <span class="value">${player.total_traceroutes || 0}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createHopPopup(hopNode, hops) {
+            const totalPoints = hops.reduce((sum, h) => sum + h.points, 0);
+            return `
+                <div class="popup">
+                    <h3>📡 ${hops[0].hop_name}</h3>
+                    <div class="info-row">
+                        <span class="label">${t('player_page.popup_node_id')}</span>
+                        <span class="value">${hopNode}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">${t('player_page.popup_distance')}</span>
+                        <span class="value">${hops[0].distance_km} km</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">${t('player_page.popup_connections')}</span>
+                        <span class="value">${hops.length}x</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">${t('player_page.popup_points')}</span>
+                        <span class="value">+${totalPoints.toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function showAllHopsOnMap() {
+            if (!playerData || !playerData.last_latitude || !playerData.last_longitude) {
+                return;
+            }
+
+            const playerLatLng = [playerData.last_latitude, playerData.last_longitude];
+
+            // Pobierz unikalne hopy
+            const uniqueHops = {};
+            traceroutes.forEach(tr => {
+                if (!uniqueHops[tr.hop_node]) {
+                    uniqueHops[tr.hop_node] = [];
+                }
+                uniqueHops[tr.hop_node].push(tr);
+            });
+
+            const bounds = [playerLatLng];
+
+            // Dla każdego unikalnego hopu, pobierz jego pozycję
+            for (const [hopNode, hops] of Object.entries(uniqueHops)) {
+                try {
+                    const response = await fetch(`/api/device/${hopNode}`);
+                    const data = await response.json();
+
+                    if (data.success && data.device.last_latitude && data.device.last_longitude) {
+                        const hopLatLng = [data.device.last_latitude, data.device.last_longitude];
+                        bounds.push(hopLatLng);
+
+                        // Dodaj marker hopu
+                        if (!hopMarkers[hopNode]) {
+                            const marker = L.marker(hopLatLng, { icon: hopIcon })
+                                .addTo(map)
+                                .bindPopup(createHopPopup(hopNode, hops));
+                            hopMarkers[hopNode] = marker;
+                        }
+
+                        // Dodaj linię zgodnie z faktyczną trasą traceroute
+                        if (!routeLines[hopNode]) {
+                            // Weź najnowszy traceroute dla tego hopu aby zobaczyć trasę
+                            const latestHop = hops[0];
+                            const route = latestHop.route_path || [];
+                            const routeBack = latestHop.route_back || [];
+
+                            let lineColor = '#0f4c75'; // domyślny
+                            let linePoints = [playerLatLng, hopLatLng]; // domyślnie bezpośrednio
+
+                            // Określ typ połączenia i kolor
+                            if (route.length === 1 && routeBack.length <= 1) {
+                                // BEZPOŚREDNIE połączenie (direct - 0 węzłów pośrednich)
+                                lineColor = '#2196F3'; // niebieski
+                                linePoints = [playerLatLng, hopLatLng];
+                            } else if (route.length > 1) {
+                                // MULTI-HOP - spróbuj zbudować trasę przez węzły pośrednie
+                                lineColor = '#4caf50'; // zielony (zakładamy że znajdziemy GPS)
+                                linePoints = [playerLatLng]; // zaczynamy od gracza
+
+                                // Próbuj pobrać pozycje wszystkich węzłów na trasie
+                                let allNodesHaveGPS = true;
+
+                                for (const nodeId of route) {
+                                    try {
+                                        const nodeResponse = await fetch(`/api/device/${nodeId}`);
+                                        const nodeData = await nodeResponse.json();
+
+                                        if (nodeData.success && nodeData.device.last_latitude && nodeData.device.last_longitude) {
+                                            linePoints.push([nodeData.device.last_latitude, nodeData.device.last_longitude]);
+                                        } else {
+                                            allNodesHaveGPS = false;
+                                            break;
+                                        }
+                                    } catch (error) {
+                                        allNodesHaveGPS = false;
+                                        break;
+                                    }
+                                }
+
+                                // Jeśli nie wszystkie węzły mają GPS - czerwona linia bezpośrednia
+                                if (!allNodesHaveGPS) {
+                                    lineColor = '#f44336'; // czerwony
+                                    linePoints = [playerLatLng, hopLatLng]; // bezpośrednia
+                                }
+                            }
+
+                            const line = L.polyline(linePoints, {
+                                color: lineColor,
+                                weight: 2,
+                                opacity: 0.6,
+                                dashArray: lineColor === '#f44336' ? '10, 5' : '' // czerwona przerywana
+                            }).addTo(map);
+                            routeLines[hopNode] = line;
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Błąd ładowania danych hopu ${hopNode}:`, error);
+                }
+            }
+
+            // Dopasuj mapę do wszystkich markerów
+            if (bounds.length > 1) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        function showTracerouteOnMap(hopNode, hops) {
+            // Usuń podświetlenie z wszystkich
+            document.querySelectorAll('.traceroute-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Podświetl kliknięty
+            document.querySelector(`[data-hop-node="${hopNode}"]`).classList.add('active');
+
+            // Zresetuj style linii - przywróć oryginalne kolory ale przyciemnione
+            Object.entries(routeLines).forEach(([node, line]) => {
+                const originalColor = line.options.color;
+                line.setStyle({
+                    weight: 2,
+                    opacity: 0.3,
+                    dashArray: originalColor === '#f44336' ? '10, 5' : ''
+                });
+            });
+
+            // Podświetl linię tego hopu - zachowaj kolor ale zwiększ widoczność
+            if (routeLines[hopNode]) {
+                const line = routeLines[hopNode];
+                const originalColor = line.options.color;
+                line.setStyle({
+                    weight: 4,
+                    opacity: 1.0,
+                    dashArray: originalColor === '#f44336' ? '10, 5' : ''
+                });
+            }
+
+            // Otwórz popup hopu
+            if (hopMarkers[hopNode]) {
+                hopMarkers[hopNode].openPopup();
+
+                // Wycentruj mapę na linii
+                if (playerData && playerData.last_latitude && playerData.last_longitude) {
+                    const marker = hopMarkers[hopNode];
+                    const hopLatLng = marker.getLatLng();
+                    const playerLatLng = L.latLng(playerData.last_latitude, playerData.last_longitude);
+                    map.fitBounds([playerLatLng, hopLatLng], { padding: [100, 100] });
+                }
+            }
+        }
+
+        // Funkcja ładowania połączonej historii punktacji (traceroutes + hexagony)
+        async function loadScoringTimeline() {
+            try {
+                // Pobierz oba zestawy danych równolegle
+                const [trResponse, hexResponse] = await Promise.all([
+                    fetch(`/api/player/${NODE_ID}/traceroutes?limit=100`),
+                    fetch(`/api/player/${NODE_ID}/hexagons?limit=1000`)
+                ]);
+
+                const trData = await trResponse.json();
+                const hexData = await hexResponse.json();
+
+                const timeline = document.getElementById('scoring-timeline');
+                timeline.innerHTML = '';
+
+                // Zapisz traceroutes globalnie (dla mapy)
+                if (trData.success && trData.traceroutes) {
+                    traceroutes = trData.traceroutes;
+                } else {
+                    traceroutes = [];
+                }
+
+                // Przygotuj wydarzenia do wyświetlenia
+                const events = [];
+
+                // Dodaj traceroutes jako wydarzenia
+                if (trData.success && trData.traceroutes) {
+                    trData.traceroutes.forEach(tr => {
+                        events.push({
+                            type: 'traceroute',
+                            timestamp: new Date(tr.received_at),
+                            data: tr
+                        });
+                    });
+                }
+
+                // Dodaj zmiany hexagonów jako wydarzenia (pierwsza wizyta w hexie)
+                if (hexData.success && hexData.hexagons) {
+                    hexData.hexagons.forEach(hex => {
+                        events.push({
+                            type: 'hex_visit',
+                            timestamp: new Date(hex.first_visit),
+                            data: hex
+                        });
+                    });
+                }
+
+                // Sortuj chronologicznie (od najnowszych)
+                events.sort((a, b) => b.timestamp - a.timestamp);
+
+                // Wyświetl max 50 najnowszych wydarzeń
+                const toShow = events.slice(0, 50);
+
+                if (toShow.length === 0) {
+                    timeline.innerHTML = `<div style="padding: 20px; text-align: center; color: #888; font-size: 12px;">${t('player_page.no_events')}</div>`;
+                    return;
+                }
+
+                for (const event of toShow) {
+                    const item = document.createElement('div');
+                    item.className = 'traceroute-item';
+
+                    if (event.type === 'traceroute') {
+                        const tr = event.data;
+                        const route = tr.route_path;
+                        const routeBack = tr.route_back;
+                        const hopsForward = tr.hops_forward || 0;
+                        const hopsBack = tr.hops_back || 0;
+                        const isConfirmed = tr.is_confirmed;
+                        const todayCount = tr.today_count || 1;
+
+                        let routeInfo = '';
+                        let confirmStatus;
+                        if (!isConfirmed) {
+                            confirmStatus = `<span style="color: #ff9800; font-weight: bold;">${t('player_page.unconfirmed')}</span>`;
+                        } else if (tr.points === 0 && todayCount > 1) {
+                            confirmStatus = `<span style="color: #888; font-weight: bold;">${t('player_page.executed_today', {count: todayCount})}</span>`;
+                        } else {
+                            confirmStatus = `<span style="color: #4caf50; font-weight: bold;">${t('player_page.confirmed')}</span>`;
+                        }
+
+                        if (route && route.length === 1 && (!routeBack || routeBack.length <= 1)) {
+                            routeInfo = `<div class="route-info">${t('player_page.direct_connection')}<br>${confirmStatus}</div>`;
+                        } else if (route && route.length > 1) {
+                            const routeStrWithNames = await formatRouteWithNames(route);
+                            if (routeBack && routeBack.length > 0) {
+                                const routeBackStrWithNames = await formatRouteWithNames(routeBack);
+                                routeInfo = `
+                                    <div class="route-info">
+                                        <div>${t('player_page.route_forward', {hops: hopsForward})}<br>${routeStrWithNames}</div>
+                                        <div style="margin-top: 5px;">${t('player_page.route_back', {hops: hopsBack})}<br>${routeBackStrWithNames}</div>
+                                        <div style="margin-top: 5px; font-size: 10px;">${confirmStatus}</div>
+                                    </div>`;
+                            } else {
+                                routeInfo = `<div class="route-info">${t('player_page.route', {hops: hopsForward})}<br>${routeStrWithNames}<br>${confirmStatus}</div>`;
+                            }
+                        } else {
+                            routeInfo = `<div class="route-info">${confirmStatus}</div>`;
+                        }
+
+                        if (!isConfirmed || (tr.points === 0 && todayCount > 1)) {
+                            item.style.opacity = '0.6';
+                        }
+
+                        item.innerHTML = `
+                            <div class="traceroute-header">
+                                <div class="traceroute-hop">
+                                    📡 ${tr.hop_name}
+                                </div>
+                                <div class="traceroute-points" style="${tr.points > 0 ? 'color: #d4af37;' : 'color: #888;'}">
+                                    ${tr.points > 0 ? '+' : ''}${tr.points.toFixed(2)} pkt
+                                </div>
+                            </div>
+                            <div class="traceroute-details">
+                                📏 ${tr.distance_km} km • 📅 ${formatTime(tr.received_at)}
+                            </div>
+                            ${routeInfo}
+                            <button class="raw-packet-btn" onclick="event.stopPropagation(); showRawPackets(${tr.packet_id})">
+                                ${t('player_page.raw_packets')}
+                            </button>
+                        `;
+
+                        // Dodaj obsługę kliknięcia dla traceroute
+                        item.dataset.hopNode = tr.hop_node;
+                        item.addEventListener('click', () => showTracerouteOnMap(tr.hop_node, [tr]));
+
+                    } else if (event.type === 'hex_visit') {
+                        const hex = event.data;
+                        const visitCount = hex.visit_count || 1;
+                        const points = hex.points_earned || 0;
+                        const traceroutes = hex.traceroutes_here || 0;
+
+                        // Oblicz punkty z bonusu i z traceroutes
+                        const hexBonus = 50;
+                        const traceroutePoints = Math.max(0, points - hexBonus);
+                        const totalPoints = hexBonus + traceroutePoints;
+
+                        item.innerHTML = `
+                            <div class="traceroute-header" style="background: #1a472a;">
+                                <div class="traceroute-hop">
+                                    ${t('player_page.new_hexagon')}
+                                </div>
+                                <div class="traceroute-points" style="color: #4caf50;">
+                                    ${t('player_page.bonus_points')}
+                                </div>
+                            </div>
+                            <div class="traceroute-details">
+                                📅 ${formatTime(hex.first_visit)} • ${t('player_page.total_visits')} ${visitCount}x
+                            </div>
+                            <div class="route-info">
+                                ${t('player_page.traceroutes_from_hex')} ${traceroutes}${traceroutePoints > 0 ? ` • ${t('player_page.additional_points')} +${traceroutePoints.toFixed(2)} pkt` : ''}
+                            </div>
+                        `;
+                    }
+
+                    timeline.appendChild(item);
+                }
+
+                // Po załadowaniu pokazuj wszystkie hopy na mapie
+                await showAllHopsOnMap();
+
+            } catch (error) {
+                console.error('Błąd ładowania historii punktacji:', error);
+                document.getElementById('scoring-timeline').innerHTML = `<div style="padding: 20px; text-align: center; color: #888; font-size: 12px;">${t('player_page.loading_error')}</div>`;
+            }
+        }
+
+        // Toggle H3 layer
+        document.getElementById('h3-toggle').addEventListener('click', function() {
+            h3Visible = !h3Visible;
+            this.classList.toggle('active');
+
+            const count = h3Data ? h3Data.features.length : 0;
+
+            if (h3Visible) {
+                this.innerHTML = `<span data-i18n="player_page.hide_hexagons">${t('player_page.hide_hexagons')}</span> (<span id="h3-count">${count}</span>)`;
+                showH3Layer();
+            } else {
+                this.innerHTML = `<span data-i18n="player_page.show_hexagons">${t('player_page.show_hexagons')}</span> (<span id="h3-count">${count}</span>)`;
+                hideH3Layer();
+            }
+        });
+
+        // Otwórz modal z surowymi pakietami
+        async function showRawPackets(packetId) {
+            try {
+                const response = await fetch(`/api/traceroute/${packetId}/raw`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    alert(t('player_page.raw_packets_error') + ': ' + data.error);
+                    return;
+                }
+
+                const modal = document.getElementById('rawPacketModal');
+                const dataContainer = document.getElementById('rawPacketData');
+
+                if (data.packets.length === 0) {
+                    dataContainer.innerHTML = `<p style="color: #888; text-align: center;">${t('player_page.raw_packets_none')}</p>`;
+                } else {
+                    const senderNode = data.sender_node;
+                    const hopNode = data.hop_node;
+
+                    let html = `<div style="margin-bottom: 15px; padding: 10px; background: #16213e; border-radius: 5px;">
+                        <strong>Traceroute:</strong> ${senderNode} → ${hopNode}<br>
+                        <strong>${t('player_page.raw_packets_found')}</strong> ${data.packets.length}
+                    </div>`;
+
+                    data.packets.forEach((packet, index) => {
+                        // Określ kierunek pakietu
+                        let direction = '';
+                        let directionColor = '';
+                        if (packet.from_node === senderNode && packet.to_node === hopNode) {
+                            direction = t('player_page.direction_request');
+                            directionColor = '#3282b8';
+                        } else if (packet.from_node === hopNode && packet.to_node === senderNode) {
+                            direction = t('player_page.direction_response');
+                            directionColor = '#4caf50';
+                        } else {
+                            direction = t('player_page.direction_other');
+                            directionColor = '#888';
+                        }
+
+                        html += `
+                            <div class="raw-packet-item">
+                                <h4>
+                                    ${t('player_page.packet')} #${index + 1} - ${packet.received_at}
+                                    <span style="color: ${directionColor}; margin-left: 10px;">${direction}</span>
+                                </h4>
+                                <div style="font-size: 11px; color: #ccc; margin-bottom: 10px;">
+                                    <strong>${t('player_page.from')}</strong> ${packet.from_node || 'N/A'} → <strong>${t('player_page.to')}:</strong> ${packet.to_node || 'N/A'}<br>
+                                    <strong>${t('player_page.message_id')}</strong> ${packet.message_id || 'N/A'} |
+                                    <strong>${t('player_page.type')}</strong> ${packet.message_type || 'N/A'}<br>
+                                    <strong>${t('player_page.snr')}</strong> ${packet.snr !== null ? packet.snr + ' dB' : 'N/A'} |
+                                    <strong>${t('player_page.rssi')}</strong> ${packet.rssi !== null ? packet.rssi + ' dBm' : 'N/A'} |
+                                    <strong>${t('player_page.hop_limit')}</strong> ${packet.hop_limit !== null ? packet.hop_limit : 'N/A'}
+                                </div>
+                                <div class="raw-packet-json">
+                                    <pre>${JSON.stringify(packet.raw_json, null, 2)}</pre>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    dataContainer.innerHTML = html;
+                }
+
+                modal.classList.add('show');
+            } catch (error) {
+                console.error(t('player_page.raw_packets_error') + ':', error);
+                alert(t('player_page.raw_packets_error'));
+            }
+        }
+
+        // Zamknij modal
+        function closeRawPacketModal() {
+            const modal = document.getElementById('rawPacketModal');
+            modal.classList.remove('show');
+        }
+
+        // Zamknij modal kliknięciem poza contentem
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('rawPacketModal');
+            if (e.target === modal) {
+                closeRawPacketModal();
+            }
+        });
+
+        // Inicjalizacja
+        async function init() {
+            await loadTranslations(currentLang);
+            await loadPlayerData();
+            await loadPlayerHexagons();
+            await loadScoringTimeline();
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        init();
+    </script>
+
+    <!-- Modal z surowymi pakietami -->
+    <div id="rawPacketModal" class="raw-packet-modal">
+        <div class="raw-packet-content">
+            <button class="raw-packet-close" onclick="closeRawPacketModal()">&times;</button>
+            <div class="raw-packet-header">
+                <h2 data-i18n="player_page.raw_packets_modal_title">📦 Surowe pakiety traceroute</h2>
+            </div>
+            <div id="rawPacketData"></div>
+        </div>
+    </div>
+
+    <div style="background: #16213e; padding: 8px 20px; text-align: center; font-size: 11px; color: #888; position: fixed; bottom: 0; width: 100%; z-index: 1000;">
+        <span data-i18n="footer.copyright">Copyright by meshtastic.info.pl © 2025</span> | <span data-i18n="footer.version">Wersja:</span> {{ version }}
+    </div>
+</body>
+</html>

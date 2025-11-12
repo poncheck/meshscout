@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="rules_page.title">Zasady Gry - meshscout.guru</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            line-height: 1.6;
+        }
+
+        #header {
+            background: #16213e;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .back-button {
+            background: #0f4c75;
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .back-button:hover {
+            background: #3282b8;
+        }
+
+        .lang-button {
+            background: #0f4c75;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-button:hover {
+            background: #3282b8;
+        }
+
+        .lang-button.active {
+            background: #d4af37;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        #content {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            color: #d4af37;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #3282b8;
+            font-size: 24px;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #0f4c75;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #d4af37;
+            font-size: 18px;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        .section {
+            background: #16213e;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .highlight {
+            background: #0f4c75;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #d4af37;
+        }
+
+        .highlight strong {
+            color: #d4af37;
+        }
+
+        code {
+            background: #0f4c75;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d4af37;
+        }
+
+        ul {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+
+        .example {
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #4caf50;
+        }
+
+        .warning {
+            background: rgba(255, 152, 0, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #ff9800;
+        }
+
+        .success {
+            background: rgba(76, 175, 80, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #4caf50;
+        }
+
+        .emoji {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #0f4c75;
+        }
+
+        th {
+            background: #0f4c75;
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: rgba(15, 76, 117, 0.3);
+        }
+
+        /* Responsywność */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 16px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            .section {
+                padding: 15px;
+            }
+
+            #content {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <div class="header-content">
+            <div class="header-title" data-i18n="rules_page.header_title">📜 Zasady Gry - meshscout.guru</div>
+            <div class="header-right">
+                <div style="display: flex; gap: 5px;">
+                    <button id="lang-pl" class="lang-button {{ 'active' if lang == 'pl' else '' }}" onclick="switchLanguage('pl')">🇵🇱</button>
+                    <button id="lang-en" class="lang-button {{ 'active' if lang == 'en' else '' }}" onclick="switchLanguage('en')">🇬🇧</button>
+                </div>
+                <a href="/" class="back-button" data-i18n="rules_page.back_button">← Powrót do mapy</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="content">
+        <h1 data-i18n="rules_page.main_title">🎮 Zasady Gry meshscout.guru</h1>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.what_is.title">📖 Co to jest meshscout.guru?</h2>
+            <p data-i18n="rules_page.what_is.description">
+                meshscout.guru to gra polegająca na zbieraniu punktów poprzez wysyłanie traceroute w sieci Meshtastic.
+                Im dalej sięgasz swoim sygnałem, tym więcej punktów zdobywasz!
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.how_to_start.title">🎯 Jak zacząć grać?</h2>
+
+            <h3 data-i18n="rules_page.how_to_start.register_title">1. Rejestracja jako gracz</h3>
+            <p data-i18n="rules_page.how_to_start.register_desc">Aby uczestniczyć w grze, musisz zarejestrować swoje urządzenie Meshtastic:</p>
+
+            <div class="highlight">
+                <strong data-i18n="rules_page.how_to_start.register_message">Wyślij wiadomość tekstową:</strong><br>
+                <code>registerme</code>
+            </div>
+
+            <p data-i18n="rules_page.how_to_start.register_after">Po rejestracji Twoje urządzenie zostanie oznaczone jako gracz i będziesz mógł zbierać punkty.</p>
+
+            <h3 data-i18n="rules_page.how_to_start.traceroute_title">2. Wysyłanie traceroute</h3>
+            <p data-i18n="rules_page.how_to_start.traceroute_desc">Aby zdobyć punkty, wysyłaj traceroute do innych węzłów w sieci:</p>
+
+            <ul>
+                <li data-i18n="rules_page.how_to_start.traceroute_step1">Użyj funkcji traceroute w aplikacji Meshtastic</li>
+                <li data-i18n="rules_page.how_to_start.traceroute_step2">Wybierz węzeł docelowy z listy</li>
+                <li data-i18n="rules_page.how_to_start.traceroute_step3">Poczekaj na potwierdzenie (odpowiedź zwrotną)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.scoring.title">💰 System punktacji</h2>
+
+            <div class="success">
+                <strong><span class="emoji">🎯</span><span data-i18n="rules_page.scoring.basic_rule">Podstawowa zasada:</span></strong><br>
+                <strong style="font-size: 20px; color: #4caf50;" data-i18n="rules_page.scoring.basic_value">1 punkt = 1 kilometr</strong>
+            </div>
+
+            <h3 data-i18n="rules_page.scoring.conditions_title">Warunki przyznania punktów:</h3>
+
+            <table>
+                <tr>
+                    <th data-i18n="rules_page.scoring.condition">Warunek</th>
+                    <th data-i18n="rules_page.scoring.description">Opis</th>
+                    <th data-i18n="rules_page.scoring.status">Status</th>
+                </tr>
+                <tr>
+                    <td><strong data-i18n="rules_page.scoring.confirmation">Potwierdzenie</strong></td>
+                    <td data-i18n="rules_page.scoring.confirmation_desc">Traceroute musi być potwierdzony (otrzymać odpowiedź zwrotną)</td>
+                    <td style="color: #4caf50;" data-i18n="rules_page.scoring.required">✅ Wymagane</td>
+                </tr>
+                <tr>
+                    <td><strong data-i18n="rules_page.scoring.gps_position">Pozycja GPS</strong></td>
+                    <td data-i18n="rules_page.scoring.gps_desc">Oba urządzenia (nadawca i odbiorca) muszą mieć dane GPS</td>
+                    <td style="color: #4caf50;" data-i18n="rules_page.scoring.required">✅ Wymagane</td>
+                </tr>
+                <tr>
+                    <td><strong data-i18n="rules_page.scoring.uniqueness">Unikalność</strong></td>
+                    <td data-i18n="rules_page.scoring.uniqueness_desc">Punkty za dane połączenie przyznawane są raz dziennie</td>
+                    <td style="color: #ff9800;" data-i18n="rules_page.scoring.limit">⚠️ Limit</td>
+                </tr>
+                <tr>
+                    <td><strong data-i18n="rules_page.scoring.player_status">Status gracza</strong></td>
+                    <td data-i18n="rules_page.scoring.player_status_desc">Musisz być zarejestrowany jako gracz (#registerme)</td>
+                    <td style="color: #4caf50;" data-i18n="rules_page.scoring.required">✅ Wymagane</td>
+                </tr>
+            </table>
+
+            <h3 data-i18n="rules_page.scoring.examples_title">Przykłady obliczania punktów:</h3>
+
+            <div class="example">
+                <strong><span class="emoji" data-i18n="rules_page.scoring.example1_title">📡 Przykład 1: Pierwsze połączenie dzisiaj</span></strong><br>
+                <span data-i18n="rules_page.scoring.example1_distance">Odległość: 15.5 km</span><br>
+                <span data-i18n="rules_page.scoring.example1_status">Status: Potwierdzony ✅</span><br>
+                <strong style="color: #4caf50;" data-i18n="rules_page.scoring.example1_points">Punkty: +15.5 pkt</strong>
+            </div>
+
+            <div class="example">
+                <strong><span class="emoji" data-i18n="rules_page.scoring.example2_title">📡 Przykład 2: Drugie połączenie do tego samego węzła</span></strong><br>
+                <span data-i18n="rules_page.scoring.example1_distance">Odległość: 15.5 km</span><br>
+                <span data-i18n="rules_page.scoring.example2_status">Status: Potwierdzony ✅, ale już dziś było</span><br>
+                <strong style="color: #888;" data-i18n="rules_page.scoring.example2_points">Punkty: 0 pkt (duplikat)</strong>
+            </div>
+
+            <div class="example">
+                <strong><span class="emoji" data-i18n="rules_page.scoring.example3_title">📡 Przykład 3: Połączenie bez potwierdzenia</span></strong><br>
+                <span data-i18n="rules_page.scoring.example3_distance">Odległość: 20.0 km</span><br>
+                <span data-i18n="rules_page.scoring.example3_status">Status: Niepotwierdzony ⏳</span><br>
+                <strong style="color: #888;" data-i18n="rules_page.scoring.example3_points">Punkty: 0 pkt (brak odpowiedzi)</strong>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.no_points.title">🚫 Kiedy NIE dostaniesz punktów?</h2>
+
+            <div class="warning">
+                <strong data-i18n="rules_page.no_points.warning_title">Nie otrzymasz punktów w następujących przypadkach:</strong>
+                <ul style="margin-top: 10px;">
+                    <li><strong data-i18n="rules_page.no_points.no_confirmation">Brak potwierdzenia: Węzeł docelowy nie odpowiedział na traceroute</strong></li>
+                    <li><strong data-i18n="rules_page.no_points.no_gps">Brak GPS: Twoje urządzenie lub węzeł docelowy nie ma danych GPS</strong></li>
+                    <li><strong data-i18n="rules_page.no_points.duplicates">Duplikaty: Już dzisiaj wysłałeś potwierdzony traceroute do tego węzła</strong></li>
+                    <li><strong><span data-i18n="rules_page.no_points.no_registration">Brak rejestracji: Nie wysłałeś</span> <code>registerme</code></strong></li>
+                </ul>
+            </div>
+
+            <p><strong data-i18n="rules_page.no_points.important_note">Ważne: Niepotwierdzony traceroute jest zapisywany w systemie, ale nie przynosi punktów.
+            Jeśli później otrzymasz potwierdzenie, punkty zostaną automatycznie przyznane.</strong></p>
+        </div>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.h3.title">🗺️ Heksagony H3 - System mapowania</h2>
+
+            <p data-i18n="rules_page.h3.intro">
+                Mesh Scout wykorzystuje system heksagonów H3 do wizualizacji zasięgu sieci Meshtastic na mapie.
+                Jest to zaawansowany system mapowania, który dzieli powierzchnię Ziemi na sześciokąty (heksagony).
+            </p>
+
+            <h3 data-i18n="rules_page.h3.what_is_title">Co to są heksagony H3?</h3>
+            <div class="highlight">
+                <strong data-i18n="rules_page.h3.what_is_desc">H3 (Hexagonal Hierarchical Spatial Index) to system stworzony przez Uber do precyzyjnego
+                mapowania lokalizacji. W Mesh Scout używamy heksagonów o rozdzielczości 8, gdzie każdy heksagon ma powierzchnię około 0.46 km².</strong>
+            </div>
+
+            <h3 data-i18n="rules_page.h3.how_work_title">Jak działają heksagony w grze?</h3>
+            <ul>
+                <li><strong data-i18n="rules_page.h3.auto_tracking">Automatyczne śledzenie: Każda pozycja GPS gracza jest automatycznie przypisana do odpowiedniego heksagonu</strong></li>
+                <li><strong data-i18n="rules_page.h3.activity">Aktywność: System śledzi ile razy gracz odwiedził dany heksagon</strong></li>
+                <li><strong data-i18n="rules_page.h3.traceroutes">Traceroutes: Rejestrowane są połączenia traceroute między heksagonami</strong></li>
+                <li><strong data-i18n="rules_page.h3.visualization">Wizualizacja: Na mapie zasięgu możesz zobaczyć wszystkie heksagony z aktywnością</strong></li>
+            </ul>
+
+            <h3 data-i18n="rules_page.h3.hex_bonus_title">Punkty za odwiedzanie heksagonów</h3>
+            <div class="success">
+                <strong data-i18n="rules_page.h3.hex_bonus_note">Ważne: Za pierwszą wizytę w nowym heksagonie otrzymujesz bonus +50 punktów! Punkty za traceroute nadal przyznawane są według podstawowej zasady: 1 km = 1 punkt.</strong>
+            </div>
+
+            <p data-i18n="rules_page.h3.tracking_desc">
+                Jednak możesz śledzić swoje "odkrycia":
+            </p>
+            <ul>
+                <li data-i18n="rules_page.h3.tracking1">Ile unikalnych heksagonów odwiedziłeś</li>
+                <li data-i18n="rules_page.h3.tracking2">Które obszary mają najwięcej połączeń traceroute</li>
+                <li data-i18n="rules_page.h3.tracking3">Jak szeroko rozprzestrzenia się sieć Meshtastic</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.connections.title">🔀 Direct vs Multi-hop</h2>
+
+            <h3 data-i18n="rules_page.connections.direct_title">Połączenie bezpośrednie (Direct)</h3>
+            <p data-i18n="rules_page.connections.direct_desc">
+                Gdy Twoje urządzenie komunikuje się bezpośrednio z węzłem docelowym bez pośredników.
+            </p>
+            <div class="example">
+                <span class="emoji" data-i18n="rules_page.connections.direct_example">📱 Ty → 📡 Węzeł docelowy</span><br>
+                <strong style="color: #2196F3;" data-i18n="rules_page.connections.direct_hops">0 węzłów pośrednich (direct)</strong>
+            </div>
+
+            <h3 data-i18n="rules_page.connections.multihop_title">Połączenie przez mesh (Multi-hop)</h3>
+            <p data-i18n="rules_page.connections.multihop_desc">
+                Gdy sygnał przechodzi przez inne węzły zanim dotrze do celu.
+            </p>
+            <div class="example">
+                <span class="emoji" data-i18n="rules_page.connections.multihop_example">📱 Ty → 📡 Węzeł 1 → 📡 Węzeł 2 → 📡 Cel</span><br>
+                <strong style="color: #4caf50;" data-i18n="rules_page.connections.multihop_hops">2 węzły pośrednie (multi-hop)</strong>
+            </div>
+
+            <p><strong data-i18n="rules_page.connections.points_note">Punkty przyznawane są tak samo niezależnie od typu połączenia - liczy się odległość w linii prostej!</strong></p>
+        </div>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.longest.title">🎯 Najdłuższy traceroute</h2>
+
+            <p data-i18n="rules_page.longest.desc">
+                Na stronie każdego gracza wyświetlany jest jego najdłuższy potwierdzony traceroute.
+                To świetny sposób na pokazanie maksymalnego zasięgu Twojego urządzenia!
+            </p>
+
+            <div class="highlight">
+                <strong data-i18n="rules_page.longest.conditions_title">Warunki dla najdłuższego traceroute:</strong>
+                <ul style="margin-top: 10px;">
+                    <li data-i18n="rules_page.longest.must_confirmed">Musi być potwierdzony ✅</li>
+                    <li data-i18n="rules_page.longest.must_gps">Oba urządzenia muszą mieć GPS 📍</li>
+                    <li data-i18n="rules_page.longest.all_time">Liczony jest ze wszystkich traceroutów (nie tylko z dzisiaj)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.rankings.title">🏆 Rankingi</h2>
+
+            <p data-i18n="rules_page.rankings.desc">System oferuje różne rankingi graczy:</p>
+
+            <h3 data-i18n="rules_page.rankings.daily_title">Ranking dzienny</h3>
+            <p data-i18n="rules_page.rankings.daily_desc">Punkty zebrane w bieżącym dniu (00:00 - 23:59)</p>
+
+            <h3 data-i18n="rules_page.rankings.weekly_title">Ranking tygodniowy</h3>
+            <p data-i18n="rules_page.rankings.weekly_desc">Punkty zebrane w bieżącym tygodniu (poniedziałek - niedziela)</p>
+
+            <h3 data-i18n="rules_page.rankings.monthly_title">Ranking miesięczny</h3>
+            <p data-i18n="rules_page.rankings.monthly_desc">Punkty zebrane w bieżącym miesiącu</p>
+
+            <h3 data-i18n="rules_page.rankings.alltime_title">Ranking ogólny (All-time)</h3>
+            <p data-i18n="rules_page.rankings.alltime_desc">Suma wszystkich punktów od początku gry</p>
+
+            <div class="success">
+                <strong data-i18n="rules_page.rankings.winners_note">🏆 Zwycięzcy: Na stronie "Zwycięzcy" możesz zobaczyć, kto wygrał w poprzednich dniach, tygodniach i miesiącach!</strong>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.tips.title">💡 Wskazówki i strategie</h2>
+
+            <ul>
+                <li><strong data-i18n="rules_page.tips.regularity">Regularność: Wysyłaj traceroute codziennie do różnych węzłów</strong></li>
+                <li><strong data-i18n="rules_page.tips.explore">Eksploruj: Szukaj nowych, odległych węzłów w sieci</strong></li>
+                <li><strong data-i18n="rules_page.tips.location">Lokalizacja: Im wyżej umieścisz antenę, tym dalej sięgnie sygnał</strong></li>
+                <li><strong data-i18n="rules_page.tips.timing">Timing: Warunki propagacji fal mogą się zmieniać w ciągu dnia</strong></li>
+                <li><strong data-i18n="rules_page.tips.multihop">Multi-hop: Wykorzystuj inne węzły jako przekaźniki do odległych celów</strong></li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.check_results.title">📊 Sprawdzanie wyników</h2>
+
+            <p><strong data-i18n="rules_page.check_results.player_page_title">Strona gracza: Kliknij na swój węzeł na mapie, aby zobaczyć:</strong></p>
+            <ul>
+                <li data-i18n="rules_page.check_results.all_traceroutes">Wszystkie Twoje traceroute</li>
+                <li data-i18n="rules_page.check_results.points_earned">Liczbę zdobytych punktów</li>
+                <li data-i18n="rules_page.check_results.longest_tr">Najdłuższy traceroute</li>
+                <li data-i18n="rules_page.check_results.map_viz">Wizualizację połączeń na mapie</li>
+            </ul>
+
+            <p><strong data-i18n="rules_page.check_results.rankings_page">Strona rankingów: Zobacz swoją pozycję wśród innych graczy</strong></p>
+        </div>
+
+        <div class="section">
+            <h2 data-i18n="rules_page.faq.title">❓ Najczęściej zadawane pytania</h2>
+
+            <h3 data-i18n="rules_page.faq.q1">Q: Czy mogę zbierać punkty bez GPS?</h3>
+            <p><strong data-i18n="rules_page.faq.a1">A: Nie, zarówno Ty jak i węzeł docelowy musicie mieć dane GPS, aby punkty mogły być przyznane.</strong></p>
+
+            <h3 data-i18n="rules_page.faq.q2">Q: Dlaczego nie dostałem punktów za traceroute?</h3>
+            <p><strong data-i18n="rules_page.faq.a2">A: Sprawdź czy:</strong></p>
+            <ul>
+                <li data-i18n="rules_page.faq.a2_1">Traceroute został potwierdzony (otrzymał odpowiedź)</li>
+                <li data-i18n="rules_page.faq.a2_2">Oba urządzenia mają GPS</li>
+                <li data-i18n="rules_page.faq.a2_3">Nie wysłałeś już dzisiaj traceroute do tego węzła</li>
+                <li data-i18n="rules_page.faq.a2_4">Jesteś zarejestrowany jako gracz (#registerme)</li>
+            </ul>
+
+            <h3 data-i18n="rules_page.faq.q3">Q: Czy mogę wysyłać traceroute do tego samego węzła wiele razy?</h3>
+            <p><strong data-i18n="rules_page.faq.a3">A: Tak, ale punkty otrzymasz tylko raz dziennie za każde unikalne połączenie.</strong></p>
+
+            <h3 data-i18n="rules_page.faq.q4">Q: Jak często są aktualizowane rankingi?</h3>
+            <p><strong data-i18n="rules_page.faq.a4">A: Rankingi są aktualizowane w czasie rzeczywistym po każdym potwierdzonym traceroute.</strong></p>
+        </div>
+
+        <div class="section" style="text-align: center; background: linear-gradient(135deg, #0f4c75 0%, #16213e 100%);">
+            <h2 style="border: none; padding-bottom: 0;" data-i18n="rules_page.ready.title">🚀 Gotowy do gry?</h2>
+            <p style="font-size: 18px; margin-top: 20px;" data-i18n="rules_page.ready.message">
+                Wyślij #registerme i zacznij zbierać punkty!
+            </p>
+            <a href="/" class="back-button" style="display: inline-block; margin-top: 20px; padding: 12px 24px; font-size: 16px;" data-i18n="rules_page.ready.go_to_map">
+                Przejdź do mapy
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Translation system
+        let currentLang = '{{ lang }}' || 'pl';
+        let translations = {};
+
+        async function loadTranslations(lang) {
+            try {
+                const response = await fetch(`/api/translations/${lang}`);
+                const data = await response.json();
+                if (data.success) {
+                    translations = data.translations;
+                    applyTranslations();
+                }
+            } catch (error) {
+                console.error('Error loading translations:', error);
+            }
+        }
+
+        function t(key) {
+            const keys = key.split('.');
+            let value = translations;
+            for (const k of keys) {
+                value = value?.[k];
+            }
+            return value || key;
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                const translation = t(key);
+                element.textContent = translation;
+            });
+
+            document.title = t('rules_page.title');
+
+            document.querySelectorAll('.lang-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`lang-${currentLang}`)?.classList.add('active');
+        }
+
+        async function switchLanguage(lang) {
+            if (lang === currentLang) return;
+
+            try {
+                const response = await fetch(`/api/set-language/${lang}`);
+                const data = await response.json();
+                if (data.success) {
+                    currentLang = lang;
+                    await loadTranslations(lang);
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Error switching language:', error);
+            }
+        }
+
+        // Load translations on page load
+        loadTranslations(currentLang);
+    </script>
+
+    <div style="background: #16213e; padding: 8px 20px; text-align: center; font-size: 11px; color: #888; margin-top: 20px;">
+        <span data-i18n="footer.copyright">Copyright by meshtastic.info.pl © 2025</span> | <span data-i18n="footer.version">Wersja:</span> {{ version }}
+    </div>
+</body>
+</html>
