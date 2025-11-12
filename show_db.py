@@ -8,7 +8,7 @@ import sys
 from datetime import datetime
 
 # Domyślna ścieżka - taka sama jak w view_devices.py
-DB_PATH = 'mesh_scout.db'
+DB_PATH = 'data/mesh_scout.db'
 
 # Jeśli podano argument, użyj go jako ścieżkę
 if len(sys.argv) > 2 and sys.argv[1] not in ['players', 'highscore', 'traceroutes', 'trace', 'devices']:

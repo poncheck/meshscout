@@ -60,7 +60,7 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
 class MeshtasticDatabase:
     """Klasa do zarządzania bazą danych SQLite dla wiadomości Meshtastic"""
 
-    def __init__(self, db_path: str = "meshtastic_messages.db"):
+    def __init__(self, db_path: str = "data/mesh_scout.db"):
         """
         Inicjalizacja połączenia z bazą danych
 

@@ -2,7 +2,7 @@
 """List all tables in the database"""
 import sqlite3
 
-conn = sqlite3.connect('meshtastic_messages.db')
+conn = sqlite3.connect('data/mesh_scout.db')
 cursor = conn.cursor()
 
 cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")

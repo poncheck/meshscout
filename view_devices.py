@@ -183,8 +183,8 @@ Przykłady użycia:
         """
     )
 
-    parser.add_argument('--db', type=str, default='mesh_scout.db',
-                       help='Ścieżka do bazy danych (domyślnie: mesh_scout.db)')
+    parser.add_argument('--db', type=str, default='data/mesh_scout.db',
+                       help='Ścieżka do bazy danych (domyślnie: data/mesh_scout.db)')
     parser.add_argument('--channel', type=str,
                        help='Filtruj według channel_id')
     parser.add_argument('--device', type=str,

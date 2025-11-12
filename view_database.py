@@ -54,7 +54,7 @@ def print_message(msg, full=False):
 
 def main():
     parser = argparse.ArgumentParser(description='Przeglądarka bazy danych Meshtastic')
-    parser.add_argument('--db', default='meshtastic_messages.db', help='Ścieżka do bazy danych')
+    parser.add_argument('--db', default='data/mesh_scout.db', help='Ścieżka do bazy danych')
     parser.add_argument('--stats', action='store_true', help='Pokaż statystyki')
     parser.add_argument('--hashtag', help='Filtruj po hashtagu (np. #countme)')
     parser.add_argument('--channel', help='Filtruj po kanale')
