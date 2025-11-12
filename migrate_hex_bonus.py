@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def migrate_hex_bonus(db_path='meshtastic_messages.db'):
+def migrate_hex_bonus(db_path='data/mesh_scout.db'):
     """
     Migrates old hex bonus records from 5 points to 50 points.
 

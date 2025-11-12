@@ -6,7 +6,7 @@ Script to update historical hex bonus points from 5 to 50
 import sqlite3
 import sys
 
-def update_hex_bonuses(db_path='meshtastic_messages.db'):
+def update_hex_bonuses(db_path='data/mesh_scout.db'):
     """Update all old hex bonuses from 5 to 50 points"""
     try:
         conn = sqlite3.connect(db_path)
