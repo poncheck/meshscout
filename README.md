@@ -93,23 +93,23 @@ Najprostszy sposób na uruchomienie całego systemu (dekoder MQTT + web interfac
 git clone https://github.com/poncheck/mesh-scout.git
 cd mesh-scout
 
-# 2. Skopiuj i dostosuj konfigurację
-cp config.example.json config.json
+# 2. Skopiuj i dostosuj konfigurację (DLA DOCKERA!)
+cp config.docker.json config.json
 nano config.json  # edytuj parametry MQTT i klucz kanału
 
-# 3. WAŻNE: W config.json ustaw ścieżkę bazy danych na:
-#    "path": "/data/mesh_scout.db"
+# 3. WAŻNE INFORMACJE O KONFIGURACJI:
+#    ✅ Dla Docker: używaj config.docker.json jako bazę
+#    ✅ Ścieżka bazy MUSI być: "/data/mesh_scout.db" (nie "data/...")
+#    ✅ Database enabled MUSI być: true
+#    ✅ Katalog data/ zostanie utworzony automatycznie
 
-# 4. Utwórz katalog na dane
-mkdir -p data
+# 4. Uruchom wszystkie serwisy (build + start)
+docker compose up -d --build
 
-# 5. Uruchom wszystkie serwisy
-docker compose up -d
-
-# 6. Sprawdź logi
+# 5. Sprawdź logi (CTRL+C aby wyjść)
 docker compose logs -f
 
-# 7. Otwórz interfejs webowy
+# 6. Otwórz interfejs webowy
 # http://localhost:5000
 ```
 
@@ -118,7 +118,45 @@ docker compose logs -f
 - 🌐 `web-server` - interfejs webowy z mapą urządzeń
 - 💾 Współdzielona baza SQLite w katalogu `./data/`
 
-Więcej informacji: [WEB_README.md](WEB_README.md)
+**Komendy Docker:**
+```bash
+# Zatrzymaj kontenery
+docker compose stop
+
+# Uruchom ponownie
+docker compose start
+
+# Restart z przebudową (po zmianach w kodzie)
+docker compose up -d --build
+
+# Zobacz logi tylko dekodera
+docker compose logs -f mqtt-decoder
+
+# Zobacz logi tylko web servera
+docker compose logs -f web-server
+
+# Usuń wszystko (zachowując dane w ./data/)
+docker compose down
+```
+
+**Rozwiązywanie problemów Docker:**
+```bash
+# Sprawdź status kontenerów
+docker compose ps
+
+# Sprawdź uprawnienia katalogu data/
+ls -la data/
+
+# Jeśli błędy z uprawnieniami, napraw:
+chmod 755 data/
+
+# Jeśli baza uszkodzona, usuń i odtwórz:
+docker compose down
+rm -f data/mesh_scout.db*
+docker compose up -d
+```
+
+Więcej informacji: [WEB_README.md](WEB_README.md) | [DATABASE.md](DATABASE.md)
 
 ## Użycie
 

@@ -32,8 +32,9 @@ COPY . .
 # Nadaj uprawnienia wykonywania
 RUN chmod +x meshtastic_mqtt_decoder.py web_server.py || true
 
-# Utwórz katalog na bazę danych
-RUN mkdir -p /data
+# Utwórz katalog na bazę danych z odpowiednimi uprawnieniami
+RUN mkdir -p /data && \
+    chmod 777 /data
 
 # Expose port dla web servera
 EXPOSE 5000

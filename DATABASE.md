@@ -276,24 +276,104 @@ chmod 644 data/mesh_scout.db
 
 ## Konfiguracja dla Docker
 
-W `docker-compose.yml`:
+### Wymagania Docker
+
+**Ścieżka bazy danych:**
+- ❌ Nie używaj: `"path": "data/mesh_scout.db"` (względna ścieżka)
+- ✅ Używaj: `"path": "/data/mesh_scout.db"` (bezwzględna ścieżka w kontenerze)
+
+**Plik konfiguracyjny:**
+```bash
+# Użyj config.docker.json jako bazy dla Dockera
+cp config.docker.json config.json
+nano config.json  # dostosuj parametry MQTT
+```
+
+W `config.json` dla Dockera:
+```json
+{
+  "broker": "mqtt.meshtastic.org",
+  "port": 1883,
+  "topic": "msh/EU_868/2/e/#",
+  "database": {
+    "enabled": true,
+    "path": "/data/mesh_scout.db"  // WAŻNE: musi być /data/ nie data/
+  }
+}
+```
+
+### docker-compose.yml
+
+Upewnij się że volume jest prawidłowo zamontowany:
 
 ```yaml
 services:
   mqtt-decoder:
     volumes:
-      - ./data:/data  # Współdzielony katalog danych
+      - ./data:/data              # Host ./data → Kontener /data
+      - ./config.json:/app/config.json:ro
     environment:
-      - DATABASE_PATH=/data/mesh_scout.db
+      - DB_PATH=/data/mesh_scout.db
+      - PYTHONUNBUFFERED=1
 
   web-server:
     volumes:
-      - ./data:/data  # Ten sam katalog danych
+      - ./data:/data              # Ten sam katalog danych
     environment:
-      - DATABASE_PATH=/data/mesh_scout.db
+      - DB_PATH=/data/mesh_scout.db
+      - PYTHONUNBUFFERED=1
 ```
 
-**Ważne:** Oba kontenery muszą mieć dostęp do tego samego katalogu `data/`.
+**Ważne:**
+- Oba kontenery muszą mieć dostęp do tego samego katalogu `data/`
+- Volume `./data:/data` mapuje lokalny katalog `./data/` na `/data` w kontenerze
+- Uprawnienia w Dockerfile: `/data` ma uprawnienia 777 dla zapisu
+
+### Uprawnienia w Docker
+
+W `Dockerfile`:
+```dockerfile
+# Utwórz katalog na bazę danych z odpowiednimi uprawnieniami
+RUN mkdir -p /data && \
+    chmod 777 /data
+```
+
+Katalog `/data` w kontenerze ma uprawnienia 777, co pozwala na zapis przez dowolnego użytkownika. Jest to bezpieczne w kontenerze Dockera, ponieważ jest izolowany od hosta.
+
+### Debugowanie problemów Docker
+
+```bash
+# 1. Sprawdź czy kontenery działają
+docker compose ps
+
+# 2. Sprawdź uprawnienia na hoście
+ls -la data/
+# Powinno być: drwxr-xr-x (755) lub drwxrwxrwx (777)
+
+# 3. Wejdź do kontenera i sprawdź uprawnienia wewnątrz
+docker compose exec mqtt-decoder ls -la /data/
+# Powinno być: drwxrwxrwx (777)
+
+# 4. Sprawdź czy baza istnieje w kontenerze
+docker compose exec mqtt-decoder ls -lah /data/mesh_scout.db
+
+# 5. Sprawdź logi błędów
+docker compose logs mqtt-decoder | grep -i "error\|warn"
+
+# 6. Test zapisu w kontenerze
+docker compose exec mqtt-decoder touch /data/test.txt
+docker compose exec mqtt-decoder ls -la /data/test.txt
+docker compose exec mqtt-decoder rm /data/test.txt
+
+# 7. Sprawdź integralność bazy w kontenerze
+docker compose exec mqtt-decoder python3 -c "
+import sqlite3
+conn = sqlite3.connect('/data/mesh_scout.db')
+result = conn.execute('PRAGMA integrity_check').fetchone()
+print(f'Integralność: {result[0]}')
+conn.close()
+"
+```
 
 ## Backup bazy danych
 

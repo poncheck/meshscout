@@ -1,0 +1,39 @@
+{
+  "_comment": "Konfiguracja dla Docker Compose - użyj tej konfiguracji jako podstawy",
+
+  "broker": "mqtt.meshtastic.org",
+  "port": 1883,
+  "topic": "msh/EU_868/2/e/#",
+
+  "channel_key": null,
+  "mesh_scout_key": null,
+
+  "username": null,
+  "password": null,
+
+  "database": {
+    "enabled": true,
+    "path": "/data/mesh_scout.db"
+  },
+
+  "filter": {
+    "enabled": true,
+    "channel_ids": ["mesh-scout"],
+    "hashtags": ["#countme", "#registerme"],
+    "message_types": ["TEXT_MESSAGE_APP", "POSITION_APP", "NODEINFO_APP", "TELEMETRY_APP", "TRACEROUTE_APP"],
+    "save_all": false,
+    "require_position": false
+  },
+
+  "_notes": {
+    "docker_setup": "1. Skopiuj ten plik jako config.json: cp config.docker.json config.json",
+    "docker_setup_2": "2. Edytuj config.json i dostosuj parametry MQTT (broker, topic, channel_key)",
+    "docker_setup_3": "3. Uruchom: docker compose up -d",
+    "database_path": "WAŻNE: W Dockerze ścieżka bazy MUSI być '/data/mesh_scout.db' (nie 'data/mesh_scout.db')",
+    "database_enabled": "Database musi być 'enabled: true' aby zapisywać dane do bazy",
+    "regions": "Dostępne regiony: US, EU_433, EU_868, CN, JP, ANZ, KR, TW, RU, IN, NZ_865, TH, UA_433, UA_868",
+    "channel_key": "Klucz kanału w formacie base64. Domyślny 'AQ==' to brak szyfrowania",
+    "mesh_scout_key": "Opcjonalny drugi klucz dla podwójnego dekodowania (mesh-scout)",
+    "filter_enabled": "Filtr określa które wiadomości zapisywać do bazy. Ustaw 'save_all: true' aby zapisywać wszystko"
+  }
+}
