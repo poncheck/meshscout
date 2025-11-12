@@ -11,6 +11,7 @@ services:
     environment:
       - TZ=Europe/Warsaw
       - DB_PATH=/data/mesh_scout.db
+      - PYTHONUNBUFFERED=1
     command: ["python", "meshtastic_mqtt_decoder.py", "--config", "/app/config.json"]
     networks:
       - mesh-scout
@@ -35,6 +36,7 @@ services:
       - DB_PATH=/data/mesh_scout.db
       - PORT=5000
       - DEBUG=False
+      - PYTHONUNBUFFERED=1
     command: ["python", "web_server.py"]
     depends_on:
       - mqtt-decoder
@@ -64,6 +66,3 @@ services:
 networks:
   mesh-scout:
     driver: bridge
-
-volumes:
-  data:

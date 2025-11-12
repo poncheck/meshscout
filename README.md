@@ -93,23 +93,23 @@ Najprostszy sposób na uruchomienie całego systemu (dekoder MQTT + web interfac
 git clone https://github.com/poncheck/mesh-scout.git
 cd mesh-scout
 
-# 2. Skopiuj i dostosuj konfigurację
-cp config.example.json config.json
+# 2. Skopiuj i dostosuj konfigurację (DLA DOCKERA!)
+cp config.docker.json config.json
 nano config.json  # edytuj parametry MQTT i klucz kanału
 
-# 3. WAŻNE: W config.json ustaw ścieżkę bazy danych na:
-#    "path": "/data/mesh_scout.db"
+# 3. WAŻNE INFORMACJE O KONFIGURACJI:
+#    ✅ Dla Docker: używaj config.docker.json jako bazę
+#    ✅ Ścieżka bazy MUSI być: "/data/mesh_scout.db" (nie "data/...")
+#    ✅ Database enabled MUSI być: true
+#    ✅ Katalog data/ zostanie utworzony automatycznie
 
-# 4. Utwórz katalog na dane
-mkdir -p data
+# 4. Uruchom wszystkie serwisy (build + start)
+docker compose up -d --build
 
-# 5. Uruchom wszystkie serwisy
-docker compose up -d
-
-# 6. Sprawdź logi
+# 5. Sprawdź logi (CTRL+C aby wyjść)
 docker compose logs -f
 
-# 7. Otwórz interfejs webowy
+# 6. Otwórz interfejs webowy
 # http://localhost:5000
 ```
 
@@ -118,7 +118,45 @@ docker compose logs -f
 - 🌐 `web-server` - interfejs webowy z mapą urządzeń
 - 💾 Współdzielona baza SQLite w katalogu `./data/`
 
-Więcej informacji: [WEB_README.md](WEB_README.md)
+**Komendy Docker:**
+```bash
+# Zatrzymaj kontenery
+docker compose stop
+
+# Uruchom ponownie
+docker compose start
+
+# Restart z przebudową (po zmianach w kodzie)
+docker compose up -d --build
+
+# Zobacz logi tylko dekodera
+docker compose logs -f mqtt-decoder
+
+# Zobacz logi tylko web servera
+docker compose logs -f web-server
+
+# Usuń wszystko (zachowując dane w ./data/)
+docker compose down
+```
+
+**Rozwiązywanie problemów Docker:**
+```bash
+# Sprawdź status kontenerów
+docker compose ps
+
+# Sprawdź uprawnienia katalogu data/
+ls -la data/
+
+# Jeśli błędy z uprawnieniami, napraw:
+chmod 755 data/
+
+# Jeśli baza uszkodzona, usuń i odtwórz:
+docker compose down
+rm -f data/mesh_scout.db*
+docker compose up -d
+```
+
+Więcej informacji: [WEB_README.md](WEB_README.md) | [DATABASE.md](DATABASE.md)
 
 ## Użycie
 
@@ -312,6 +350,77 @@ Sprawdź:
 - Czy klucz ma odpowiednią długość (16 lub 32 bajty)
 - Czy wiadomość rzeczywiście jest zaszyfrowana tym kluczem
 - Czy kanał używa tego samego klucza co twój dekoder
+
+### Błąd: "Nie udało się zapisać do bazy"
+
+Problem z zapisem do bazy danych SQLite. Sprawdź:
+
+1. **Katalog `data/` istnieje i ma odpowiednie uprawnienia**:
+   ```bash
+   # Utwórz katalog jeśli nie istnieje
+   mkdir -p data
+
+   # Ustaw odpowiednie uprawnienia (755 = rwxr-xr-x)
+   chmod 755 data
+
+   # Sprawdź uprawnienia
+   ls -la data/
+   ```
+
+2. **Plik bazy danych ma uprawnienia do zapisu**:
+   ```bash
+   # Ustaw uprawnienia dla pliku bazy (jeśli istnieje)
+   chmod 644 data/mesh_scout.db
+   ```
+
+3. **Użytkownik ma prawa do zapisu**:
+   ```bash
+   # Sprawdź bieżącego użytkownika
+   whoami
+
+   # Opcjonalnie zmień właściciela katalogu
+   sudo chown -R $USER:$USER data/
+   ```
+
+**Wymagane uprawnienia:**
+- Katalog `data/`: `755` (rwxr-xr-x) - odczyt, zapis, wykonywanie dla właściciela
+- Plik bazy `mesh_scout.db`: `644` (rw-r--r--) - odczyt/zapis dla właściciela, odczyt dla innych
+- WAL files (`mesh_scout.db-wal`, `mesh_scout.db-shm`): `644`
+
+**Automatyczne tworzenie katalogu:**
+Od wersji z poprawkami, `database.py` automatycznie tworzy katalog `data/` jeśli nie istnieje. Jeśli używasz starszej wersji, zaktualizuj kod lub utwórz katalog ręcznie.
+
+### Błąd: "database disk image is malformed"
+
+Baza danych jest uszkodzona. Może to być spowodowane nieprawidłowym zakończeniem procesu lub problemem z systemem plików.
+
+**Automatyczna naprawa:**
+Od najnowszej wersji, `database.py` automatycznie:
+- Wykrywa uszkodzoną bazę przy starcie
+- Tworzy backup uszkodzonej bazy jako `mesh_scout.db.corrupted`
+- Tworzy nową, czystą bazę danych
+
+**Ręczna naprawa:**
+```bash
+# 1. Zatrzymaj wszystkie procesy
+docker compose down
+
+# 2. Utwórz backup uszkodzonej bazy
+mv data/mesh_scout.db data/mesh_scout.db.corrupted
+
+# 3. Usuń pliki WAL
+rm -f data/mesh_scout.db-wal data/mesh_scout.db-shm
+
+# 4. Uruchom aplikację - utworzy nową bazę
+docker compose up -d
+```
+
+**Zapobieganie:**
+- Używaj graceful shutdown (`docker compose stop` zamiast `docker compose kill`)
+- Regularnie twórz backupy bazy danych
+- Monitoruj miejsce na dysku
+
+Więcej informacji w [DATABASE.md](DATABASE.md)
 
 ## Struktura projektu
 
