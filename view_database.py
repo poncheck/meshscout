@@ -48,7 +48,7 @@ def print_message(msg, full=False):
         try:
             raw = json.loads(msg['raw_json'])
             print(json.dumps(raw, indent=2, ensure_ascii=False))
-        except:
+        except (json.JSONDecodeError, TypeError):
             print(msg['raw_json'])
 
 

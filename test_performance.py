@@ -42,7 +42,7 @@ def test_endpoint(url, name, iterations=3):
                     data = response.json()
                     if 'total' in data:
                         print(f"    └─ Total items: {data['total']}")
-                except:
+                except (ValueError, KeyError):
                     pass
             else:
                 print(f"  Request {i+1}: ❌ Status: {response.status_code}")
