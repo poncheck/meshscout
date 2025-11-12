@@ -1375,12 +1375,12 @@ class MeshtasticDatabase:
             if row[6]:  # route_path
                 try:
                     route_path = json.loads(row[6])
-                except:
+                except (json.JSONDecodeError, TypeError):
                     route_path = None
             if row[7]:  # route_back
                 try:
                     route_back = json.loads(row[7])
-                except:
+                except (json.JSONDecodeError, TypeError):
                     route_back = None
 
             hop_name = row[4] or row[1]  # longname lub node_id
@@ -1836,12 +1836,12 @@ class MeshtasticDatabase:
                 if row[7]:  # route_path
                     try:
                         route_path = json.loads(row[7])
-                    except:
+                    except (json.JSONDecodeError, TypeError):
                         route_path = None
                 if row[8]:  # route_back
                     try:
                         route_back = json.loads(row[8])
-                    except:
+                    except (json.JSONDecodeError, TypeError):
                         route_back = None
                 
                 traceroutes.append({

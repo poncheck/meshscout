@@ -144,7 +144,7 @@ class MeshtasticDecoder:
                 return hex(id_value)
             else:
                 return str(id_value)
-        except:
+        except (ValueError, TypeError):
             return str(id_value) if id_value else None
 
     def _decode_key(self, key_base64: str) -> bytes:
@@ -360,7 +360,7 @@ class MeshtasticDecoder:
         if data.portnum == 1:  # TEXT_MESSAGE_APP
             try:
                 result["text"] = data.payload.decode('utf-8')
-            except:
+            except UnicodeDecodeError:
                 result["payload_raw"] = base64.b64encode(data.payload).decode()
 
         elif data.portnum == 3:  # POSITION_APP

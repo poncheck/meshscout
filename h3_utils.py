@@ -374,7 +374,7 @@ def validate_h3_index(h3_index: str) -> bool:
             return h3.is_valid_cell(h3_index)  # h3 v4+
         except AttributeError:
             return h3.h3_is_valid(h3_index)  # h3 v3
-    except:
+    except Exception:
         return False
 
 

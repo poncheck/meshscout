@@ -71,7 +71,7 @@ def format_timestamp(ts_str):
         from datetime import timezone
         dt_utc = dt.replace(tzinfo=timezone.utc)
         return dt_utc.isoformat()
-    except:
+    except (ValueError, TypeError):
         return ts_str
 
 
@@ -437,13 +437,13 @@ def get_player_traceroutes(node_id):
                 try:
                     import json
                     route_path = json.loads(row[8])
-                except:
+                except (json.JSONDecodeError, TypeError):
                     route_path = None
             if row[9]:  # route_back
                 try:
                     import json
                     route_back = json.loads(row[9])
-                except:
+                except (json.JSONDecodeError, TypeError):
                     route_back = None
 
             is_confirmed = bool(row[10]) if row[10] is not None else False
@@ -542,7 +542,7 @@ def get_traceroute_raw_packets(packet_id):
                 try:
                     import json
                     raw_data = json.loads(row[9])
-                except:
+                except (json.JSONDecodeError, TypeError):
                     raw_data = row[9]
 
             packets.append({
