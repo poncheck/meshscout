@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="rules_page.title">Zasady Gry - meshscout.guru</title>
 
+    <!-- Google Fonts - Pixel/Retro fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -13,16 +16,28 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a2e;
-            color: #eee;
+            font-family: 'Share Tech Mono', 'Courier Prime', monospace;
+            background: #2c2416;
+            color: #d4c5a0;
             line-height: 1.6;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.1) 2px,
+                    rgba(0, 0, 0, 0.1) 4px
+                );
         }
 
         #header {
-            background: #16213e;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border-bottom: 4px solid #8b7355;
             padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            box-shadow:
+                0 4px 0 #1a1410,
+                0 4px 15px rgba(0, 0, 0, 0.5),
+                inset 0 2px 0 rgba(255, 255, 255, 0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -37,9 +52,14 @@
         }
 
         .header-title {
+            font-family: 'VT323', monospace;
             font-size: 24px;
-            color: #d4af37;
+            color: #ff6b35;
             font-weight: bold;
+            text-shadow:
+                0 0 10px rgba(255, 107, 53, 0.8),
+                2px 2px 0 rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
         }
 
         .header-right {
@@ -49,37 +69,40 @@
         }
 
         .back-button {
-            background: #0f4c75;
-            color: white;
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            color: #d4c5a0;
             text-decoration: none;
             padding: 8px 15px;
-            border-radius: 5px;
             font-size: 14px;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
 
         .back-button:hover {
-            background: #3282b8;
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
+            transform: translateY(-2px);
         }
 
         .lang-button {
-            background: #0f4c75;
-            color: white;
-            border: none;
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            color: #d4c5a0;
             padding: 8px 12px;
-            border-radius: 5px;
             font-size: 12px;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .lang-button:hover {
-            background: #3282b8;
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
         }
 
         .lang-button.active {
-            background: #d4af37;
-            color: #1a1a2e;
+            background: #ff6b35;
+            color: #1a1410;
+            border-color: #ff6b35;
             font-weight: bold;
         }
 
@@ -90,59 +113,75 @@
         }
 
         h1 {
-            color: #d4af37;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
             font-size: 32px;
             margin-bottom: 30px;
             text-align: center;
+            text-shadow:
+                0 0 15px rgba(255, 107, 53, 0.8),
+                2px 2px 0 rgba(0, 0, 0, 0.5);
+            letter-spacing: 3px;
         }
 
         h2 {
-            color: #3282b8;
+            font-family: 'VT323', monospace;
+            color: #ffa500;
             font-size: 24px;
             margin-top: 40px;
             margin-bottom: 15px;
-            border-bottom: 2px solid #0f4c75;
+            border-bottom: 2px solid #8b7355;
             padding-bottom: 10px;
+            text-shadow: 0 0 8px rgba(255, 165, 0, 0.6);
+            letter-spacing: 2px;
         }
 
         h3 {
-            color: #d4af37;
+            font-family: 'VT323', monospace;
+            color: #ffa500;
             font-size: 18px;
             margin-top: 25px;
             margin-bottom: 10px;
+            letter-spacing: 1px;
         }
 
         p {
             margin-bottom: 15px;
-            color: #ccc;
+            color: #d4c5a0;
         }
 
         .section {
-            background: #16213e;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border: 3px solid #8b7355;
             padding: 25px;
-            border-radius: 10px;
+            border-radius: 8px;
             margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            box-shadow:
+                0 4px 0 #1a1410,
+                0 4px 15px rgba(0, 0, 0, 0.5),
+                inset 0 2px 0 rgba(255, 255, 255, 0.05);
         }
 
         .highlight {
-            background: #0f4c75;
+            background: rgba(139, 115, 85, 0.2);
+            border: 2px solid #8b7355;
+            border-left: 4px solid #ffa500;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 4px;
             margin: 15px 0;
-            border-left: 4px solid #d4af37;
         }
 
         .highlight strong {
-            color: #d4af37;
+            color: #ffa500;
         }
 
         code {
-            background: #0f4c75;
+            background: #1a1410;
+            border: 1px solid #8b7355;
             padding: 2px 6px;
             border-radius: 3px;
             font-family: 'Courier New', monospace;
-            color: #d4af37;
+            color: #ff6b35;
         }
 
         ul {
@@ -152,31 +191,34 @@
 
         li {
             margin-bottom: 10px;
-            color: #ccc;
+            color: #d4c5a0;
         }
 
         .example {
-            background: #1a1a2e;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
+            background: #1a1410;
+            border: 2px solid #8b7355;
             border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
         }
 
         .warning {
             background: rgba(255, 152, 0, 0.1);
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
+            border: 2px solid #ff9800;
             border-left: 4px solid #ff9800;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
         }
 
         .success {
             background: rgba(76, 175, 80, 0.1);
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
+            border: 2px solid #4caf50;
             border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
         }
 
         .emoji {
@@ -186,24 +228,40 @@
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin: 20px 0;
+            background: #1a1410;
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         th, td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #0f4c75;
+            border-bottom: 1px solid #8b7355;
         }
 
         th {
-            background: #0f4c75;
-            color: #d4af37;
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 100%);
+            color: #ff6b35;
             font-weight: bold;
+            font-family: 'VT323', monospace;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        td {
+            color: #d4c5a0;
         }
 
         tr:hover {
-            background: rgba(15, 76, 117, 0.3);
+            background: rgba(139, 115, 85, 0.1);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
         }
 
         /* Responsywność */
@@ -526,7 +584,7 @@
             <p><strong data-i18n="rules_page.faq.a4">A: Rankingi są aktualizowane w czasie rzeczywistym po każdym potwierdzonym traceroute.</strong></p>
         </div>
 
-        <div class="section" style="text-align: center; background: linear-gradient(135deg, #0f4c75 0%, #16213e 100%);">
+        <div class="section" style="text-align: center; background: linear-gradient(135deg, #8b7355 0%, #3d3020 100%);">
             <h2 style="border: none; padding-bottom: 0;" data-i18n="rules_page.ready.title">🚀 Gotowy do gry?</h2>
             <p style="font-size: 18px; margin-top: 20px;" data-i18n="rules_page.ready.message">
                 Wyślij #registerme i zacznij zbierać punkty!
@@ -599,7 +657,7 @@
         loadTranslations(currentLang);
     </script>
 
-    <div style="background: #16213e; padding: 8px 20px; text-align: center; font-size: 11px; color: #888; margin-top: 20px;">
+    <div style="background: linear-gradient(180deg, #2c2416 0%, #1a1410 100%); border-top: 2px solid #8b7355; padding: 8px 20px; text-align: center; font-size: 11px; color: #8b7355; margin-top: 20px;">
         <span data-i18n="footer.copyright">Copyright by meshtastic.info.pl © 2025</span> | <span data-i18n="footer.version">Wersja:</span> {{ version }}
     </div>
 </body>

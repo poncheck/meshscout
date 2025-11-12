@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="player_page.title">Gracz - meshscout.guru</title>
 
+    <!-- Google Fonts - Pixel/Retro fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -16,18 +19,30 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a2e;
-            color: #eee;
+            font-family: 'Share Tech Mono', 'Courier Prime', monospace;
+            background: #2c2416;
+            color: #d4c5a0;
             display: flex;
             flex-direction: column;
             height: 100vh;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.1) 2px,
+                    rgba(0, 0, 0, 0.1) 4px
+                );
         }
 
         #header {
-            background: #16213e;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border-bottom: 4px solid #8b7355;
             padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            box-shadow:
+                0 4px 0 #1a1410,
+                0 4px 15px rgba(0, 0, 0, 0.5),
+                inset 0 2px 0 rgba(255, 255, 255, 0.1);
             z-index: 2000;
         }
 
@@ -36,41 +51,46 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .back-button {
-            background: #0f4c75;
-            color: white;
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            color: #d4c5a0;
             text-decoration: none;
             padding: 8px 15px;
-            border-radius: 5px;
             font-size: 14px;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            font-family: 'Share Tech Mono', monospace;
         }
 
         .back-button:hover {
-            background: #3282b8;
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
+            transform: translateY(-2px);
         }
 
         .lang-button {
-            background: #0f4c75;
-            color: white;
-            border: none;
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            color: #d4c5a0;
             padding: 8px 12px;
-            border-radius: 5px;
             font-size: 12px;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .lang-button:hover {
-            background: #3282b8;
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
         }
 
         .lang-button.active {
-            background: #d4af37;
-            color: #1a1a2e;
-            font-weight: bold;
+            background: #ff6b35;
+            color: #1a1410;
+            border-color: #ff6b35;
         }
 
         .player-info {
@@ -79,28 +99,35 @@
         }
 
         .player-name {
+            font-family: 'VT323', monospace;
             font-size: 24px;
-            color: #d4af37;
-            font-weight: bold;
-            margin-bottom: 5px;
+            color: #ff6b35;
+            text-shadow:
+                0 0 10px rgba(255, 107, 53, 0.8),
+                2px 2px 0 rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
         }
 
         .player-stats {
             display: flex;
-            gap: 20px;
-            font-size: 14px;
-            color: #888;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 12px;
         }
 
         .stat-badge {
-            background: #0f4c75;
+            background: rgba(26, 20, 16, 0.5);
+            border: 2px solid #8b7355;
             padding: 5px 10px;
-            border-radius: 5px;
+            border-radius: 4px;
         }
 
         .stat-value {
-            color: #d4af37;
+            color: #ffa500;
             font-weight: bold;
+            font-family: 'VT323', monospace;
+            font-size: 16px;
         }
 
         #main-container {
@@ -113,31 +140,35 @@
             flex: 1;
             height: 100%;
             position: relative;
+            background: #1a1410;
         }
 
         .map-legend {
             position: absolute;
             bottom: 20px;
             right: 20px;
-            background: rgba(22, 33, 62, 0.95);
-            padding: 15px;
-            border-radius: 8px;
+            background: rgba(44, 36, 22, 0.95);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            padding: 12px;
             z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            font-size: 11px;
         }
 
         .map-legend h4 {
-            color: #3282b8;
-            margin: 0 0 10px 0;
-            font-size: 13px;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            color: #eee;
+            margin-bottom: 6px;
+            color: #d4c5a0;
         }
 
         .legend-item:last-child {
@@ -163,80 +194,89 @@
 
         #sidebar {
             width: 350px;
-            background: #16213e;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border-left: 3px solid #8b7355;
             padding: 20px;
             overflow-y: auto;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.5);
         }
 
         #sidebar h2 {
-            color: #3282b8;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
             margin-bottom: 15px;
-            font-size: 18px;
+            font-size: 20px;
+            text-shadow: 0 0 5px rgba(255, 107, 53, 0.6);
         }
 
         .h3-toggle-button {
             width: 100%;
-            background: #0f4c75;
-            color: white;
-            border: none;
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 50%, #2c2416 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+            color: #d4c5a0;
             padding: 10px;
             margin-bottom: 15px;
             cursor: pointer;
-            border-radius: 5px;
             font-size: 14px;
             font-weight: bold;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            font-family: 'Share Tech Mono', monospace;
         }
 
         .h3-toggle-button:hover {
-            background: #3282b8;
+            background: linear-gradient(180deg, #5a4f3e 0%, #4d4230 50%, #3c3226 100%);
         }
 
         .h3-toggle-button.active {
-            background: #d4af37;
-            color: #1a1a2e;
+            background: #ff6b35;
+            color: #1a1410;
+            border-color: #ff6b35;
         }
 
         .hex-history-item {
-            background: #1a1a2e;
+            background: #1a1410;
+            border: 2px solid #8b7355;
             padding: 10px;
             margin-bottom: 8px;
-            border-radius: 5px;
-            border-left: 3px solid #d4af37;
+            border-radius: 4px;
+            border-left: 4px solid #ffa500;
             font-size: 12px;
         }
 
         .hex-history-item .hex-date {
-            color: #d4af37;
+            color: #ffa500;
             font-weight: bold;
             margin-bottom: 5px;
         }
 
         .hex-history-item .hex-details {
-            color: #888;
+            color: #8b7355;
             font-size: 11px;
         }
 
         .traceroute-item {
-            background: #1a1a2e;
+            background: linear-gradient(180deg, #2c2416 0%, #1a1410 100%);
+            border: 2px solid #8b7355;
+            border-radius: 4px;
             padding: 12px;
             margin-bottom: 10px;
-            border-radius: 5px;
             cursor: pointer;
             transition: all 0.2s;
-            border-left: 3px solid #0f4c75;
+            border-left: 4px solid #8b7355;
         }
 
         .traceroute-item:hover {
-            background: #0f4c75;
-            border-left-color: #d4af37;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border-left-color: #ffa500;
+            transform: translateX(3px);
         }
 
         .traceroute-item.active {
-            background: #0f4c75;
-            border-left-color: #d4af37;
-            box-shadow: 0 3px 8px rgba(212,175,55,0.3);
+            background: linear-gradient(180deg, #4a3f2e 0%, #3d3020 100%);
+            border-left-color: #ff6b35;
+            border-color: #ff6b35;
+            box-shadow: 0 3px 8px rgba(255, 107, 53, 0.4);
         }
 
         .traceroute-header {
@@ -246,51 +286,54 @@
         }
 
         .traceroute-hop {
-            color: #3282b8;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .traceroute-points {
-            color: #d4af37;
+            font-family: 'VT323', monospace;
+            color: #d4c5a0;
             font-weight: bold;
             font-size: 16px;
         }
 
+        .traceroute-points {
+            font-family: 'VT323', monospace;
+            color: #ffa500;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.6);
+        }
+
         .traceroute-details {
             font-size: 12px;
-            color: #888;
+            color: #8b7355;
         }
 
         .traceroute-time {
             font-size: 11px;
-            color: #666;
+            color: #8b7355;
             margin-top: 5px;
         }
 
         .route-info {
             font-size: 11px;
-            color: #d4af37;
-            margin-top: 5px;
-            padding: 5px 8px;
-            background: rgba(212, 175, 55, 0.1);
+            color: #d4c5a0;
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(139, 115, 85, 0.15);
             border-radius: 3px;
-            border-left: 3px solid #d4af37;
+            border-left: 3px solid #8b7355;
             font-family: monospace;
         }
 
         .snr-info {
             font-size: 10px;
-            color: #888;
+            color: #8b7355;
             margin-left: 5px;
         }
 
         .raw-packet-btn {
-            background: #3282b8;
-            color: white;
-            border: none;
-            padding: 4px 8px;
+            background: linear-gradient(180deg, #8b7355 0%, #6d5a41 100%);
+            color: #d4c5a0;
+            border: 2px solid #8b7355;
             border-radius: 3px;
+            padding: 5px 10px;
             font-size: 10px;
             cursor: pointer;
             margin-top: 5px;
@@ -298,10 +341,11 @@
             display: inline-flex;
             align-items: center;
             gap: 3px;
+            font-family: 'Share Tech Mono', monospace;
         }
 
         .raw-packet-btn:hover {
-            background: #4a9dbf;
+            background: linear-gradient(180deg, #a08868 0%, #8b7355 100%);
         }
 
         .raw-packet-modal {
@@ -311,7 +355,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             z-index: 10000;
             overflow-y: auto;
         }
@@ -321,12 +365,14 @@
         }
 
         .raw-packet-content {
-            background: #1a1a2e;
+            background: linear-gradient(180deg, #3d3020 0%, #2c2416 100%);
+            border: 4px solid #8b7355;
             margin: 20px auto;
             padding: 20px;
             max-width: 900px;
-            border-radius: 10px;
+            border-radius: 8px;
             position: relative;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
         }
 
         .raw-packet-close {
@@ -334,70 +380,85 @@
             top: 10px;
             right: 15px;
             font-size: 30px;
-            color: #888;
+            color: #8b7355;
             cursor: pointer;
             background: none;
             border: none;
+            transition: color 0.2s;
         }
 
         .raw-packet-close:hover {
-            color: #fff;
+            color: #ff6b35;
         }
 
         .raw-packet-header {
-            border-bottom: 2px solid #0f4c75;
+            border-bottom: 2px solid #8b7355;
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
 
         .raw-packet-header h2 {
-            color: #3282b8;
+            font-family: 'VT323', monospace;
+            color: #ff6b35;
             margin: 0;
-            font-size: 20px;
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
         }
 
         .raw-packet-item {
-            background: #16213e;
+            background: #1a1410;
+            border: 2px solid #8b7355;
             padding: 15px;
             margin-bottom: 10px;
-            border-radius: 5px;
-            border-left: 3px solid #3282b8;
+            border-radius: 4px;
+            border-left: 3px solid #ff6b35;
         }
 
         .raw-packet-item h4 {
-            color: #d4af37;
+            color: #ffa500;
             margin-bottom: 10px;
             font-size: 14px;
         }
 
         .raw-packet-json {
-            background: #0f1419;
+            background: #0f0c08;
+            border: 1px solid #8b7355;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 4px;
             overflow-x: auto;
             font-family: 'Courier New', monospace;
             font-size: 11px;
-            color: #aaa;
+            color: #a08868;
             max-height: 400px;
             overflow-y: auto;
         }
 
+        .leaflet-popup-content-wrapper {
+            background: #3d3020;
+            color: #d4c5a0;
+            border: 2px solid #8b7355;
+            border-radius: 4px;
+        }
+
         .leaflet-popup-content {
-            color: #333;
+            font-family: 'Share Tech Mono', monospace;
+            margin: 10px;
             min-width: 200px;
         }
 
         .popup h3 {
+            font-family: 'VT323', monospace;
             margin: 0 0 10px 0;
-            color: #0f4c75;
-            font-size: 16px;
+            color: #ff6b35;
+            font-size: 18px;
         }
 
         .popup .info-row {
             display: flex;
             justify-content: space-between;
             padding: 5px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #8b7355;
+            font-size: 12px;
         }
 
         .popup .info-row:last-child {
@@ -406,11 +467,11 @@
 
         .popup .label {
             font-weight: bold;
-            color: #555;
+            color: #8b7355;
         }
 
         .popup .value {
-            color: #333;
+            color: #d4c5a0;
         }
 
         #loading {
@@ -418,11 +479,17 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(15, 76, 117, 0.9);
+            background: rgba(61, 48, 32, 0.95);
+            border: 3px solid #ff6b35;
             padding: 20px 40px;
-            border-radius: 10px;
+            border-radius: 8px;
             z-index: 10000;
             display: none;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            color: #ff6b35;
+            text-shadow: 0 0 10px rgba(255, 107, 53, 0.6);
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
         }
 
         #loading.show {
@@ -432,12 +499,31 @@
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: #888;
+            color: #8b7355;
         }
 
         .empty-state-icon {
             font-size: 48px;
             margin-bottom: 15px;
+        }
+
+        /* Scrollbar */
+        #sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #1a1410;
+            border-radius: 4px;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #8b7355;
+            border-radius: 4px;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb:hover {
+            background: #a08868;
         }
 
         /* RESPONSYWNOŚĆ DLA TELEFONÓW */
@@ -530,11 +616,11 @@
             }
 
             .traceroute-hop {
-                font-size: 13px;
+                font-size: 14px;
             }
 
             .traceroute-points {
-                font-size: 14px;
+                font-size: 16px;
             }
 
             .traceroute-details {
@@ -543,7 +629,7 @@
 
             .route-info {
                 font-size: 10px;
-                padding: 4px 6px;
+                padding: 6px;
             }
 
             .back-button {
@@ -553,13 +639,11 @@
                 text-align: center;
             }
 
-            /* Większe przyciski do klikania na telefonie */
             .traceroute-item {
                 min-height: 60px;
                 touch-action: manipulation;
             }
 
-            /* Lepsza widoczność na telefonie */
             .popup {
                 font-size: 12px;
             }
@@ -759,7 +843,7 @@
         // Custom ikona dla gracza (duża)
         const playerIcon = L.divIcon({
             className: 'custom-marker',
-            html: '<div style="background: #d4af37; color: white; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border: 4px solid #FFD700; box-shadow: 0 4px 12px rgba(212,175,55,0.6); font-size: 24px;">🎮</div>',
+            html: '<div style="background: #ffa500; color: white; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border: 4px solid #ff6b35; box-shadow: 0 4px 12px rgba(255, 165, 0, 0.6); font-size: 24px;">🎮</div>',
             iconSize: [45, 45],
             iconAnchor: [22, 22]
         });
@@ -767,7 +851,7 @@
         // Custom ikona dla hopów
         const hopIcon = L.divIcon({
             className: 'custom-marker',
-            html: '<div style="background: #0f4c75; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">📡</div>',
+            html: '<div style="background: #8b7355; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 3px solid #d4c5a0; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">📡</div>',
             iconSize: [30, 30],
             iconAnchor: [15, 15]
         });
@@ -797,7 +881,7 @@
             try {
                 const response = await fetch(`/api/device/${nodeId}`);
                 const data = await response.json();
-                
+
                 if (data.success && data.device) {
                     const longname = data.device.user_longname;
                     const shortname = data.device.user_shortname;
@@ -874,7 +958,7 @@
                         fillColor: getHexColorByVisits(visits),
                         weight: 2,
                         opacity: 0.6,
-                        color: '#d4af37',
+                        color: '#ffa500',
                         fillOpacity: 0.3
                     };
                 },
@@ -1064,7 +1148,7 @@
                             const route = latestHop.route_path || [];
                             const routeBack = latestHop.route_back || [];
 
-                            let lineColor = '#0f4c75'; // domyślny
+                            let lineColor = '#8b7355'; // domyślny
                             let linePoints = [playerLatLng, hopLatLng]; // domyślnie bezpośrednio
 
                             // Określ typ połączenia i kolor
@@ -1222,7 +1306,7 @@
                 const toShow = events.slice(0, 50);
 
                 if (toShow.length === 0) {
-                    timeline.innerHTML = `<div style="padding: 20px; text-align: center; color: #888; font-size: 12px;">${t('player_page.no_events')}</div>`;
+                    timeline.innerHTML = `<div style="padding: 20px; text-align: center; color: #8b7355; font-size: 12px;">${t('player_page.no_events')}</div>`;
                     return;
                 }
 
@@ -1277,7 +1361,7 @@
                                 <div class="traceroute-hop">
                                     📡 ${tr.hop_name}
                                 </div>
-                                <div class="traceroute-points" style="${tr.points > 0 ? 'color: #d4af37;' : 'color: #888;'}">
+                                <div class="traceroute-points" style="${tr.points > 0 ? 'color: #ffa500;' : 'color: #888;'}">
                                     ${tr.points > 0 ? '+' : ''}${tr.points.toFixed(2)} pkt
                                 </div>
                             </div>
@@ -1331,7 +1415,7 @@
 
             } catch (error) {
                 console.error('Błąd ładowania historii punktacji:', error);
-                document.getElementById('scoring-timeline').innerHTML = `<div style="padding: 20px; text-align: center; color: #888; font-size: 12px;">${t('player_page.loading_error')}</div>`;
+                document.getElementById('scoring-timeline').innerHTML = `<div style="padding: 20px; text-align: center; color: #8b7355; font-size: 12px;">${t('player_page.loading_error')}</div>`;
             }
         }
 
@@ -1366,12 +1450,12 @@
                 const dataContainer = document.getElementById('rawPacketData');
 
                 if (data.packets.length === 0) {
-                    dataContainer.innerHTML = `<p style="color: #888; text-align: center;">${t('player_page.raw_packets_none')}</p>`;
+                    dataContainer.innerHTML = `<p style="color: #8b7355; text-align: center;">${t('player_page.raw_packets_none')}</p>`;
                 } else {
                     const senderNode = data.sender_node;
                     const hopNode = data.hop_node;
 
-                    let html = `<div style="margin-bottom: 15px; padding: 10px; background: #16213e; border-radius: 5px;">
+                    let html = `<div style="margin-bottom: 15px; padding: 10px; background: #1a1410; border: 2px solid #8b7355; border-radius: 4px;">
                         <strong>Traceroute:</strong> ${senderNode} → ${hopNode}<br>
                         <strong>${t('player_page.raw_packets_found')}</strong> ${data.packets.length}
                     </div>`;
@@ -1382,7 +1466,7 @@
                         let directionColor = '';
                         if (packet.from_node === senderNode && packet.to_node === hopNode) {
                             direction = t('player_page.direction_request');
-                            directionColor = '#3282b8';
+                            directionColor = '#ff6b35';
                         } else if (packet.from_node === hopNode && packet.to_node === senderNode) {
                             direction = t('player_page.direction_response');
                             directionColor = '#4caf50';
@@ -1397,7 +1481,7 @@
                                     ${t('player_page.packet')} #${index + 1} - ${packet.received_at}
                                     <span style="color: ${directionColor}; margin-left: 10px;">${direction}</span>
                                 </h4>
-                                <div style="font-size: 11px; color: #ccc; margin-bottom: 10px;">
+                                <div style="font-size: 11px; color: #d4c5a0; margin-bottom: 10px;">
                                     <strong>${t('player_page.from')}</strong> ${packet.from_node || 'N/A'} → <strong>${t('player_page.to')}:</strong> ${packet.to_node || 'N/A'}<br>
                                     <strong>${t('player_page.message_id')}</strong> ${packet.message_id || 'N/A'} |
                                     <strong>${t('player_page.type')}</strong> ${packet.message_type || 'N/A'}<br>
@@ -1458,7 +1542,7 @@
         </div>
     </div>
 
-    <div style="background: #16213e; padding: 8px 20px; text-align: center; font-size: 11px; color: #888; position: fixed; bottom: 0; width: 100%; z-index: 1000;">
+    <div style="background: linear-gradient(180deg, #2c2416 0%, #1a1410 100%); border-top: 2px solid #8b7355; padding: 8px 20px; text-align: center; font-size: 11px; color: #8b7355;">
         <span data-i18n="footer.copyright">Copyright by meshtastic.info.pl © 2025</span> | <span data-i18n="footer.version">Wersja:</span> {{ version }}
     </div>
 </body>
