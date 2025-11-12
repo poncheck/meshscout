@@ -309,9 +309,42 @@ docker compose exec mqtt-decoder du -h /data/mesh_scout.db
 
 ### Health checks
 
+#### Web Server Health Check (Zalecane)
+
+Użyj dedykowanego endpointu do sprawdzania zdrowia bazy danych:
+
+```bash
+# Prosty health check
+curl http://localhost:5000/health
+
+# Szczegółowy health check bazy danych
+curl http://localhost:5000/api/database/health
+```
+
+Odpowiedź:
+```json
+{
+  "success": true,
+  "database_healthy": true,
+  "database_size_mb": 123.45,
+  "wal_size_mb": 2.1,
+  "status": "healthy"
+}
+```
+
+#### Docker Health Check
+
 Dodaj do `docker-compose.yml`:
 ```yaml
 services:
+  web:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/database/health"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
   mqtt-decoder:
     healthcheck:
       test: ["CMD", "python3", "-c", "import sqlite3; sqlite3.connect('/data/mesh_scout.db').execute('SELECT 1')"]
@@ -325,6 +358,15 @@ Sprawdź:
 ```bash
 docker compose ps
 # Kolumna Status pokaże "healthy" lub "unhealthy"
+```
+
+#### Monitoring ciągły
+
+Możesz monitorować zdrowie bazy w Prometheus/Grafana:
+
+```bash
+# Cron job - sprawdzaj co 5 minut
+*/5 * * * * curl -s http://localhost:5000/api/database/health | grep -q '"database_healthy":true' || echo "ALERT: Database corruption detected!" | mail -s "Mesh Scout Alert" admin@example.com
 ```
 
 ## 🔄 Aktualizacje
