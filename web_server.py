@@ -19,9 +19,13 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-producti
 CORS(app)  # Enable CORS for API endpoints
 
 # Configure Flask-Caching
+# Używamy FileSystemCache zamiast SimpleCache dla lepszej wydajności
+# zwłaszcza przy większych odpowiedziach API
 cache = Cache(config={
-    'CACHE_TYPE': 'SimpleCache',  # In-memory cache
-    'CACHE_DEFAULT_TIMEOUT': 300  # 5 minutes default
+    'CACHE_TYPE': 'FileSystemCache',
+    'CACHE_DIR': 'data/cache',  # Katalog dla cache
+    'CACHE_DEFAULT_TIMEOUT': 300,  # 5 minut default
+    'CACHE_THRESHOLD': 100  # Maksymalna liczba wpisów w cache
 })
 cache.init_app(app)
 
@@ -997,8 +1001,10 @@ def cache_info():
     """Get cache configuration info"""
     return jsonify({
         'success': True,
-        'cache_type': 'SimpleCache',
+        'cache_type': 'FileSystemCache',
+        'cache_dir': 'data/cache',
         'default_timeout': 300,
+        'threshold': 100,
         'endpoints_cached': {
             '/api/devices': '600s (10 min)',
             '/api/stats': '600s (10 min)',
