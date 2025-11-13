@@ -679,11 +679,17 @@ def coverage_page():
 @app.route('/api/coverage')
 @cache.cached(timeout=900, query_string=True)  # 15 minut cache
 def get_coverage_map():
-    """API endpoint - mapa zasięgu sieci (aktywne heksagony H3)"""
+    """API endpoint - mapa zasięgu sieci (aktywne heksagony H3)
+
+    Domyślnie zwraca 5000 najbardziej aktywnych hexów z min. 2 wizytami.
+    Parametry query string:
+    - limit: maksymalna liczba hexów do zwrócenia (domyślnie 5000)
+    - min_activity: minimalna liczba wizyt w hexie (domyślnie 2)
+    """
     try:
-        # Zmniejszony domyślny limit dla szybszego ładowania
-        limit = int(request.args.get('limit', 50000))
-        min_activity = int(request.args.get('min_activity', 1))
+        # Ograniczone limity dla szybszego ładowania i renderowania mapy
+        limit = int(request.args.get('limit', 5000))
+        min_activity = int(request.args.get('min_activity', 2))
         
         db = MeshtasticDatabase(DB_PATH)
         coverage = db.get_coverage_map(limit=limit, min_activity=min_activity)

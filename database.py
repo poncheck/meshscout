@@ -2079,7 +2079,7 @@ class MeshtasticDatabase:
                 LEFT JOIN traceroute_packets t ON dh.h3_index = t.sender_h3
                 GROUP BY dh.h3_index
                 HAVING total_visits >= ?
-                ORDER BY last_activity DESC
+                ORDER BY total_visits DESC, last_activity DESC
                 LIMIT ?
             """, (min_activity, limit))
             
