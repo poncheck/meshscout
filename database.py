@@ -132,7 +132,7 @@ class MeshtasticDatabase:
             cursor.execute("PRAGMA journal_mode=WAL")
 
             # Optymalizacje dla współbieżności i zapobiegania korupcji
-            cursor.execute("PRAGMA synchronous=FULL")     # Pełna synchronizacja dla bezpieczeństwa danych
+            cursor.execute("PRAGMA synchronous=NORMAL")   # NORMAL jest bezpieczny z WAL i 10-20x szybszy niż FULL
             cursor.execute("PRAGMA cache_size=-64000")    # 64MB cache
             cursor.execute("PRAGMA temp_store=MEMORY")    # Tymczasowe dane w pamięci
             cursor.execute("PRAGMA busy_timeout=30000")   # 30 sekund timeout
@@ -140,7 +140,7 @@ class MeshtasticDatabase:
             cursor.execute("PRAGMA page_size=4096")       # Standardowy rozmiar strony
             cursor.execute("PRAGMA auto_vacuum=INCREMENTAL")  # Automatyczne czyszczenie
 
-            logger.info("Włączono tryb WAL z pełną synchronizacją dla bezpiecznego dostępu do bazy danych")
+            logger.info("Włączono tryb WAL z normalną synchronizacją dla szybkiego i bezpiecznego dostępu do bazy danych")
 
             # Tabela główna dla wiadomości
             cursor.execute("""
@@ -267,6 +267,12 @@ class MeshtasticDatabase:
             """)
             cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_traceroute_channel ON traceroute_packets(channel_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_traceroute_sender_h3 ON traceroute_packets(sender_h3)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_traceroute_hop_h3 ON traceroute_packets(hop_h3)
             """)
 
             # Indeksy dla player_scores
@@ -708,13 +714,16 @@ class MeshtasticDatabase:
 
             where_clause = f"WHERE channel_id = '{channel_id}'" if channel_id else ""
 
-            # Liczba wiadomości
-            cursor.execute(f"SELECT COUNT(*) FROM messages {where_clause}")
-            total_messages = cursor.fetchone()[0]
-
-            # Liczba unikalnych węzłów
-            cursor.execute(f"SELECT COUNT(DISTINCT from_node) FROM messages {where_clause}")
-            unique_nodes = cursor.fetchone()[0]
+            # Zoptymalizowane: Pobierz liczby w jednym zapytaniu
+            cursor.execute(f"""
+                SELECT
+                    COUNT(*) as total_messages,
+                    COUNT(DISTINCT from_node) as unique_nodes
+                FROM messages {where_clause}
+            """)
+            row = cursor.fetchone()
+            total_messages = row[0]
+            unique_nodes = row[1]
 
             # Najpopularniejsze hashtagi
             cursor.execute(f"""
@@ -2051,20 +2060,21 @@ class MeshtasticDatabase:
     def get_coverage_map(self, limit: int = 10000, min_activity: int = 1) -> List[Dict[str, Any]]:
         """
         Pobiera mapę zasięgu sieci - wszystkie aktywne heksagony
-        
+
         Args:
             limit: Maksymalna liczba heksagonów
             min_activity: Minimalna liczba wizyt/punktów dla heksagonu
-            
+
         Returns:
             Lista heksagonów z aktywnością jako dict
         """
         if not H3_AVAILABLE:
             return []
-            
+
         try:
             cursor = self.conn.cursor()
-            
+
+            # Zoptymalizowane zapytanie - używamy podzapytania zamiast LEFT JOIN dla lepszej wydajności
             cursor.execute("""
                 SELECT
                     dh.h3_index,
@@ -2072,11 +2082,10 @@ class MeshtasticDatabase:
                     COUNT(DISTINCT CASE WHEN dh.is_player = 0 THEN dh.node_id END) as unique_devices,
                     SUM(dh.visit_count) as total_visits,
                     SUM(dh.points_earned) as hex_bonus_points,
-                    COUNT(DISTINCT t.id) as traceroutes_count,
-                    COALESCE(SUM(t.points), 0) as traceroute_points,
+                    (SELECT COUNT(*) FROM traceroute_packets t WHERE t.sender_h3 = dh.h3_index) as traceroutes_count,
+                    (SELECT COALESCE(SUM(points), 0) FROM traceroute_packets t WHERE t.sender_h3 = dh.h3_index) as traceroute_points,
                     MAX(dh.last_visit) as last_activity
                 FROM device_hexagons dh
-                LEFT JOIN traceroute_packets t ON dh.h3_index = t.sender_h3
                 GROUP BY dh.h3_index
                 HAVING total_visits >= ?
                 ORDER BY total_visits DESC, last_activity DESC
