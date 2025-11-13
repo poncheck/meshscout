@@ -268,12 +268,6 @@ class MeshtasticDatabase:
             cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_traceroute_channel ON traceroute_packets(channel_id)
             """)
-            cursor.execute("""
-                CREATE INDEX IF NOT EXISTS idx_traceroute_sender_h3 ON traceroute_packets(sender_h3)
-            """)
-            cursor.execute("""
-                CREATE INDEX IF NOT EXISTS idx_traceroute_hop_h3 ON traceroute_packets(hop_h3)
-            """)
 
             # Indeksy dla player_scores
             cursor.execute("""
@@ -331,12 +325,20 @@ class MeshtasticDatabase:
                 except sqlite3.OperationalError:
                     logger.info("Dodawanie kolumny 'sender_h3' do tabeli traceroute_packets")
                     cursor.execute("ALTER TABLE traceroute_packets ADD COLUMN sender_h3 TEXT")
-                
+
                 try:
                     cursor.execute("SELECT hop_h3 FROM traceroute_packets LIMIT 1")
                 except sqlite3.OperationalError:
                     logger.info("Dodawanie kolumny 'hop_h3' do tabeli traceroute_packets")
                     cursor.execute("ALTER TABLE traceroute_packets ADD COLUMN hop_h3 TEXT")
+
+                # Twórz indeksy dla kolumn H3 po ich dodaniu
+                cursor.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_traceroute_sender_h3 ON traceroute_packets(sender_h3)
+                """)
+                cursor.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_traceroute_hop_h3 ON traceroute_packets(hop_h3)
+                """)
                 
                 # Tabela odwiedzonych heksagonów przez WSZYSTKIE urządzenia (graczy i zwykłe)
                 cursor.execute("""
