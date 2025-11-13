@@ -1174,6 +1174,7 @@
 
                 players = data.highscore || [];
                 document.getElementById('players-count').textContent = data.total;
+                document.getElementById('players-count-inline').textContent = data.total;
 
                 const list = document.getElementById('highscore-list');
                 list.innerHTML = '';
