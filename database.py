@@ -211,6 +211,11 @@ class MeshtasticDatabase:
                     distance_km REAL,
                     points INTEGER DEFAULT 0,
                     channel_id TEXT,
+                    route_path TEXT,
+                    route_back TEXT,
+                    is_confirmed BOOLEAN DEFAULT 0,
+                    sender_h3 TEXT,
+                    hop_h3 TEXT,
                     received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(packet_id, hop_node)
                 )
