@@ -133,12 +133,13 @@ class MeshtasticDatabase:
 
             # Optymalizacje dla współbieżności i zapobiegania korupcji
             cursor.execute("PRAGMA synchronous=NORMAL")   # NORMAL jest bezpieczny z WAL i 10-20x szybszy niż FULL
-            cursor.execute("PRAGMA cache_size=-64000")    # 64MB cache
+            cursor.execute("PRAGMA cache_size=-262144")   # 256MB cache (było 64MB) - dla 16GB RAM to bardzo bezpieczne
             cursor.execute("PRAGMA temp_store=MEMORY")    # Tymczasowe dane w pamięci
             cursor.execute("PRAGMA busy_timeout=30000")   # 30 sekund timeout
             cursor.execute("PRAGMA wal_autocheckpoint=1000")  # Checkpoint co 1000 stron
             cursor.execute("PRAGMA page_size=4096")       # Standardowy rozmiar strony
             cursor.execute("PRAGMA auto_vacuum=INCREMENTAL")  # Automatyczne czyszczenie
+            cursor.execute("PRAGMA mmap_size=268435456")  # 256MB memory-mapped I/O dla szybszego odczytu
 
             logger.info("Włączono tryb WAL z normalną synchronizacją dla szybkiego i bezpiecznego dostępu do bazy danych")
 

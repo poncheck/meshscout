@@ -690,7 +690,7 @@ def get_coverage_map():
         # Ograniczone limity dla szybszego ładowania i renderowania mapy
         limit = int(request.args.get('limit', 5000))
         min_activity = int(request.args.get('min_activity', 2))
-        
+
         db = MeshtasticDatabase(DB_PATH)
         coverage = db.get_coverage_map(limit=limit, min_activity=min_activity)
         db.close()
@@ -714,6 +714,79 @@ def get_coverage_map():
         return jsonify({
             'success': True,
             'total': len(coverage),
+            'hexagons': coverage,
+            'geojson': geojson
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/coverage/zoom/<int:zoom_level>')
+@cache.cached(timeout=900, query_string=True)  # 15 minut cache
+def get_coverage_by_zoom(zoom_level):
+    """API endpoint - mapa zasięgu z dynamiczną agregacją według zoom level
+
+    Parametry query string:
+    - min_activity: minimalna liczba wizyt w hexie (domyślnie 2)
+
+    Zwraca hexagony zagregowane do odpowiedniej rozdzielczości H3 dla danego zoom:
+    - zoom 0-4: rozdzielczość 2 (bardzo duże hexe)
+    - zoom 5-6: rozdzielczość 4 (duże hexe)
+    - zoom 7-8: rozdzielczość 6 (średnie hexe)
+    - zoom 9-10: rozdzielczość 7 (małe hexe)
+    - zoom 11+: rozdzielczość 8 (pełna szczegółowość)
+    """
+    try:
+        min_activity = int(request.args.get('min_activity', 2))
+
+        # Import h3_utils
+        try:
+            from h3_utils import (
+                get_resolution_for_zoom,
+                aggregate_hexagons_by_resolution,
+                hexagons_to_geojson_feature_collection
+            )
+        except ImportError:
+            return jsonify({
+                'success': False,
+                'error': 'H3 utilities not available'
+            }), 500
+
+        # Określ rozdzielczość dla danego zoom
+        target_resolution = get_resolution_for_zoom(zoom_level)
+
+        # Pobierz wszystkie hexe z bazy (rozdzielczość 8)
+        db = MeshtasticDatabase(DB_PATH)
+        coverage = db.get_coverage_map(limit=50000, min_activity=min_activity)
+        db.close()
+
+        if not coverage:
+            return jsonify({
+                'success': True,
+                'total': 0,
+                'zoom_level': zoom_level,
+                'resolution': target_resolution,
+                'hexagons': [],
+                'geojson': None,
+                'message': 'No H3 data available.'
+            })
+
+        # Agreguj do odpowiedniej rozdzielczości jeśli zoom < 11
+        if zoom_level < 11:
+            coverage = aggregate_hexagons_by_resolution(coverage, target_resolution)
+
+        # Konwertuj do GeoJSON
+        geojson = hexagons_to_geojson_feature_collection(coverage, include_properties=True)
+
+        return jsonify({
+            'success': True,
+            'total': len(coverage),
+            'zoom_level': zoom_level,
+            'resolution': target_resolution,
             'hexagons': coverage,
             'geojson': geojson
         })
