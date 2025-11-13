@@ -434,10 +434,10 @@ def hexagons_to_geojson_feature_collection(
 def get_resolution_info(resolution: int = DEFAULT_H3_RESOLUTION) -> Dict[str, Any]:
     """
     Zwraca informacje o danej rozdzielczości H3
-    
+
     Args:
         resolution: Rozdzielczość H3 (0-15)
-        
+
     Returns:
         Dict z informacjami o rozdzielczości
     """
@@ -447,3 +447,151 @@ def get_resolution_info(resolution: int = DEFAULT_H3_RESOLUTION) -> Dict[str, An
         "edge_length_km": get_h3_edge_length_km(resolution),
         "description": f"Rozdzielczość {resolution} (~{get_h3_area_km2(resolution):.2f} km² per hexagon)"
     }
+
+
+def h3_to_parent(h3_index: str, target_resolution: int) -> Optional[str]:
+    """
+    Konwertuje H3 index na rodzica o niższej rozdzielczości
+
+    Args:
+        h3_index: H3 index jako string
+        target_resolution: Docelowa rozdzielczość (niższa liczba = większy hex)
+
+    Returns:
+        H3 index rodzica lub None w przypadku błędu
+    """
+    try:
+        if not h3_index or not validate_h3_index(h3_index):
+            return None
+
+        current_res = get_h3_resolution(h3_index)
+        if current_res is None or target_resolution >= current_res:
+            return h3_index
+
+        # Konwersja na rodzica - wspieraj obie wersje API
+        try:
+            return h3.cell_to_parent(h3_index, target_resolution)  # h3 v4+
+        except AttributeError:
+            return h3.h3_to_parent(h3_index, target_resolution)  # h3 v3
+
+    except Exception as e:
+        logger.error(f"Błąd konwersji H3 na rodzica: {e}")
+        return None
+
+
+def aggregate_hexagons_by_resolution(
+    hexagons: List[Dict[str, Any]],
+    target_resolution: int
+) -> List[Dict[str, Any]]:
+    """
+    Agreguje hexagony do niższej rozdzielczości, sumując ich właściwości
+
+    Args:
+        hexagons: Lista dict z polami 'h3_index' i właściwościami liczbowymi
+        target_resolution: Docelowa rozdzielczość (niższa liczba = większe hexe)
+
+    Returns:
+        Lista zagregowanych hexagonów
+    """
+    aggregated = {}
+
+    for hex_data in hexagons:
+        h3_index = hex_data.get('h3_index')
+        if not h3_index or not validate_h3_index(h3_index):
+            continue
+
+        # Konwertuj na rodzica
+        parent_h3 = h3_to_parent(h3_index, target_resolution)
+        if not parent_h3:
+            continue
+
+        # Agreguj dane
+        if parent_h3 not in aggregated:
+            aggregated[parent_h3] = {
+                'h3_index': parent_h3,
+                'unique_players': set(),
+                'unique_devices': set(),
+                'total_visits': 0,
+                'total_activity': 0,
+                'hex_bonus_points': 0,
+                'traceroutes_count': 0,
+                'traceroute_points': 0,
+                'total_points': 0,
+                'last_activity': None,
+                'child_count': 0
+            }
+
+        # Sumuj wartości
+        agg = aggregated[parent_h3]
+        agg['child_count'] += 1
+        agg['total_visits'] += hex_data.get('total_visits', 0)
+        agg['total_activity'] += hex_data.get('total_activity', 0)
+        agg['hex_bonus_points'] += hex_data.get('hex_bonus_points', 0)
+        agg['traceroutes_count'] += hex_data.get('traceroutes_count', 0)
+        agg['traceroute_points'] += hex_data.get('traceroute_points', 0)
+        agg['total_points'] += hex_data.get('total_points', 0)
+
+        # Unikalni gracze i urządzenia
+        if 'unique_players' in hex_data and hex_data['unique_players']:
+            if isinstance(hex_data['unique_players'], set):
+                agg['unique_players'].update(hex_data['unique_players'])
+            else:
+                agg['unique_players'].add(hex_data['unique_players'])
+
+        if 'unique_devices' in hex_data and hex_data['unique_devices']:
+            if isinstance(hex_data['unique_devices'], set):
+                agg['unique_devices'].update(hex_data['unique_devices'])
+            else:
+                agg['unique_devices'].add(hex_data['unique_devices'])
+
+        # Najnowsza aktywność
+        if hex_data.get('last_activity'):
+            if not agg['last_activity'] or hex_data['last_activity'] > agg['last_activity']:
+                agg['last_activity'] = hex_data['last_activity']
+
+    # Konwertuj sety na liczby
+    results = []
+    for hex_data in aggregated.values():
+        hex_data['unique_players'] = len(hex_data['unique_players'])
+        hex_data['unique_devices'] = len(hex_data['unique_devices'])
+
+        # Określ typ heksagonu
+        if hex_data['unique_players'] > 0 and hex_data['unique_devices'] > 0:
+            hex_data['hex_type'] = "mixed"
+        elif hex_data['unique_players'] > 0:
+            hex_data['hex_type'] = "player"
+        else:
+            hex_data['hex_type'] = "device"
+
+        # Poziom aktywności
+        hex_data['activity_level'] = 'high' if hex_data['total_activity'] >= 10 else (
+            'medium' if hex_data['total_activity'] >= 5 else 'low'
+        )
+
+        results.append(hex_data)
+
+    return results
+
+
+def get_resolution_for_zoom(zoom_level: int) -> int:
+    """
+    Zwraca odpowiednią rozdzielczość H3 dla danego poziomu zoom mapy Leaflet
+
+    Args:
+        zoom_level: Poziom zoom mapy (0-19)
+
+    Returns:
+        Rozdzielczość H3 (0-15)
+    """
+    # Mapowanie zoom level na rozdzielczość H3
+    # Niższe zoom = mniejsza rozdzielczość (większe hexe)
+    if zoom_level <= 4:
+        return 2  # Bardzo duże hexe (~86,000 km²)
+    elif zoom_level <= 6:
+        return 4  # Duże hexe (~1,770 km²)
+    elif zoom_level <= 8:
+        return 6  # Średnie hexe (~36 km²)
+    elif zoom_level <= 10:
+        return 7  # Mniejsze hexe (~5 km²)
+    else:
+        return 8  # Domyślna rozdzielczość (~0.46 km²)

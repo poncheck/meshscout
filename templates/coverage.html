@@ -794,9 +794,13 @@
             }
         }
 
-        async function loadCoverageMap() {
+        async function loadCoverageMap(zoom) {
             try {
-                const response = await fetch('/api/coverage?limit=10000');
+                // Użyj aktualnego zoom level z mapy lub domyślnego
+                const currentZoom = zoom || map.getZoom();
+
+                // Nowy endpoint z dynamiczną agregacją
+                const response = await fetch(`/api/coverage/zoom/${Math.floor(currentZoom)}`);
                 const data = await response.json();
 
                 if (!data.success) {
@@ -812,6 +816,9 @@
 
                 // Aktualizuj statystyki
                 document.getElementById('stat-hexagons').textContent = data.total;
+
+                // Dodaj informację o rozdzielczości w konsoli
+                console.log(`Załadowano ${data.total} hexagonów (zoom: ${currentZoom}, rozdzielczość H3: ${data.resolution})`);
 
                 // Oblicz statystyki z danych
                 let totalActivity = 0;
@@ -832,6 +839,11 @@
                 const totalArea = (data.total * areaPerHex).toFixed(2);
                 document.getElementById('stat-area').textContent = totalArea;
 
+                // Usuń poprzednią warstwę hexów jeśli istnieje
+                if (h3Layer) {
+                    map.removeLayer(h3Layer);
+                }
+
                 // Wyświetl warstwę H3
                 h3Layer = L.geoJSON(data.geojson, {
                     style: function(feature) {
@@ -846,13 +858,22 @@
                     },
                     onEachFeature: function(feature, layer) {
                         const props = feature.properties;
+
+                        // Popup z różnymi informacjami w zależności od tego czy to zagregowany hex
+                        const isAggregated = props.child_count && props.child_count > 1;
                         const popupContent = `
                             <div class="hex-popup">
-                                <h3>🗺️ Heksagon H3</h3>
+                                <h3>🗺️ Heksagon H3 ${isAggregated ? '(Zagregowany)' : ''}</h3>
                                 <div class="info-row">
                                     <span class="label">H3 Index:</span>
                                     <span class="value" style="font-size: 10px;">${props.h3_index}</span>
                                 </div>
+                                ${isAggregated ? `
+                                <div class="info-row">
+                                    <span class="label">Hexagony w grupie:</span>
+                                    <span class="value">${props.child_count}</span>
+                                </div>
+                                ` : ''}
                                 <div class="info-row">
                                     <span class="label">Aktywność:</span>
                                     <span class="value">${props.total_activity || 0}</span>
@@ -871,12 +892,17 @@
                                 </div>
                                 <div class="info-row">
                                     <span class="label">Traceroutes:</span>
-                                    <span class="value">${props.traceroute_count || 0}</span>
+                                    <span class="value">${props.traceroutes_count || 0}</span>
                                 </div>
                                 <div class="info-row">
                                     <span class="label">Ostatnia aktywność:</span>
                                     <span class="value">${formatTime(props.last_activity)}</span>
                                 </div>
+                                ${isAggregated ? `
+                                <p style="font-size: 10px; color: #888; margin-top: 10px;">
+                                    💡 Zbliż mapę aby zobaczyć szczegóły
+                                </p>
+                                ` : ''}
                             </div>
                         `;
                         layer.bindPopup(popupContent);
@@ -894,15 +920,17 @@
                             h3Layer.resetStyle(this);
                         });
 
-                        // Obsługa kliknięcia - wyświetl szczegóły
+                        // Obsługa kliknięcia - wyświetl szczegóły tylko dla nie-zagregowanych
                         layer.on('click', function() {
-                            showHexDetails(props.h3_index);
+                            if (!isAggregated) {
+                                showHexDetails(props.h3_index);
+                            }
                         });
                     }
                 }).addTo(map);
 
-                // Dopasuj mapę do granic heksagonów
-                if (h3Layer.getBounds().isValid()) {
+                // Dopasuj mapę do granic heksagonów tylko przy pierwszym załadowaniu
+                if (!zoom && h3Layer.getBounds().isValid()) {
                     map.fitBounds(h3Layer.getBounds(), { padding: [50, 50] });
                 }
 
@@ -1271,10 +1299,38 @@
         document.getElementById('legendToggle').addEventListener('click', toggleLegend);
         document.getElementById('modalCloseBtn').addEventListener('click', closeHexDetails);
 
+        // Funkcja debounce dla optymalizacji
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Przeładuj hexagony po zmianie zoom z debounce
+        const reloadHexagonsOnZoom = debounce(async function() {
+            const currentZoom = map.getZoom();
+            console.log('Zoom changed to:', currentZoom);
+
+            // Pokaż loading
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('loading').innerHTML = '⏳ Ładowanie hexagonów...';
+
+            await loadCoverageMap(currentZoom);
+        }, 500);  // Poczekaj 500ms po zakończeniu zoom
+
         // Załaduj mapę przy starcie
         async function init() {
             await loadTranslations(currentLang);
             await loadCoverageMap();
+
+            // Dodaj event listener na zmianę zoom
+            map.on('zoomend', reloadHexagonsOnZoom);
 
             // Sprawdź czy jest parametr highlight w URL
             const highlightH3 = getUrlParameter('highlight');
