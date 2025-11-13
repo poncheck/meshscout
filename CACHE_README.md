@@ -19,6 +19,7 @@ Zaimplementowano **Flask-Caching** w projekcie mesh-scout w celu znacznego przys
 | Endpoint | Timeout | Opis |
 |----------|---------|------|
 | `/api/devices` | 600s (10 min) | Lista wszystkich urządzeń |
+| `/api/device/<node_id>` | 300s (5 min) | Szczegóły konkretnego urządzenia |
 | `/api/stats` | 600s (10 min) | Statystyki ogólne |
 | `/api/highscore/<period>` | 300s (5 min) | Rankingi graczy |
 | `/api/winners/<period_type>` | 300s (5 min) | Zwycięzcy okresów |

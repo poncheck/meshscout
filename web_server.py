@@ -245,6 +245,7 @@ def get_devices():
 
 
 @app.route('/api/device/<node_id>')
+@cache.cached(timeout=300)  # 5 minut cache
 def get_device(node_id):
     """API endpoint - szczegóły konkretnego urządzenia"""
     try:
