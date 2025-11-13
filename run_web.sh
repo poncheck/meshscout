@@ -27,7 +27,11 @@ fi
 source "$VENV_DIR/bin/activate"
 
 # Ustawienie domyślnej ścieżki do bazy (jeśli nie ustawiona)
-export DB_PATH="${DB_PATH:-mesh_scout.db}"
+# Zgodne z docker-compose.yml (./data/mesh_scout.db)
+export DB_PATH="${DB_PATH:-$SCRIPT_DIR/data/mesh_scout.db}"
+
+# Upewnij się, że katalog data istnieje
+mkdir -p "$SCRIPT_DIR/data"
 
 echo "=========================================="
 echo "Mesh Scout Web Server"
