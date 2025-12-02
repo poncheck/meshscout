@@ -13,7 +13,11 @@ class MeshtasticIngestion {
 
     constructor() {
         const brokerUrl = process.env.MQTT_BROKER_URL || 'mqtt://mqtt.meshtastic.org';
-        this.client = mqtt.connect(brokerUrl);
+        this.client = mqtt.connect(brokerUrl, {
+            username: 'meshdev',
+            password: 'large4cats',
+            reconnectPeriod: 5000,
+        });
 
         this.client.on('connect', () => {
             console.log('✅ Connected to MQTT broker:', brokerUrl);
