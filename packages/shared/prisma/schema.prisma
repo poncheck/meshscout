@@ -106,7 +106,7 @@ model Message {
   from      String
   to        String
   channel   Int
-  packetId  Int
+  packetId  BigInt
   payload   Bytes?
   timestamp DateTime @default(now())
   portnum   Int
