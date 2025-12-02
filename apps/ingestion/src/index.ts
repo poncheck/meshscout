@@ -57,7 +57,7 @@ setInterval(() => {
     const rate = (this.messageCount / elapsed).toFixed(2);
     console.log(`📊 Stats: ${this.messageCount} messages, ${rate} msg/s`);
 }, 30000);
-    }
+
 
     private async handleMessage(topic: string, payload: Buffer) {
     this.messageCount++;
