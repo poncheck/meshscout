@@ -176,8 +176,8 @@ export function broadcastUpdate(type: string, data: any) {
     });
 }
 
-server.listen(PORT, () => {
-    console.log(`API server running on port ${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`API server running on http://0.0.0.0:${PORT}`);
 });
 
 process.on('SIGINT', async () => {

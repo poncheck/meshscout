@@ -19,8 +19,16 @@ export default function MapView() {
     const map = useRef<maplibregl.Map | null>(null);
     const [mapLoaded, setMapLoaded] = useState(false);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const { data: hexagons } = useSWR<Hexagon[]>(`${apiUrl}/api/hexagons`, fetcher, {
+    // Dynamically determine API URL based on current hostname to support network access
+    const [apiUrl, setApiUrl] = useState('');
+
+    useEffect(() => {
+        const hostname = window.location.hostname;
+        const port = '3001';
+        setApiUrl(`http://${hostname}:${port}`);
+    }, []);
+
+    const { data: hexagons } = useSWR<Hexagon[]>(apiUrl ? `${apiUrl}/api/hexagons` : null, fetcher, {
         refreshInterval: 10000, // Refresh every 10 seconds
     });
 
@@ -30,27 +38,7 @@ export default function MapView() {
 
         map.current = new maplibregl.Map({
             container: mapContainer.current,
-            style: {
-                version: 8,
-                sources: {
-                    'raster-tiles': {
-                        type: 'raster',
-                        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                        tileSize: 256,
-                        attribution:
-                            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                    },
-                },
-                layers: [
-                    {
-                        id: 'simple-tiles',
-                        type: 'raster',
-                        source: 'raster-tiles',
-                        minzoom: 0,
-                        maxzoom: 22,
-                    },
-                ],
-            },
+            style: 'https://demotiles.maplibre.org/style.json', // Use a reliable vector style for testing
             center: [0, 20],
             zoom: 2,
         });
@@ -164,8 +152,8 @@ export default function MapView() {
     }, [hexagons, mapLoaded]);
 
     return (
-        <div className="relative w-full h-screen">
-            <div ref={mapContainer} className="absolute inset-0" />
+        <div className="relative w-full h-[100vh]">
+            <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
 
             {/* Stats overlay */}
             <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-4 z-10">

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -14,9 +15,16 @@ interface Player {
 }
 
 export default function LeaderboardPage() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const [apiUrl, setApiUrl] = useState('');
+
+    useEffect(() => {
+        const hostname = window.location.hostname;
+        const port = '3001';
+        setApiUrl(`http://${hostname}:${port}`);
+    }, []);
+
     const { data: players, isLoading } = useSWR<Player[]>(
-        `${apiUrl}/api/leaderboard`,
+        apiUrl ? `${apiUrl}/api/leaderboard` : null,
         fetcher,
         { refreshInterval: 30000 }
     );
