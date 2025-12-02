@@ -17,7 +17,7 @@ class MeshtasticIngestion {
     constructor() {
         // Load .env from root directory
         const envPath = path.resolve(__dirname, '../../../.env');
-        const result = dotenv.config({ path: envPath });
+        const result = dotenv.config({ path: envPath, override: true });
 
         console.log('🔍 Loading .env from:', envPath);
         if (result.error) {
@@ -39,12 +39,14 @@ class MeshtasticIngestion {
         this.client.on('connect', () => {
             console.log('✅ Connected to MQTT broker:', brokerUrl);
 
-            // Subscribe to both JSON and protobuf topics
-            const topics = [
-                'msh/+/2/json/#',  // JSON messages
-                'msh/+/2/e/#',     // Encrypted protobuf
-                'msh/+/2/c/#',     // Compressed protobuf
-            ];
+            // Subscribe to topics
+            const topics = process.env.MQTT_TOPIC
+                ? [process.env.MQTT_TOPIC]
+                : [
+                    'msh/+/2/json/#',  // JSON messages
+                    'msh/+/2/e/#',     // Encrypted protobuf
+                    'msh/+/2/c/#',     // Compressed protobuf
+                ];
 
             topics.forEach(topic => {
                 this.client.subscribe(topic, (err) => {
