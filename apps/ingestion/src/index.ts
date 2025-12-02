@@ -1,9 +1,12 @@
 import mqtt from 'mqtt';
 import { PrismaClient } from '@prisma/client';
 import { latLngToCell } from 'h3-js';
-import * as meshtastic from './generated/meshtastic';
+import * as protobuf from './generated/meshtastic';
 import path from 'path';
 import dotenv from 'dotenv';
+
+// Extract the meshtastic namespace from the protobuf root
+const meshtastic = (protobuf as any).meshtastic;
 
 // Load .env from root directory
 const envPath = path.resolve(__dirname, '../../../.env');
