@@ -1,0 +1,117 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+model Player {
+  id           String   @id @default(cuid())
+  nodeId       String   @unique
+  longName     String?
+  shortName    String?
+  points       Int      @default(0)
+  registeredAt DateTime @default(now())
+  lastSeen     DateTime @default(now())
+
+  traceroutes Traceroute[]
+
+  @@index([points])
+  @@index([nodeId])
+}
+
+model Node {
+  id        String   @id @default(cuid())
+  nodeId    String   @unique
+  longName  String?
+  shortName String?
+  lastSeen  DateTime @default(now())
+
+  positions Position[]
+
+  @@index([nodeId])
+}
+
+model Position {
+  id          String   @id @default(cuid())
+  nodeId      String
+  latitude    Float
+  longitude   Float
+  altitude    Int?
+  timestamp   DateTime @default(now())
+  hexagonId   String?
+  snr         Float?
+  rssi        Int?
+
+  node    Node     @relation(fields: [nodeId], references: [nodeId])
+  hexagon Hexagon? @relation(fields: [hexagonId], references: [hexId])
+
+  @@index([nodeId])
+  @@index([hexagonId])
+  @@index([timestamp])
+}
+
+model Hexagon {
+  hexId       String   @id
+  resolution  Int      @default(8)
+  firstSeen   DateTime @default(now())
+  lastSeen    DateTime @default(now())
+  messageCount Int     @default(0)
+
+  positions   Position[]
+  traceroutes TracerouteHop[]
+
+  @@index([lastSeen])
+}
+
+model Traceroute {
+  id          String   @id @default(cuid())
+  playerId    String?
+  sourceNode  String
+  destNode    String
+  timestamp   DateTime @default(now())
+  verified    Boolean  @default(false)
+  distance    Float?
+  points      Int      @default(0)
+
+  player Player?          @relation(fields: [playerId], references: [id])
+  hops   TracerouteHop[]
+
+  @@index([playerId])
+  @@index([timestamp])
+  @@index([verified])
+}
+
+model TracerouteHop {
+  id           String  @id @default(cuid())
+  tracerouteId String
+  hopNumber    Int
+  nodeId       String
+  hexagonId    String?
+  snr          Float?
+
+  traceroute Traceroute @relation(fields: [tracerouteId], references: [id], onDelete: Cascade)
+  hexagon    Hexagon?   @relation(fields: [hexagonId], references: [hexId])
+
+  @@index([tracerouteId])
+  @@index([hexagonId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  from      String
+  to        String
+  channel   Int
+  packetId  Int
+  payload   Bytes?
+  timestamp DateTime @default(now())
+  portnum   Int
+
+  @@index([from])
+  @@index([timestamp])
+  @@index([channel])
+}
