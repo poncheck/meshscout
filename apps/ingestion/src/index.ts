@@ -84,6 +84,12 @@ class MeshtasticIngestion {
             console.log(`🔍 First 50 bytes (hex):`, payload.slice(0, 50).toString('hex'));
             console.log(`🔍 First 100 chars (string):`, payload.slice(0, 100).toString('utf8'));
 
+            // Skip encrypted messages (we don't have the key)
+            if (topic.includes('/e/')) {
+                console.log('🔒 Skipping encrypted message (no decryption key)');
+                return;
+            }
+
             // Try to detect format
             // First, try JSON
             try {
