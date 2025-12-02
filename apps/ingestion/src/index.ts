@@ -310,19 +310,7 @@ class MeshtasticIngestion {
             },
         });
 
-        // Store position
-        await prisma.position.create({
-            data: {
-                nodeId,
-                latitude,
-                longitude,
-                altitude,
-                hexagonId: hexId,
-                timestamp,
-            },
-        });
-
-        // Upsert hexagon
+        // Upsert hexagon FIRST (before creating position with foreign key)
         await prisma.hexagon.upsert({
             where: { hexId },
             update: {
@@ -335,6 +323,18 @@ class MeshtasticIngestion {
                 messageCount: 1,
                 firstSeen: timestamp,
                 lastSeen: timestamp,
+            },
+        });
+
+        // Store position (now hexagon exists)
+        await prisma.position.create({
+            data: {
+                nodeId,
+                latitude,
+                longitude,
+                altitude,
+                hexagonId: hexId,
+                timestamp,
             },
         });
 
