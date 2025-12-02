@@ -111,10 +111,18 @@ class MeshtasticIngestion {
         try {
             const data = JSON.parse(payload.toString());
 
+            // Skip unencoded messages (user requested to discard them)
+            if (!data.decoded) {
+                console.log('⏭️  Skipping unencoded JSON message');
+                return;
+            }
+
+            const fromNode = data.sender || data.from?.toString() || 'unknown';
+
             // Process position data
             if (data.payload?.latitude && data.payload?.longitude) {
                 await this.processPosition({
-                    nodeId: data.sender || data.from?.toString(),
+                    nodeId: fromNode,
                     latitude: data.payload.latitude,
                     longitude: data.payload.longitude,
                     altitude: data.payload.altitude,
@@ -126,13 +134,13 @@ class MeshtasticIngestion {
             if (data.decoded?.payload) {
                 const text = Buffer.from(data.decoded.payload, 'base64').toString('utf-8');
                 if (text.trim().toLowerCase() === '!registerme') {
-                    await this.registerPlayer(data.sender || data.from?.toString());
+                    await this.registerPlayer(fromNode);
                 }
             }
 
             // Store raw message
             await this.storeMessage({
-                from: data.sender || data.from?.toString(),
+                from: fromNode,
                 to: data.to?.toString() || 'broadcast',
                 channel: data.channel || 0,
                 packetId: data.id || 0,
