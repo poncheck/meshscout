@@ -36,11 +36,11 @@ export default function MapView() {
     useEffect(() => {
         if (map.current || !mapContainer.current) return;
 
-        const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+        const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoicG9uY2hlY2siLCJhIjoiY21pb3hibmsyMDVyejNmc2N2dTA0NnAzOSJ9.VxWyty0zK_90R_Zi3N2QHA';
         if (!token) {
             console.error('Mapbox token is missing!');
         }
-        mapboxgl.accessToken = token || '';
+        mapboxgl.accessToken = token;
 
         map.current = new mapboxgl.Map({
             container: mapContainer.current,
