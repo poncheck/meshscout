@@ -79,10 +79,27 @@ class MeshtasticIngestion {
         this.messageCount++;
 
         try {
+            console.log(`📨 Received message on topic: ${topic}`);
+            console.log(`📦 Payload length: ${payload.length} bytes`);
+            console.log(`🔍 First 50 bytes (hex):`, payload.slice(0, 50).toString('hex'));
+            console.log(`🔍 First 100 chars (string):`, payload.slice(0, 100).toString('utf8'));
+
+            // Try to detect format
+            // First, try JSON
+            try {
+                const jsonData = JSON.parse(payload.toString());
+                console.log('✅ Detected JSON format');
+                await this.handleJsonMessage(payload);
+                return;
+            } catch {
+                // Not JSON, continue
+            }
+
             // Determine if JSON or Protobuf based on topic
             if (topic.includes('/json/')) {
                 await this.handleJsonMessage(payload);
             } else {
+                console.log('🔄 Attempting Protobuf decode...');
                 await this.handleProtobufMessage(payload);
             }
         } catch (error) {
