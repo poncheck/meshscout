@@ -196,14 +196,25 @@ class MeshtasticIngestion {
 
     private async handleProtobufMessage(payload: Buffer) {
         try {
-            // Decode ServiceEnvelope
-            const envelope = meshtastic.ServiceEnvelope.decode(payload);
+            let packet: any;
 
-            if (!envelope.packet) {
-                return;
+            // Try to decode as ServiceEnvelope first
+            try {
+                const envelope = meshtastic.ServiceEnvelope.decode(payload);
+                if (!envelope.packet) {
+                    return;
+                }
+                packet = envelope.packet;
+            } catch (envelopeError) {
+                // If ServiceEnvelope decode fails, try direct MeshPacket decode
+                console.log('⚠️  ServiceEnvelope decode failed, trying direct MeshPacket decode...');
+                try {
+                    packet = meshtastic.MeshPacket.decode(payload);
+                } catch (meshPacketError) {
+                    console.error('❌ Both ServiceEnvelope and MeshPacket decode failed');
+                    throw meshPacketError;
+                }
             }
-
-            const packet = envelope.packet;
             const fromNode = packet.from?.toString() || 'unknown';
             const toNode = packet.to?.toString() || 'broadcast';
 
