@@ -4,9 +4,50 @@ import { latLngToCell } from 'h3-js';
 import * as protobuf from './generated/meshtastic';
 import path from 'path';
 import dotenv from 'dotenv';
+import { createDecipheriv } from 'crypto';
 
 // Extract the meshtastic namespace from the protobuf root
 const meshtastic = (protobuf as any).meshtastic;
+
+// Meshtastic default channel key "AQ==" (base64) = 0x01
+// For AES256, we need to expand this to 32 bytes
+const DEFAULT_KEY = Buffer.alloc(32);
+DEFAULT_KEY[0] = 0x01;
+
+/**
+ * Decrypt Meshtastic packet using AES256-CTR
+ * @param encryptedPayload - The encrypted payload buffer
+ * @param packetId - Packet ID (used in nonce)
+ * @param fromNode - Sender node number (used in nonce)
+ * @param key - AES256 key (32 bytes)
+ * @returns Decrypted buffer
+ */
+function decryptMeshtasticPacket(
+    encryptedPayload: Buffer,
+    packetId: number,
+    fromNode: number,
+    key: Buffer = DEFAULT_KEY
+): Buffer {
+    // Construct nonce: 8 bytes (packetId) + 8 bytes (fromNode) = 16 bytes
+    const nonce = Buffer.alloc(16);
+
+    // Write packetId as 64-bit little-endian
+    nonce.writeBigUInt64LE(BigInt(packetId), 0);
+
+    // Write fromNode as 64-bit little-endian
+    nonce.writeBigUInt64LE(BigInt(fromNode), 8);
+
+    // Create decipher
+    const decipher = createDecipheriv('aes-256-ctr', key, nonce);
+
+    // Decrypt
+    const decrypted = Buffer.concat([
+        decipher.update(encryptedPayload),
+        decipher.final()
+    ]);
+
+    return decrypted;
+}
 
 // Load .env from root directory
 const envPath = path.resolve(__dirname, '../../../.env');
@@ -83,12 +124,6 @@ class MeshtasticIngestion {
             console.log(`📦 Payload length: ${payload.length} bytes`);
             console.log(`🔍 First 50 bytes (hex):`, payload.slice(0, 50).toString('hex'));
             console.log(`🔍 First 100 chars (string):`, payload.slice(0, 100).toString('utf8'));
-
-            // Skip encrypted messages (we don't have the key)
-            if (topic.includes('/e/')) {
-                console.log('🔒 Skipping encrypted message (no decryption key)');
-                return;
-            }
 
             // Try to detect format
             // First, try JSON
@@ -171,6 +206,29 @@ class MeshtasticIngestion {
             const packet = envelope.packet;
             const fromNode = packet.from?.toString() || 'unknown';
             const toNode = packet.to?.toString() || 'broadcast';
+
+            // If packet is encrypted (no decoded field but has encrypted field), decrypt it
+            if (!packet.decoded && packet.encrypted) {
+                try {
+                    console.log(`🔓 Decrypting packet ${packet.id} from ${fromNode}`);
+
+                    // Decrypt the payload
+                    const decryptedPayload = decryptMeshtasticPacket(
+                        packet.encrypted,
+                        packet.id || 0,
+                        packet.from || 0
+                    );
+
+                    // Try to decode as Data message
+                    const decoded = meshtastic.Data.decode(decryptedPayload);
+                    packet.decoded = decoded;
+
+                    console.log(`✅ Successfully decrypted packet, portnum: ${decoded.portnum}`);
+                } catch (decryptError) {
+                    console.error(`❌ Failed to decrypt packet ${packet.id}:`, decryptError);
+                    return;
+                }
+            }
 
             // Decode the payload based on portnum
             if (packet.decoded) {
