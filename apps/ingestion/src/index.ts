@@ -78,6 +78,7 @@ class MeshtasticIngestion {
             username: 'meshdev',
             password: 'large4cats',
             reconnectPeriod: 5000,
+            encoding: 'binary', // Preserve binary data, don't convert to UTF-8
         });
 
         this.client.on('connect', () => {
