@@ -2,7 +2,11 @@ import mqtt from 'mqtt';
 import { PrismaClient } from '@prisma/client';
 import { latLngToCell } from 'h3-js';
 import * as meshtastic from './generated/meshtastic';
-import 'dotenv/config';
+import path from 'path';
+import dotenv from 'dotenv';
+
+// Load .env from root directory
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const prisma = new PrismaClient();
 
