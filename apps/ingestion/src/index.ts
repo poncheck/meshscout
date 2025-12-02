@@ -24,6 +24,7 @@ class MeshtasticIngestion {
             console.error('❌ Error loading .env:', result.error);
         } else {
             console.log('✅ .env loaded successfully');
+            console.log('🔍 Dotenv parsed:', result.parsed);
         }
 
         console.log('🔍 MQTT_BROKER_URL:', process.env.MQTT_BROKER_URL);
