@@ -65,10 +65,15 @@ export default function MapView() {
 
         const sourceId = 'hexagons';
 
-        // Remove existing source and layer if present
+        // Remove existing layers first (both fill and outline)
         if (map.current.getLayer(sourceId)) {
             map.current.removeLayer(sourceId);
         }
+        if (map.current.getLayer(`${sourceId}-outline`)) {
+            map.current.removeLayer(`${sourceId}-outline`);
+        }
+
+        // Then remove source
         if (map.current.getSource(sourceId)) {
             map.current.removeSource(sourceId);
         }
