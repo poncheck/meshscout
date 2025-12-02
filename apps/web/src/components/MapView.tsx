@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -16,7 +16,7 @@ interface Hexagon {
 
 export default function MapView() {
     const mapContainer = useRef<HTMLDivElement>(null);
-    const map = useRef<maplibregl.Map | null>(null);
+    const map = useRef<mapboxgl.Map | null>(null);
     const [mapLoaded, setMapLoaded] = useState(false);
 
     // Dynamically determine API URL based on current hostname to support network access
@@ -36,11 +36,18 @@ export default function MapView() {
     useEffect(() => {
         if (map.current || !mapContainer.current) return;
 
-        map.current = new maplibregl.Map({
+        const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+        if (!token) {
+            console.error('Mapbox token is missing!');
+        }
+        mapboxgl.accessToken = token || '';
+
+        map.current = new mapboxgl.Map({
             container: mapContainer.current,
-            style: 'https://demotiles.maplibre.org/style.json', // Use a reliable vector style for testing
+            style: 'mapbox://styles/mapbox/navigation-night-v1', // Premium dark tactical style
             center: [0, 20],
             zoom: 2,
+            projection: { name: 'globe' } // 3D Globe view
         });
 
         map.current.on('load', () => {
@@ -129,10 +136,10 @@ export default function MapView() {
             const feature = e.features[0];
             const props = feature.properties;
 
-            new maplibregl.Popup()
+            new mapboxgl.Popup({ closeButton: false, className: 'bg-black/80 text-white' })
                 .setLngLat(e.lngLat)
                 .setHTML(
-                    `<div class="p-2">
+                    `<div class="p-2 text-gray-900">
             <h3 class="font-bold">Hexagon ${props?.hexId}</h3>
             <p>Messages: ${props?.messageCount}</p>
             <p>Last seen: ${new Date(props?.lastSeen).toLocaleString()}</p>
