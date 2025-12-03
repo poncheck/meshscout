@@ -247,19 +247,20 @@ class MeshtasticIngestion {
             // Handle encryption
             if (packet.encrypted && packet.payload) {
                 this.encryptedCount++;
+                console.log(`🔐 Encrypted packet detected: from=${fromNode}, id=${packet.id}, payloadSize=${packet.payload.length}`);
                 try {
                     const decryptedPayload = decryptMeshtasticPacket(
                         packet.payload as Buffer,
-                        Number(packet.packetId), // packetId is BigInt in DB but number here? No, it's number in protobuf
+                        Number(packet.id || 0),
                         packet.from
                     );
 
                     // Decode the decrypted payload
                     packet.decoded = meshtastic.Data.decode(decryptedPayload);
                     this.decryptedCount++;
-                    // console.log(`✅ Successfully decrypted packet, portnum: ${packet.decoded.portnum}`);
+                    console.log(`✅ Successfully decrypted packet from ${fromNode}, portnum: ${packet.decoded.portnum} (${meshtastic.PortNum[packet.decoded.portnum]})`);
                 } catch (err) {
-                    // console.error(`❌ Failed to decrypt packet from ${packet.from}:`, err);
+                    console.error(`❌ Failed to decrypt packet from ${fromNode}:`, err instanceof Error ? err.message : err);
                     return; // Skip if decryption fails
                 }
             }
