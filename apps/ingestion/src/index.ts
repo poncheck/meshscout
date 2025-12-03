@@ -124,6 +124,11 @@ class MeshtasticIngestion {
         this.messageCount++;
 
         try {
+            // Filter out problematic topics
+            if (topic.includes('/Deutsch/')) {
+                return;
+            }
+
             // Ensure payload is a Buffer (not corrupted by UTF-8 conversion)
             const binaryPayload = Buffer.isBuffer(payload) ? payload : Buffer.from(payload, 'binary');
 
