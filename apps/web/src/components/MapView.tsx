@@ -63,6 +63,9 @@ export default function MapView() {
     useEffect(() => {
         if (!map.current || !mapLoaded || !hexagons) return;
 
+        console.log('🗺️ Updating map with hexagons:', hexagons.length);
+        console.log('🗺️ First hexagon sample:', hexagons[0]);
+
         const sourceId = 'hexagons';
 
         // Remove existing layers first (both fill and outline)
@@ -96,6 +99,9 @@ export default function MapView() {
                 },
             })),
         };
+
+        console.log('🗺️ GeoJSON features:', geojson.features.length);
+        console.log('🗺️ First feature:', geojson.features[0]);
 
         // Add source
         map.current.addSource(sourceId, {
