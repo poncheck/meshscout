@@ -248,6 +248,9 @@ class MeshtasticIngestion {
             if (packet.decoded) {
                 const portnum = packet.decoded.portnum;
 
+                // Log all decoded packets with their portnum
+                console.log(`📦 Decoded packet from ${fromNode}: portnum=${portnum} (${meshtastic.PortNum[portnum] || 'UNKNOWN'})`);
+
                 // POSITION_APP
                 if (portnum === meshtastic.PortNum.POSITION_APP && packet.decoded.payload) {
                     const position = meshtastic.Position.decode(packet.decoded.payload);
