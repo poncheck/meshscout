@@ -245,16 +245,15 @@ class MeshtasticIngestion {
             const toNode = packet.to?.toString() || 'broadcast';
 
             // Debug: show packet structure
-            console.log(`🔍 Packet structure: hasDecoded=${!!packet.decoded}, hasPayload=${!!packet.payload}, payloadLen=${packet.payload?.length || 0}`);
+            console.log(`🔍 Packet structure: hasDecoded=${!!packet.decoded}, hasEncrypted=${!!packet.encrypted}, encryptedLen=${packet.encrypted?.length || 0}`);
 
-            // Handle encryption - if packet has no decoded field but has payload, it's encrypted
-            // This is because MQTT packets from /e/ topics have encrypted payload but don't set encrypted=true
-            if (!packet.decoded && packet.payload && packet.payload.length > 0) {
+            // Handle encryption - encrypted data is in packet.encrypted field (Uint8Array), not payload!
+            if (!packet.decoded && packet.encrypted && packet.encrypted.length > 0) {
                 this.encryptedCount++;
-                console.log(`🔐 Encrypted packet detected: from=${fromNode}, id=${packet.id}, payloadSize=${packet.payload.length}`);
+                console.log(`🔐 Encrypted packet detected: from=${fromNode}, id=${packet.id}, encryptedSize=${packet.encrypted.length}`);
                 try {
                     const decryptedPayload = decryptMeshtasticPacket(
-                        packet.payload as Buffer,
+                        Buffer.from(packet.encrypted), // Convert Uint8Array to Buffer
                         Number(packet.id || 0),
                         packet.from
                     );
