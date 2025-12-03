@@ -117,13 +117,8 @@ class MeshtasticIngestion {
             const elapsed = (Date.now() - this.startTime) / 1000;
             const rate = (this.messageCount / elapsed).toFixed(2);
             console.log(`📊 Stats: ${this.messageCount} messages, ${rate} msg/s`);
-            console.log(`   🔓 Decryption: ${this.decryptedCount || 0} successes, ${this.encryptedCount || 0} encrypted total`);
         }, 30000);
     }
-
-    // Add counters
-    private decryptedCount = 0;
-    private encryptedCount = 0;
 
     private async handleMessage(topic: string, payload: Buffer) {
         this.messageCount++;
@@ -244,28 +239,10 @@ class MeshtasticIngestion {
             const fromNode = packet.from?.toString() || 'unknown';
             const toNode = packet.to?.toString() || 'broadcast';
 
-            // Debug: show packet structure
-            console.log(`🔍 Packet structure: hasDecoded=${!!packet.decoded}, hasEncrypted=${!!packet.encrypted}, encryptedLen=${packet.encrypted?.length || 0}`);
-
-            // Handle encryption - encrypted data is in packet.encrypted field (Uint8Array), not payload!
+            // Skip encrypted packets - most channels use custom keys we don't have
             if (!packet.decoded && packet.encrypted && packet.encrypted.length > 0) {
-                this.encryptedCount++;
-                console.log(`🔐 Encrypted packet detected: from=${fromNode}, id=${packet.id}, encryptedSize=${packet.encrypted.length}`);
-                try {
-                    const decryptedPayload = decryptMeshtasticPacket(
-                        Buffer.from(packet.encrypted), // Convert Uint8Array to Buffer
-                        Number(packet.id || 0),
-                        packet.from
-                    );
-
-                    // Decode the decrypted payload
-                    packet.decoded = meshtastic.Data.decode(decryptedPayload);
-                    this.decryptedCount++;
-                    console.log(`✅ Successfully decrypted packet from ${fromNode}, portnum: ${packet.decoded.portnum} (${meshtastic.PortNum[packet.decoded.portnum]})`);
-                } catch (err) {
-                    console.error(`❌ Failed to decrypt packet from ${fromNode}:`, err instanceof Error ? err.message : err);
-                    return; // Skip if decryption fails
-                }
+                // Silently skip encrypted packets
+                return;
             }
 
             // Decode the payload based on portnum
