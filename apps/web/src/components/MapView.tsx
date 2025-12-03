@@ -44,7 +44,7 @@ export default function MapView() {
 
         map.current = new mapboxgl.Map({
             container: mapContainer.current,
-            style: 'mapbox://styles/mapbox/navigation-night-v1', // Premium dark tactical style
+            style: 'mapbox://styles/mapbox/dark-v11', // Clean dark style without traffic
             center: [0, 20],
             zoom: 2,
             projection: { name: 'globe' } // 3D Globe view
@@ -151,7 +151,12 @@ export default function MapView() {
             if (!hexId) return;
 
             // Show loading popup
-            const popup = new mapboxgl.Popup({ closeButton: true, className: 'hexagon-popup' })
+            const popup = new mapboxgl.Popup({
+                closeButton: true,
+                className: 'hexagon-popup',
+                closeOnClick: false,
+                maxWidth: 'none'
+            })
                 .setLngLat(e.lngLat)
                 .setHTML('<div class="p-4"><div class="animate-pulse">Loading...</div></div>')
                 .addTo(map.current!);

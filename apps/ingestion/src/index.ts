@@ -121,17 +121,21 @@ class MeshtasticIngestion {
         this.messageCount++;
 
         try {
+            // Ensure payload is a Buffer (not corrupted by UTF-8 conversion)
+            const binaryPayload = Buffer.isBuffer(payload) ? payload : Buffer.from(payload, 'binary');
+
             console.log(`📨 Received message on topic: ${topic}`);
-            console.log(`📦 Payload length: ${payload.length} bytes`);
-            console.log(`🔍 First 50 bytes (hex):`, payload.slice(0, 50).toString('hex'));
-            console.log(`🔍 First 100 chars (string):`, payload.slice(0, 100).toString('utf8'));
+            console.log(`📦 Payload length: ${binaryPayload.length} bytes`);
+            console.log(`📦 Is Buffer: ${Buffer.isBuffer(binaryPayload)}`);
+            console.log(`🔍 First 50 bytes (hex):`, binaryPayload.slice(0, 50).toString('hex'));
+            console.log(`🔍 First 100 chars (string):`, binaryPayload.slice(0, 100).toString('utf8'));
 
             // Try to detect format
             // First, try JSON
             try {
-                const jsonData = JSON.parse(payload.toString());
+                const jsonData = JSON.parse(binaryPayload.toString());
                 console.log('✅ Detected JSON format');
-                await this.handleJsonMessage(payload);
+                await this.handleJsonMessage(binaryPayload);
                 return;
             } catch {
                 // Not JSON, continue
@@ -139,10 +143,10 @@ class MeshtasticIngestion {
 
             // Determine if JSON or Protobuf based on topic
             if (topic.includes('/json/')) {
-                await this.handleJsonMessage(payload);
+                await this.handleJsonMessage(binaryPayload);
             } else {
                 console.log('🔄 Attempting Protobuf decode...');
-                await this.handleProtobufMessage(payload);
+                await this.handleProtobufMessage(binaryPayload);
             }
         } catch (error) {
             console.error('❌ Error processing message:', error);
