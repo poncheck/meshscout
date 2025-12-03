@@ -141,22 +141,91 @@ export default function MapView() {
         });
 
         // Add click handler
-        map.current.on('click', sourceId, (e) => {
+        map.current.on('click', sourceId, async (e) => {
             if (!e.features || e.features.length === 0) return;
 
             const feature = e.features[0];
             const props = feature.properties;
+            const hexId = props?.hexId;
 
-            new mapboxgl.Popup({ closeButton: false, className: 'bg-black/80 text-white' })
+            if (!hexId) return;
+
+            // Show loading popup
+            const popup = new mapboxgl.Popup({ closeButton: true, className: 'hexagon-popup' })
                 .setLngLat(e.lngLat)
-                .setHTML(
-                    `<div class="p-2 text-gray-900">
-            <h3 class="font-bold">Hexagon ${props?.hexId}</h3>
-            <p>Messages: ${props?.messageCount}</p>
-            <p>Last seen: ${new Date(props?.lastSeen).toLocaleString()}</p>
-          </div>`
-                )
+                .setHTML('<div class="p-4"><div class="animate-pulse">Loading...</div></div>')
                 .addTo(map.current!);
+
+            try {
+                // Fetch detailed hexagon data
+                const apiUrl = typeof window !== 'undefined'
+                    ? `http://${window.location.hostname}:3001/api/hexagons/${hexId}`
+                    : `/api/hexagons/${hexId}`;
+
+                const response = await fetch(apiUrl);
+                const hexagonData = await response.json();
+
+                // Get unique nodes
+                const nodes = new Map();
+                hexagonData.positions?.forEach((pos: any) => {
+                    if (!nodes.has(pos.nodeId)) {
+                        nodes.set(pos.nodeId, {
+                            nodeId: pos.nodeId,
+                            longName: pos.node?.longName || 'Unknown',
+                            shortName: pos.node?.shortName || pos.nodeId.slice(0, 8),
+                            lastSeen: pos.timestamp,
+                            positionCount: 1
+                        });
+                    } else {
+                        nodes.get(pos.nodeId).positionCount++;
+                    }
+                });
+
+                const nodeList = Array.from(nodes.values());
+
+                // Build popup HTML
+                const html = `
+                    <div class="p-4 min-w-[300px]">
+                        <h3 class="font-bold text-lg mb-2 text-blue-600">📍 Hexagon ${hexId.slice(0, 12)}...</h3>
+                        
+                        <div class="mb-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Messages:</span>
+                                <span class="font-semibold">${hexagonData.messageCount}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Last Activity:</span>
+                                <span class="font-semibold">${new Date(hexagonData.lastSeen).toLocaleString()}</span>
+                            </div>
+                        </div>
+
+                        ${nodeList.length > 0 ? `
+                            <div class="border-t pt-2">
+                                <h4 class="font-semibold text-sm mb-2">🔌 Devices (${nodeList.length})</h4>
+                                <div class="max-h-48 overflow-y-auto space-y-1">
+                                    ${nodeList.map(node => `
+                                        <div class="text-xs bg-gray-50 p-2 rounded">
+                                            <div class="font-medium">${node.longName}</div>
+                                            <div class="text-gray-500">ID: ${node.shortName}</div>
+                                            <div class="text-gray-400">Positions: ${node.positionCount}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : '<div class="text-gray-400 text-sm">No devices detected</div>'}
+                    </div>
+                `;
+
+                popup.setHTML(html);
+            } catch (error) {
+                console.error('Error fetching hexagon details:', error);
+                popup.setHTML(`
+                    <div class="p-4">
+                        <h3 class="font-bold text-red-600">Error</h3>
+                        <p class="text-sm">Failed to load hexagon details</p>
+                    </div>
+                `);
+            }
         });
 
         // Change cursor on hover
