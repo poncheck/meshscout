@@ -262,6 +262,8 @@ class MeshtasticIngestion {
                             longitude: position.longitudeI * 1e-7,
                             altitude: position.altitude,
                             timestamp: new Date(packet.rxTime ? packet.rxTime * 1000 : Date.now()),
+                            snr: packet.rxSnr,
+                            rssi: packet.rxRssi,
                         });
                     }
                 }
@@ -278,7 +280,7 @@ class MeshtasticIngestion {
                 // TELEMETRY_APP
                 if (portnum === meshtastic.PortNum.TELEMETRY_APP && packet.decoded.payload) {
                     const telemetry = meshtastic.Telemetry.decode(packet.decoded.payload);
-                    console.log(`📊 Telemetry from ${fromNode}:`, telemetry);
+                    await this.processTelemetry(fromNode, telemetry, new Date(packet.rxTime ? packet.rxTime * 1000 : Date.now()));
                 }
 
                 // NODEINFO_APP - Extract device names
@@ -368,8 +370,10 @@ class MeshtasticIngestion {
         longitude: number;
         altitude?: number;
         timestamp: Date;
+        snr?: number;
+        rssi?: number;
     }) {
-        const { nodeId, latitude, longitude, altitude, timestamp } = data;
+        const { nodeId, latitude, longitude, altitude, timestamp, snr, rssi } = data;
 
         // Calculate H3 hexagon
         const hexId = latLngToCell(latitude, longitude, 8);
@@ -409,10 +413,127 @@ class MeshtasticIngestion {
                 altitude,
                 hexagonId: hexId,
                 timestamp,
+                snr,
+                rssi,
             },
         });
 
-        console.log(`📍 Position: ${nodeId} at hex ${hexId} (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+        const snrInfo = snr !== undefined ? ` SNR: ${snr.toFixed(1)} dB` : '';
+        const rssiInfo = rssi !== undefined ? ` RSSI: ${rssi} dBm` : '';
+        console.log(`📍 Position: ${nodeId} at hex ${hexId} (${latitude.toFixed(4)}, ${longitude.toFixed(4)})${snrInfo}${rssiInfo}`);
+    }
+
+    private async processTelemetry(nodeId: string, telemetry: any, timestamp: Date) {
+        try {
+            // Ensure node exists
+            await prisma.node.upsert({
+                where: { nodeId },
+                update: { lastSeen: timestamp },
+                create: {
+                    nodeId,
+                    lastSeen: timestamp,
+                },
+            });
+
+            const telemetryData: any = {
+                nodeId,
+                timestamp,
+                variant: null,
+            };
+
+            // Device metrics
+            if (telemetry.deviceMetrics) {
+                const dm = telemetry.deviceMetrics;
+                telemetryData.variant = 'device_metrics';
+                telemetryData.batteryLevel = dm.batteryLevel;
+                telemetryData.voltage = dm.voltage;
+                telemetryData.channelUtilization = dm.channelUtilization;
+                telemetryData.airUtilTx = dm.airUtilTx;
+                telemetryData.uptimeSeconds = dm.uptimeSeconds;
+
+                console.log(`📊 Device metrics from ${nodeId}: Battery ${dm.batteryLevel}%, Voltage ${dm.voltage}V, Uptime ${dm.uptimeSeconds}s`);
+            }
+
+            // Environment metrics
+            if (telemetry.environmentMetrics) {
+                const em = telemetry.environmentMetrics;
+                telemetryData.variant = 'environment_metrics';
+                telemetryData.temperature = em.temperature;
+                telemetryData.relativeHumidity = em.relativeHumidity;
+                telemetryData.barometricPressure = em.barometricPressure;
+                telemetryData.gasResistance = em.gasResistance;
+                telemetryData.iaq = em.iaq;
+                telemetryData.distance = em.distance;
+                telemetryData.lux = em.lux;
+                telemetryData.whiteLux = em.whiteLux;
+                telemetryData.ir = em.ir;
+                telemetryData.uv = em.uv;
+                telemetryData.windDirection = em.windDirection;
+                telemetryData.windSpeed = em.windSpeed;
+                telemetryData.windGust = em.windGust;
+                telemetryData.windLull = em.windLull;
+
+                console.log(`📊 Environment from ${nodeId}: Temp ${em.temperature}°C, Humidity ${em.relativeHumidity}%`);
+            }
+
+            // Power metrics
+            if (telemetry.powerMetrics) {
+                const pm = telemetry.powerMetrics;
+                telemetryData.variant = 'power_metrics';
+                telemetryData.ch1Voltage = pm.ch1Voltage;
+                telemetryData.ch1Current = pm.ch1Current;
+                telemetryData.ch2Voltage = pm.ch2Voltage;
+                telemetryData.ch2Current = pm.ch2Current;
+                telemetryData.ch3Voltage = pm.ch3Voltage;
+                telemetryData.ch3Current = pm.ch3Current;
+
+                console.log(`📊 Power metrics from ${nodeId}`);
+            }
+
+            // Air quality metrics
+            if (telemetry.airQualityMetrics) {
+                const aq = telemetry.airQualityMetrics;
+                telemetryData.variant = 'air_quality_metrics';
+                telemetryData.pm10 = aq.pm10Standard;
+                telemetryData.pm25 = aq.pm25Standard;
+                telemetryData.pm100 = aq.pm100Standard;
+
+                console.log(`📊 Air quality from ${nodeId}: PM2.5 ${aq.pm25Standard}, PM10 ${aq.pm10Standard}`);
+            }
+
+            // Local stats
+            if (telemetry.localStats) {
+                const ls = telemetry.localStats;
+                telemetryData.variant = 'local_stats';
+                telemetryData.numPacketsTx = ls.numPacketsTx;
+                telemetryData.numPacketsRx = ls.numPacketsRx;
+                telemetryData.numPacketsRxBad = ls.numPacketsRxBad;
+                telemetryData.numOnlineNodes = ls.numOnlineNodes;
+                telemetryData.numTotalNodes = ls.numTotalNodes;
+
+                console.log(`📊 Local stats from ${nodeId}: TX ${ls.numPacketsTx}, RX ${ls.numPacketsRx}, Online nodes ${ls.numOnlineNodes}`);
+            }
+
+            // Health metrics
+            if (telemetry.healthMetrics) {
+                const hm = telemetry.healthMetrics;
+                telemetryData.variant = 'health_metrics';
+                telemetryData.heartBpm = hm.heartBpm;
+                telemetryData.spO2 = hm.spO2;
+                telemetryData.bodyTempC = hm.bodyTempC;
+
+                console.log(`📊 Health metrics from ${nodeId}: Heart ${hm.heartBpm} BPM, SpO2 ${hm.spO2}%`);
+            }
+
+            // Store telemetry in database
+            await prisma.telemetry.create({
+                data: telemetryData,
+            });
+
+            console.log(`✅ Stored ${telemetryData.variant} telemetry from ${nodeId}`);
+        } catch (error) {
+            console.error(`❌ Error processing telemetry from ${nodeId}:`, error);
+        }
     }
 
     private async registerPlayer(nodeId: string) {

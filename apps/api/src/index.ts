@@ -160,6 +160,10 @@ app.get('/api/nodes/:nodeId', async (req, res) => {
                     take: 100,
                     orderBy: { timestamp: 'desc' },
                 },
+                telemetry: {
+                    take: 100,
+                    orderBy: { timestamp: 'desc' },
+                },
             },
         });
 
@@ -188,6 +192,52 @@ app.get('/api/nodes/:nodeId', async (req, res) => {
     } catch (error) {
         console.error('Error fetching node details:', error);
         res.status(500).json({ error: 'Failed to fetch node details' });
+    }
+});
+
+// Get telemetry data
+app.get('/api/telemetry', async (req, res) => {
+    try {
+        const { nodeId, variant, limit = 100 } = req.query;
+
+        const where: any = {};
+        if (nodeId) where.nodeId = nodeId as string;
+        if (variant) where.variant = variant as string;
+
+        const telemetry = await prisma.telemetry.findMany({
+            where,
+            take: Number(limit),
+            orderBy: { timestamp: 'desc' },
+            include: {
+                node: true,
+            },
+        });
+
+        res.json(telemetry);
+    } catch (error) {
+        console.error('Error fetching telemetry:', error);
+        res.status(500).json({ error: 'Failed to fetch telemetry' });
+    }
+});
+
+// Get latest telemetry for a node
+app.get('/api/nodes/:nodeId/telemetry/latest', async (req, res) => {
+    try {
+        const { nodeId } = req.params;
+
+        const latestTelemetry = await prisma.telemetry.findFirst({
+            where: { nodeId },
+            orderBy: { timestamp: 'desc' },
+        });
+
+        if (!latestTelemetry) {
+            return res.status(404).json({ error: 'No telemetry found for this node' });
+        }
+
+        res.json(latestTelemetry);
+    } catch (error) {
+        console.error('Error fetching latest telemetry:', error);
+        res.status(500).json({ error: 'Failed to fetch latest telemetry' });
     }
 });
 
