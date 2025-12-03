@@ -230,8 +230,12 @@ export default function MapView() {
                                 <h4 class="font-bold text-sm mb-3 text-white">🔌 Devices (${nodeList.length})</h4>
                                 <div class="max-h-48 overflow-y-auto space-y-2 pr-2">
                                     ${nodeList.map(node => `
-                                        <div class="text-xs bg-gray-800 p-3 rounded-lg border border-gray-700 hover:border-blue-500 transition-colors">
-                                            <div class="font-bold text-white mb-1">${node.longName}</div>
+                                        <div class="text-xs bg-gray-800 p-3 rounded-lg border border-gray-700 hover:border-blue-500 transition-colors group">
+                                            <div class="flex justify-between items-start">
+                                                <a href="/node/${node.nodeId}" class="font-bold text-white mb-1 hover:text-blue-400 hover:underline block flex-grow">
+                                                    ${node.longName} ↗
+                                                </a>
+                                            </div>
                                             <div class="text-gray-400">ID: <span class="text-blue-400 font-mono">${node.shortName}</span></div>
                                             <div class="text-gray-500 text-[10px] mt-1">📍 ${node.positionCount} position${node.positionCount > 1 ? 's' : ''}</div>
                                         </div>

@@ -7,7 +7,7 @@ import http from 'http';
 
 const app = express();
 const prisma = new PrismaClient();
-const PORT = process.env.API_PORT || 3001;
+const PORT = Number(process.env.API_PORT || 3001);
 
 app.use(cors());
 app.use(express.json());
@@ -145,6 +145,47 @@ app.get('/api/positions', async (req, res) => {
     } catch (error) {
         console.error('Error fetching positions:', error);
         res.status(500).json({ error: 'Failed to fetch positions' });
+    }
+});
+
+// Get node details with telemetry and traceroutes
+app.get('/api/nodes/:nodeId', async (req, res) => {
+    try {
+        const { nodeId } = req.params;
+
+        const node = await prisma.node.findUnique({
+            where: { nodeId },
+            include: {
+                positions: {
+                    take: 100,
+                    orderBy: { timestamp: 'desc' },
+                },
+            },
+        });
+
+        if (!node) {
+            return res.status(404).json({ error: 'Node not found' });
+        }
+
+        // Fetch traceroutes initiated by this node (using raw query or if we link Node to Traceroute)
+        // Currently Traceroute links to Player, but sourceNode is a string.
+        // We can search by sourceNode string.
+        const traceroutes = await prisma.traceroute.findMany({
+            where: { sourceNode: nodeId },
+            take: 20,
+            orderBy: { timestamp: 'desc' },
+            include: {
+                hops: true,
+            },
+        });
+
+        res.json({
+            ...node,
+            traceroutes,
+        });
+    } catch (error) {
+        console.error('Error fetching node details:', error);
+        res.status(500).json({ error: 'Failed to fetch node details' });
     }
 });
 
