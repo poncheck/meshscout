@@ -244,8 +244,9 @@ class MeshtasticIngestion {
             const fromNode = packet.from?.toString() || 'unknown';
             const toNode = packet.to?.toString() || 'broadcast';
 
-            // Handle encryption
-            if (packet.encrypted && packet.payload) {
+            // Handle encryption - if packet has no decoded field but has payload, it's encrypted
+            // This is because MQTT packets from /e/ topics have encrypted payload but don't set encrypted=true
+            if (!packet.decoded && packet.payload && packet.payload.length > 0) {
                 this.encryptedCount++;
                 console.log(`🔐 Encrypted packet detected: from=${fromNode}, id=${packet.id}, payloadSize=${packet.payload.length}`);
                 try {
