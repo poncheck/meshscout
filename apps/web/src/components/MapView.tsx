@@ -17,6 +17,7 @@ interface Hexagon {
 export default function MapView() {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<mapboxgl.Map | null>(null);
+    const activePopup = useRef<mapboxgl.Popup | null>(null);
     const [mapLoaded, setMapLoaded] = useState(false);
 
     // Dynamically determine API URL based on current hostname to support network access
