@@ -54,6 +54,16 @@ export default function MapView() {
             setMapLoaded(true);
         });
 
+        map.current.on('style.load', () => { // Added style.load event for fog
+            map.current?.setFog({
+                'color': 'rgb(10, 10, 20)', // Lower atmosphere
+                'high-color': 'rgb(20, 20, 40)', // Upper atmosphere
+                'horizon-blend': 0.2, // Atmosphere thickness (default 0.2 at low zooms)
+                'space-color': 'rgb(5, 5, 10)', // Background color
+                'star-intensity': 0.6 // Background star brightness (default 0.35 at low zoooms )
+            });
+        });
+
         return () => {
             map.current?.remove();
         };
@@ -150,16 +160,24 @@ export default function MapView() {
 
             if (!hexId) return;
 
+            // Remove existing popup if any
+            if (activePopup.current) {
+                activePopup.current.remove();
+                activePopup.current = null;
+            }
+
             // Show loading popup
             const popup = new mapboxgl.Popup({
                 closeButton: true,
                 className: 'hexagon-popup',
-                closeOnClick: false,
+                closeOnClick: true, // Changed to true
                 maxWidth: 'none'
             })
                 .setLngLat(e.lngLat)
                 .setHTML('<div class="p-4"><div class="animate-pulse">Loading...</div></div>')
                 .addTo(map.current!);
+
+            activePopup.current = popup; // Assign new popup to ref
 
             try {
                 // Fetch detailed hexagon data
