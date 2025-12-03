@@ -226,14 +226,13 @@ class MeshtasticIngestion {
                     return;
                 }
                 packet = envelope.packet;
-            } catch (envelopeError) {
-                // If ServiceEnvelope decode fails, try direct MeshPacket decode
-                console.log('⚠️  ServiceEnvelope decode failed, trying direct MeshPacket decode...');
+            } catch (meshError) {
+                // Try direct MeshPacket decode as fallback
                 try {
                     packet = meshtastic.MeshPacket.decode(payload);
-                } catch (meshPacketError) {
-                    console.error('❌ Both ServiceEnvelope and MeshPacket decode failed');
-                    throw meshPacketError;
+                } catch (directError) {
+                    // Silently skip packets that can't be decoded (likely corrupted or unknown format)
+                    return;
                 }
             }
             const fromNode = packet.from?.toString() || 'unknown';
@@ -328,7 +327,7 @@ class MeshtasticIngestion {
             });
 
         } catch (error) {
-            console.error('Error processing Protobuf message:', error);
+            // Silently skip messages that fail to process
         }
     }
 
