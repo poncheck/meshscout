@@ -38,24 +38,26 @@ body {
 }
 
 .mapboxgl-popup-close-button {
-  color: white !important;
-  font-size: 24px !important;
-  font-weight: bold !important;
-  width: 32px !important;
-  height: 32px !important;
-  line-height: 28px !important;
+  color: #ffffff !important;
+  font-size: 18px !important;
+  font-weight: normal !important;
+  width: 24px !important;
+  height: 24px !important;
+  line-height: 22px !important;
   text-align: center !important;
   padding: 0 !important;
-  background: rgba(220, 38, 38, 0.9) !important;
-  border-radius: 6px !important;
+  background: rgba(55, 65, 81, 0.9) !important;
+  border-radius: 4px !important;
   position: absolute !important;
-  right: 12px !important;
-  top: 12px !important;
+  right: 8px !important;
+  top: 8px !important;
   z-index: 10 !important;
-  transition: all 0.2s !important;
+  transition: all 0.15s ease !important;
+  cursor: pointer !important;
+  border: 1px solid rgba(156, 163, 175, 0.3) !important;
 }
 
 .mapboxgl-popup-close-button:hover {
-  background: rgba(220, 38, 38, 1) !important;
-  transform: scale(1.1) !important;
+  background: rgba(75, 85, 99, 1) !important;
+  border-color: rgba(156, 163, 175, 0.5) !important;
 }
