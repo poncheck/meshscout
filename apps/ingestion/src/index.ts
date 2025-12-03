@@ -276,6 +276,35 @@ class MeshtasticIngestion {
                     console.log(`📊 Telemetry from ${fromNode}:`, telemetry);
                 }
 
+                // NODEINFO_APP - Extract device names
+                if (portnum === meshtastic.PortNum.NODEINFO_APP && packet.decoded.payload) {
+                    try {
+                        const user = meshtastic.User.decode(packet.decoded.payload);
+
+                        if (user.longName || user.shortName) {
+                            console.log(`👤 Node info from ${fromNode}: ${user.longName} (${user.shortName})`);
+
+                            // Update node with names
+                            await prisma.node.upsert({
+                                where: { nodeId: fromNode },
+                                update: {
+                                    longName: user.longName || undefined,
+                                    shortName: user.shortName || undefined,
+                                    lastSeen: new Date(packet.rxTime ? packet.rxTime * 1000 : Date.now()),
+                                },
+                                create: {
+                                    nodeId: fromNode,
+                                    longName: user.longName || undefined,
+                                    shortName: user.shortName || undefined,
+                                    lastSeen: new Date(packet.rxTime ? packet.rxTime * 1000 : Date.now()),
+                                },
+                            });
+                        }
+                    } catch (error) {
+                        console.error(`Error processing NODEINFO from ${fromNode}:`, error);
+                    }
+                }
+
                 // TRACEROUTE_APP
                 if (portnum === meshtastic.PortNum.TRACEROUTE_APP && packet.decoded.payload) {
                     const route = meshtastic.RouteDiscovery.decode(packet.decoded.payload);
