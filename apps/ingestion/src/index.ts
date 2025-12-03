@@ -117,8 +117,13 @@ class MeshtasticIngestion {
             const elapsed = (Date.now() - this.startTime) / 1000;
             const rate = (this.messageCount / elapsed).toFixed(2);
             console.log(`📊 Stats: ${this.messageCount} messages, ${rate} msg/s`);
+            console.log(`   🔓 Decryption: ${this.decryptedCount || 0} successes, ${this.encryptedCount || 0} encrypted total`);
         }, 30000);
     }
+
+    // Add counters
+    private decryptedCount = 0;
+    private encryptedCount = 0;
 
     private async handleMessage(topic: string, payload: Buffer) {
         this.messageCount++;
@@ -239,26 +244,23 @@ class MeshtasticIngestion {
             const fromNode = packet.from?.toString() || 'unknown';
             const toNode = packet.to?.toString() || 'broadcast';
 
-            // If packet is encrypted (no decoded field but has encrypted field), decrypt it
-            if (!packet.decoded && packet.encrypted) {
+            // Handle encryption
+            if (packet.encrypted && packet.payload) {
+                this.encryptedCount++;
                 try {
-                    console.log(`🔓 Decrypting packet ${packet.id} from ${fromNode}`);
-
-                    // Decrypt the payload
                     const decryptedPayload = decryptMeshtasticPacket(
-                        packet.encrypted,
-                        packet.id || 0,
-                        packet.from || 0
+                        packet.payload as Buffer,
+                        Number(packet.packetId), // packetId is BigInt in DB but number here? No, it's number in protobuf
+                        packet.from
                     );
 
-                    // Try to decode as Data message
-                    const decoded = meshtastic.Data.decode(decryptedPayload);
-                    packet.decoded = decoded;
-
-                    console.log(`✅ Successfully decrypted packet, portnum: ${decoded.portnum}`);
-                } catch (decryptError) {
-                    console.error(`❌ Failed to decrypt packet ${packet.id}:`, decryptError);
-                    return;
+                    // Decode the decrypted payload
+                    packet.decoded = meshtastic.Data.decode(decryptedPayload);
+                    this.decryptedCount++;
+                    // console.log(`✅ Successfully decrypted packet, portnum: ${packet.decoded.portnum}`);
+                } catch (err) {
+                    // console.error(`❌ Failed to decrypt packet from ${packet.from}:`, err);
+                    return; // Skip if decryption fails
                 }
             }
 
