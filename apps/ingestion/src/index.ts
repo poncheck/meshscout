@@ -28,14 +28,17 @@ function decryptMeshtasticPacket(
     fromNode: number,
     key: Buffer = DEFAULT_KEY
 ): Buffer {
-    // Construct nonce: 8 bytes (packetId) + 8 bytes (fromNode) = 16 bytes
+    // Construct nonce: packetId (8 bytes) + fromNode (4 bytes) + padding (4 bytes) = 16 bytes
+    // Meshtastic uses 96-bit nonce: packetId (64-bit) + fromNode (32-bit)
     const nonce = Buffer.alloc(16);
 
-    // Write packetId as 64-bit little-endian
+    // Write packetId as 64-bit little-endian (8 bytes)
     nonce.writeBigUInt64LE(BigInt(packetId), 0);
 
-    // Write fromNode as 64-bit little-endian
-    nonce.writeBigUInt64LE(BigInt(fromNode), 8);
+    // Write fromNode as 32-bit little-endian (4 bytes)
+    nonce.writeUInt32LE(fromNode >>> 0, 8);
+
+    // Remaining 4 bytes are zero (padding for AES block size)
 
     // Create decipher
     const decipher = createDecipheriv('aes-256-ctr', key, nonce);
