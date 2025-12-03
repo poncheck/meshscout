@@ -124,6 +124,14 @@ class MeshtasticIngestion {
             // Ensure payload is a Buffer (not corrupted by UTF-8 conversion)
             const binaryPayload = Buffer.isBuffer(payload) ? payload : Buffer.from(payload, 'binary');
 
+            // Check if data is corrupted by UTF-8 conversion (contains replacement character)
+            const hexString = binaryPayload.slice(0, 50).toString('hex');
+            if (hexString.includes('efbfbd')) {
+                console.warn(`⚠️  Skipping corrupted message from ${topic} - data was converted to UTF-8 by broker`);
+                console.warn(`💡 Tip: Check your MQTT broker configuration or use mqtt://mqtt.meshtastic.org`);
+                return;
+            }
+
             console.log(`📨 Received message on topic: ${topic}`);
             console.log(`📦 Payload length: ${binaryPayload.length} bytes`);
             console.log(`📦 Is Buffer: ${Buffer.isBuffer(binaryPayload)}`);
