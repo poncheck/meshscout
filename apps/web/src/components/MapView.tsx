@@ -183,36 +183,38 @@ export default function MapView() {
 
                 const nodeList = Array.from(nodes.values());
 
-                // Build popup HTML
+                // Build popup HTML with dark theme
                 const html = `
-                    <div class="p-4 min-w-[300px]">
-                        <h3 class="font-bold text-lg mb-2 text-blue-600">📍 Hexagon ${hexId.slice(0, 12)}...</h3>
+                    <div class="p-4 min-w-[320px] bg-gray-900 text-white rounded-lg">
+                        <h3 class="font-bold text-xl mb-3 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                            📍 Hexagon ${hexId.slice(0, 12)}...
+                        </h3>
                         
-                        <div class="mb-3 text-sm">
+                        <div class="mb-4 text-sm space-y-2 bg-gray-800/50 p-3 rounded-lg">
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Messages:</span>
-                                <span class="font-semibold">${hexagonData.messageCount}</span>
+                                <span class="text-gray-400">Messages:</span>
+                                <span class="font-bold text-blue-400">${hexagonData.messageCount}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Last Activity:</span>
-                                <span class="font-semibold">${new Date(hexagonData.lastSeen).toLocaleString()}</span>
+                                <span class="text-gray-400">Last Activity:</span>
+                                <span class="font-semibold text-gray-200">${new Date(hexagonData.lastSeen).toLocaleString()}</span>
                             </div>
                         </div>
 
                         ${nodeList.length > 0 ? `
-                            <div class="border-t pt-2">
-                                <h4 class="font-semibold text-sm mb-2">🔌 Devices (${nodeList.length})</h4>
-                                <div class="max-h-48 overflow-y-auto space-y-1">
+                            <div class="border-t border-gray-700 pt-3">
+                                <h4 class="font-bold text-sm mb-3 text-white">🔌 Devices (${nodeList.length})</h4>
+                                <div class="max-h-48 overflow-y-auto space-y-2 pr-2">
                                     ${nodeList.map(node => `
-                                        <div class="text-xs bg-gray-50 p-2 rounded">
-                                            <div class="font-medium">${node.longName}</div>
-                                            <div class="text-gray-500">ID: ${node.shortName}</div>
-                                            <div class="text-gray-400">Positions: ${node.positionCount}</div>
+                                        <div class="text-xs bg-gray-800 p-3 rounded-lg border border-gray-700 hover:border-blue-500 transition-colors">
+                                            <div class="font-bold text-white mb-1">${node.longName}</div>
+                                            <div class="text-gray-400">ID: <span class="text-blue-400 font-mono">${node.shortName}</span></div>
+                                            <div class="text-gray-500 text-[10px] mt-1">📍 ${node.positionCount} position${node.positionCount > 1 ? 's' : ''}</div>
                                         </div>
                                     `).join('')}
                                 </div>
                             </div>
-                        ` : '<div class="text-gray-400 text-sm">No devices detected</div>'}
+                        ` : '<div class="text-gray-500 text-sm text-center py-4">No devices detected</div>'}
                     </div>
                 `;
 
@@ -220,9 +222,9 @@ export default function MapView() {
             } catch (error) {
                 console.error('Error fetching hexagon details:', error);
                 popup.setHTML(`
-                    <div class="p-4">
-                        <h3 class="font-bold text-red-600">Error</h3>
-                        <p class="text-sm">Failed to load hexagon details</p>
+                    <div class="p-4 bg-gray-900 text-white rounded-lg">
+                        <h3 class="font-bold text-red-400 mb-2">⚠️ Error</h3>
+                        <p class="text-sm text-gray-400">Failed to load hexagon details</p>
                     </div>
                 `);
             }
@@ -243,35 +245,43 @@ export default function MapView() {
             <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
 
             {/* Stats overlay */}
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-4 z-10">
-                <h2 className="text-xl font-bold mb-2">MeshScout</h2>
-                <div className="space-y-1 text-sm">
-                    <p>Active Hexagons: <span className="font-semibold">{hexagons?.length || 0}</span></p>
-                    <p>Total Messages: <span className="font-semibold">
-                        {hexagons?.reduce((sum, h) => sum + h.messageCount, 0) || 0}
-                    </span></p>
+            <div className="absolute top-4 left-4 bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-2xl p-4 z-10 border border-gray-700">
+                <h2 className="text-2xl font-bold mb-3 text-white bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    MeshScout
+                </h2>
+                <div className="space-y-2 text-sm text-gray-200">
+                    <p className="flex justify-between gap-4">
+                        <span className="text-gray-400">Active Hexagons:</span>
+                        <span className="font-bold text-blue-400">{hexagons?.length || 0}</span>
+                    </p>
+                    <p className="flex justify-between gap-4">
+                        <span className="text-gray-400">Total Messages:</span>
+                        <span className="font-bold text-purple-400">
+                            {hexagons?.reduce((sum, h) => sum + h.messageCount, 0) || 0}
+                        </span>
+                    </p>
                 </div>
             </div>
 
             {/* Legend */}
-            <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-4 z-10">
-                <h3 className="font-bold mb-2 text-sm">Message Count</h3>
-                <div className="space-y-1 text-xs">
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }}></div>
-                        <span>0-10</span>
+            <div className="absolute bottom-4 right-4 bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-2xl p-4 z-10 border border-gray-700">
+                <h3 className="font-bold mb-3 text-sm text-white">Message Activity</h3>
+                <div className="space-y-2 text-xs">
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-md shadow-lg" style={{ backgroundColor: '#3b82f6' }}></div>
+                        <span className="text-gray-300 font-medium">0-10 messages</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#8b5cf6' }}></div>
-                        <span>10-50</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-md shadow-lg" style={{ backgroundColor: '#8b5cf6' }}></div>
+                        <span className="text-gray-300 font-medium">10-50 messages</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ec4899' }}></div>
-                        <span>50-100</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-md shadow-lg" style={{ backgroundColor: '#ec4899' }}></div>
+                        <span className="text-gray-300 font-medium">50-100 messages</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ef4444' }}></div>
-                        <span>100+</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-md shadow-lg" style={{ backgroundColor: '#ef4444' }}></div>
+                        <span className="text-gray-300 font-medium">100+ messages</span>
                     </div>
                 </div>
             </div>
