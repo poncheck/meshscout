@@ -34,14 +34,22 @@ export default function MapView() {
     });
 
     // Initialize map
+    // Initialize map
     useEffect(() => {
-        if (map.current || !mapContainer.current) return;
+        if (map.current) return; // Prevent multiple initializations
+
+        console.log('🗺️ Initializing MapView...');
 
         const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoicG9uY2hlY2siLCJhIjoiY21pb3hibmsyMDVyejNmc2N2dTA0NnAzOSJ9.VxWyty0zK_90R_Zi3N2QHA';
         if (!token) {
             console.error('Mapbox token is missing!');
         }
         mapboxgl.accessToken = token;
+
+        if (!mapContainer.current) {
+            console.error('Map container ref is null');
+            return;
+        }
 
         map.current = new mapboxgl.Map({
             container: mapContainer.current,
@@ -52,6 +60,7 @@ export default function MapView() {
         });
 
         map.current.on('load', () => {
+            console.log('🗺️ Map loaded');
             setMapLoaded(true);
         });
 
@@ -66,7 +75,9 @@ export default function MapView() {
         });
 
         return () => {
+            console.log('🗺️ Cleaning up MapView...');
             map.current?.remove();
+            map.current = null;
         };
     }, []);
 
