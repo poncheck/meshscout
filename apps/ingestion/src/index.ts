@@ -309,10 +309,38 @@ class MeshtasticIngestion {
 
                 // TRACEROUTE_APP
                 if (portnum === meshtastic.PortNum.TRACEROUTE_APP && packet.decoded.payload) {
-                    const route = meshtastic.RouteDiscovery.decode(packet.decoded.payload);
-                    console.log(`🛤️  Traceroute from ${fromNode}:`, route);
+                    try {
+                        const route = meshtastic.RouteDiscovery.decode(packet.decoded.payload);
+                        console.log(`🛤️  Traceroute from ${fromNode} with ${route.route?.length || 0} hops`);
 
-                    // TODO: Process traceroute for gamification
+                        if (route.route && route.route.length > 0) {
+                            // Create traceroute record
+                            const traceroute = await prisma.traceroute.create({
+                                data: {
+                                    sourceNode: fromNode,
+                                    destNode: route.route[route.route.length - 1]?.toString() || 'unknown',
+                                    timestamp: new Date(packet.rxTime ? packet.rxTime * 1000 : Date.now()),
+                                    verified: false, // We can verify later based on positions
+                                },
+                            });
+
+                            // Create hop records
+                            for (let i = 0; i < route.route.length; i++) {
+                                await prisma.tracerouteHop.create({
+                                    data: {
+                                        tracerouteId: traceroute.id,
+                                        hopNumber: i,
+                                        nodeId: route.route[i].toString(),
+                                        snr: route.snrTowards && route.snrTowards[i] ? route.snrTowards[i] : null,
+                                    },
+                                });
+                            }
+
+                            console.log(`✅ Saved traceroute ${traceroute.id} with ${route.route.length} hops`);
+                        }
+                    } catch (error) {
+                        console.error(`Error processing TRACEROUTE from ${fromNode}:`, error);
+                    }
                 }
             }
 

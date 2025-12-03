@@ -175,7 +175,9 @@ app.get('/api/nodes/:nodeId', async (req, res) => {
             take: 20,
             orderBy: { timestamp: 'desc' },
             include: {
-                hops: true,
+                hops: {
+                    orderBy: { hopNumber: 'asc' },
+                },
             },
         });
 
