@@ -1,0 +1,28 @@
+# API Service Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy all package.json files for workspace setup
+COPY package*.json ./
+COPY apps/web/package*.json ./apps/web/
+COPY apps/api/package*.json ./apps/api/
+COPY apps/ingestion/package*.json ./apps/ingestion/
+COPY packages/shared/package*.json ./packages/shared/
+
+# Install all dependencies (workspaces)
+RUN npm install
+
+# Copy source code
+COPY packages/shared ./packages/shared
+COPY apps/api ./apps/api
+
+# Generate Prisma client
+WORKDIR /app/packages/shared
+RUN npx prisma generate
+
+WORKDIR /app/apps/api
+
+EXPOSE 3001
+
+CMD ["npm", "run", "dev"]

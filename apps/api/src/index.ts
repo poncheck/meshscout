@@ -171,9 +171,7 @@ app.get('/api/nodes/:nodeId', async (req, res) => {
             return res.status(404).json({ error: 'Node not found' });
         }
 
-        // Fetch traceroutes initiated by this node (using raw query or if we link Node to Traceroute)
-        // Currently Traceroute links to Player, but sourceNode is a string.
-        // We can search by sourceNode string.
+        // Fetch traceroutes initiated by this node
         const traceroutes = await prisma.traceroute.findMany({
             where: { sourceNode: nodeId },
             take: 20,
@@ -185,9 +183,40 @@ app.get('/api/nodes/:nodeId', async (req, res) => {
             },
         });
 
+        // Enrich traceroutes with node names
+        const enrichedTraceroutes = await Promise.all(
+            traceroutes.map(async (tr) => {
+                // Get destination node name
+                const destNodeInfo = await prisma.node.findUnique({
+                    where: { nodeId: tr.destNode },
+                    select: { longName: true, shortName: true },
+                });
+
+                // Get node names for each hop
+                const enrichedHops = await Promise.all(
+                    tr.hops.map(async (hop) => {
+                        const hopNodeInfo = await prisma.node.findUnique({
+                            where: { nodeId: hop.nodeId },
+                            select: { longName: true, shortName: true },
+                        });
+                        return {
+                            ...hop,
+                            nodeName: hopNodeInfo?.longName || hopNodeInfo?.shortName || hop.nodeId.slice(0, 8),
+                        };
+                    })
+                );
+
+                return {
+                    ...tr,
+                    destNodeName: destNodeInfo?.longName || destNodeInfo?.shortName || tr.destNode.slice(0, 8),
+                    hops: enrichedHops,
+                };
+            })
+        );
+
         res.json({
             ...node,
-            traceroutes,
+            traceroutes: enrichedTraceroutes,
         });
     } catch (error) {
         console.error('Error fetching node details:', error);
