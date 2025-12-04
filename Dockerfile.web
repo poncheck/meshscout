@@ -3,12 +3,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Copy all package.json files for workspace setup
 COPY package*.json ./
 COPY apps/web/package*.json ./apps/web/
+COPY apps/api/package*.json ./apps/api/
+COPY apps/ingestion/package*.json ./apps/ingestion/
+COPY packages/shared/package*.json ./packages/shared/
 
-# Install dependencies
-RUN npm install --workspace=@meshscout/web
+# Install all dependencies (workspaces)
+RUN npm install
 
 # Copy source code
 COPY apps/web ./apps/web
