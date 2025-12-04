@@ -21,12 +21,14 @@ interface TracerouteHop {
     id: string;
     hopNumber: number;
     nodeId: string;
+    nodeName?: string;
     snr: number | null;
 }
 
 interface Traceroute {
     id: string;
     destNode: string;
+    destNodeName?: string;
     timestamp: string;
     hops: TracerouteHop[];
 }
@@ -255,18 +257,18 @@ export default function NodeDetailsPage() {
                             node.traceroutes.map((tr) => (
                                 <div key={tr.id} className="bg-gray-900 p-4 rounded-xl border border-gray-800">
                                     <div className="flex justify-between mb-2">
-                                        <span className="font-bold text-purple-400">To: {tr.destNode}</span>
+                                        <span className="font-bold text-purple-400">To: {tr.destNodeName || tr.destNode.slice(0, 8)}</span>
                                         <span className="text-gray-500 text-sm">{new Date(tr.timestamp).toLocaleString()}</span>
                                     </div>
                                     <div className="flex items-center gap-2 overflow-x-auto py-2">
                                         <div className="px-3 py-1 bg-blue-900/50 rounded text-sm border border-blue-800">
-                                            Start
+                                            {node.longName || node.shortName || 'Start'}
                                         </div>
                                         {tr.hops.map((hop) => (
                                             <div key={hop.id} className="flex items-center gap-2">
                                                 <span className="text-gray-600">→</span>
                                                 <div className="px-3 py-1 bg-gray-800 rounded text-sm border border-gray-700">
-                                                    {hop.nodeId.slice(0, 8)}
+                                                    {hop.nodeName || hop.nodeId.slice(0, 8)}
                                                     {hop.snr && <span className="ml-2 text-xs text-green-500">{hop.snr.toFixed(1)}dB</span>}
                                                 </div>
                                             </div>
@@ -274,7 +276,7 @@ export default function NodeDetailsPage() {
                                         <div className="flex items-center gap-2">
                                             <span className="text-gray-600">→</span>
                                             <div className="px-3 py-1 bg-purple-900/50 rounded text-sm border border-purple-800">
-                                                End
+                                                {tr.destNodeName || tr.destNode.slice(0, 8)}
                                             </div>
                                         </div>
                                     </div>
