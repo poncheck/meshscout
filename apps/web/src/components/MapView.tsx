@@ -106,20 +106,25 @@ export default function MapView() {
         // Create GeoJSON from hexagons
         const geojson: GeoJSON.FeatureCollection = {
             type: 'FeatureCollection',
-            features: hexagons.map((hex) => ({
-                type: 'Feature',
-                geometry: {
-                    type: 'Polygon',
-                    coordinates: [
-                        hex.boundary.map(([lat, lng]) => [lng, lat]), // Convert lat/lng to lng/lat
-                    ],
-                },
-                properties: {
-                    hexId: hex.hexId,
-                    messageCount: hex.messageCount,
-                    lastSeen: hex.lastSeen,
-                },
-            })),
+            features: hexagons.map((hex) => {
+                // Convert lat/lng to lng/lat and close the polygon
+                const coords = hex.boundary.map(([lat, lng]) => [lng, lat]);
+                // GeoJSON polygons must have first and last point be the same
+                const closedCoords = [...coords, coords[0]];
+
+                return {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [closedCoords],
+                    },
+                    properties: {
+                        hexId: hex.hexId,
+                        messageCount: hex.messageCount,
+                        lastSeen: hex.lastSeen,
+                    },
+                };
+            }),
         };
 
         console.log('🗺️ GeoJSON features:', geojson.features.length);
