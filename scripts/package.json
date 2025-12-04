@@ -1,0 +1,16 @@
+{
+  "name": "meshscout-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "check": "ts-node check-db.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
+  }
+}

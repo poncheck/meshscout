@@ -31,7 +31,8 @@ model Node {
   shortName String?
   lastSeen  DateTime @default(now())
 
-  positions Position[]
+  positions  Position[]
+  telemetry  Telemetry[]
 
   @@index([nodeId])
 }
@@ -99,6 +100,69 @@ model TracerouteHop {
 
   @@index([tracerouteId])
   @@index([hexagonId])
+}
+
+model Telemetry {
+  id        String   @id @default(cuid())
+  nodeId    String
+  timestamp DateTime @default(now())
+
+  // Device metrics
+  batteryLevel          Int?
+  voltage               Float?
+  channelUtilization    Float?
+  airUtilTx             Float?
+  uptimeSeconds         Int?
+
+  // Environment metrics
+  temperature           Float?
+  relativeHumidity      Float?
+  barometricPressure    Float?
+  gasResistance         Float?
+  iaq                   Int?
+  distance              Float?
+  lux                   Float?
+  whiteLux              Float?
+  ir                    Float?
+  uv                    Float?
+  windDirection         Int?
+  windSpeed             Float?
+  windGust              Float?
+  windLull              Float?
+
+  // Power metrics
+  ch1Voltage            Float?
+  ch1Current            Float?
+  ch2Voltage            Float?
+  ch2Current            Float?
+  ch3Voltage            Float?
+  ch3Current            Float?
+
+  // Air quality metrics
+  pm10                  Int?
+  pm25                  Int?
+  pm100                 Int?
+
+  // Local stats
+  numPacketsTx          Int?
+  numPacketsRx          Int?
+  numPacketsRxBad       Int?
+  numOnlineNodes        Int?
+  numTotalNodes         Int?
+
+  // Health metrics
+  heartBpm              Int?
+  spO2                  Int?
+  bodyTempC             Float?
+
+  // Metadata
+  variant               String?  // device_metrics, environment_metrics, power_metrics, etc.
+
+  node Node @relation(fields: [nodeId], references: [nodeId])
+
+  @@index([nodeId])
+  @@index([timestamp])
+  @@index([variant])
 }
 
 model Message {

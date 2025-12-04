@@ -31,6 +31,26 @@ interface Traceroute {
     hops: TracerouteHop[];
 }
 
+interface Telemetry {
+    id: string;
+    timestamp: string;
+    variant: string | null;
+    batteryLevel: number | null;
+    voltage: number | null;
+    channelUtilization: number | null;
+    airUtilTx: number | null;
+    uptimeSeconds: number | null;
+    temperature: number | null;
+    relativeHumidity: number | null;
+    barometricPressure: number | null;
+    pm10: number | null;
+    pm25: number | null;
+    pm100: number | null;
+    numPacketsTx: number | null;
+    numPacketsRx: number | null;
+    numOnlineNodes: number | null;
+}
+
 interface NodeDetails {
     nodeId: string;
     longName: string | null;
@@ -38,6 +58,7 @@ interface NodeDetails {
     lastSeen: string;
     positions: Position[];
     traceroutes: Traceroute[];
+    telemetry: Telemetry[];
 }
 
 export default function NodeDetailsPage() {
@@ -73,29 +94,29 @@ export default function NodeDetailsPage() {
                     </h1>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     {/* Info Card */}
                     <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
                         <h2 className="text-xl font-semibold mb-4 text-blue-400">Device Info</h2>
                         <div className="space-y-3">
                             <div className="flex justify-between border-b border-gray-800 pb-2">
                                 <span className="text-gray-400">Node ID</span>
-                                <span className="font-mono">{node.nodeId}</span>
+                                <span className="font-mono text-sm">{node.nodeId}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-800 pb-2">
                                 <span className="text-gray-400">Last Seen</span>
-                                <span>{new Date(node.lastSeen).toLocaleString()}</span>
+                                <span className="text-sm">{new Date(node.lastSeen).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between border-b border-gray-800 pb-2">
-                                <span className="text-gray-400">Total Positions</span>
+                                <span className="text-gray-400">Positions</span>
                                 <span>{node.positions.length}</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Recent Telemetry (Latest Position) */}
+                    {/* Signal Quality (from Position data) */}
                     <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
-                        <h2 className="text-xl font-semibold mb-4 text-green-400">Latest Telemetry</h2>
+                        <h2 className="text-xl font-semibold mb-4 text-purple-400">Signal Quality</h2>
                         {node.positions.length > 0 ? (
                             <div className="space-y-3">
                                 <div className="flex justify-between border-b border-gray-800 pb-2">
@@ -112,14 +133,92 @@ export default function NodeDetailsPage() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-gray-500">No telemetry data available</div>
+                            <div className="text-gray-500">No position data</div>
+                        )}
+                    </div>
+
+                    {/* Device Telemetry */}
+                    <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
+                        <h2 className="text-xl font-semibold mb-4 text-green-400">Device Telemetry</h2>
+                        {node.telemetry && node.telemetry.length > 0 ? (
+                            <div className="space-y-3">
+                                {node.telemetry[0].batteryLevel !== null && (
+                                    <div className="flex justify-between border-b border-gray-800 pb-2">
+                                        <span className="text-gray-400">Battery</span>
+                                        <span>{node.telemetry[0].batteryLevel}%</span>
+                                    </div>
+                                )}
+                                {node.telemetry[0].voltage !== null && (
+                                    <div className="flex justify-between border-b border-gray-800 pb-2">
+                                        <span className="text-gray-400">Voltage</span>
+                                        <span>{node.telemetry[0].voltage.toFixed(2)}V</span>
+                                    </div>
+                                )}
+                                {node.telemetry[0].temperature !== null && (
+                                    <div className="flex justify-between border-b border-gray-800 pb-2">
+                                        <span className="text-gray-400">Temperature</span>
+                                        <span>{node.telemetry[0].temperature.toFixed(1)}°C</span>
+                                    </div>
+                                )}
+                                {node.telemetry[0].relativeHumidity !== null && (
+                                    <div className="flex justify-between border-b border-gray-800 pb-2">
+                                        <span className="text-gray-400">Humidity</span>
+                                        <span>{node.telemetry[0].relativeHumidity.toFixed(0)}%</span>
+                                    </div>
+                                )}
+                                {!node.telemetry[0].batteryLevel && !node.telemetry[0].voltage &&
+                                 !node.telemetry[0].temperature && !node.telemetry[0].relativeHumidity && (
+                                    <div className="text-gray-500 text-sm">
+                                        Type: {node.telemetry[0].variant || 'unknown'}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-gray-500">No telemetry data</div>
                         )}
                     </div>
                 </div>
 
                 {/* Telemetry History Table */}
+                {node.telemetry && node.telemetry.length > 0 && (
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold mb-4">Telemetry History</h2>
+                        <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-800 text-gray-400">
+                                    <tr>
+                                        <th className="p-4">Time</th>
+                                        <th className="p-4">Type</th>
+                                        <th className="p-4">Battery</th>
+                                        <th className="p-4">Voltage</th>
+                                        <th className="p-4">Temp</th>
+                                        <th className="p-4">Humidity</th>
+                                        <th className="p-4">Uptime</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-800">
+                                    {node.telemetry.slice(0, 20).map((tel) => (
+                                        <tr key={tel.id} className="hover:bg-gray-800/50">
+                                            <td className="p-4 text-gray-300">{new Date(tel.timestamp).toLocaleString()}</td>
+                                            <td className="p-4 text-sm text-purple-300">{tel.variant || '-'}</td>
+                                            <td className="p-4 font-mono text-green-300">{tel.batteryLevel !== null ? `${tel.batteryLevel}%` : '-'}</td>
+                                            <td className="p-4 font-mono text-blue-300">{tel.voltage !== null ? `${tel.voltage.toFixed(2)}V` : '-'}</td>
+                                            <td className="p-4 font-mono text-orange-300">{tel.temperature !== null ? `${tel.temperature.toFixed(1)}°C` : '-'}</td>
+                                            <td className="p-4 font-mono text-cyan-300">{tel.relativeHumidity !== null ? `${tel.relativeHumidity.toFixed(0)}%` : '-'}</td>
+                                            <td className="p-4 font-mono text-gray-400 text-sm">
+                                                {tel.uptimeSeconds !== null ? `${Math.floor(tel.uptimeSeconds / 3600)}h ${Math.floor((tel.uptimeSeconds % 3600) / 60)}m` : '-'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* Position History */}
                 <div className="mb-8">
-                    <h2 className="text-2xl font-bold mb-4">Telemetry History</h2>
+                    <h2 className="text-2xl font-bold mb-4">Position History</h2>
                     <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
                         <table className="w-full text-left">
                             <thead className="bg-gray-800 text-gray-400">
@@ -132,7 +231,7 @@ export default function NodeDetailsPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-800">
-                                {node.positions.map((pos) => (
+                                {node.positions.slice(0, 20).map((pos) => (
                                     <tr key={pos.id} className="hover:bg-gray-800/50">
                                         <td className="p-4 text-gray-300">{new Date(pos.timestamp).toLocaleString()}</td>
                                         <td className="p-4 font-mono text-blue-300">{pos.altitude || '-'} m</td>
