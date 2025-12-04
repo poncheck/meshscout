@@ -11,7 +11,7 @@ Complete Docker Compose setup for MeshScout - real-time Meshtastic network visua
 
 ### 1. Build and start all services:
 ```bash
-docker-compose up --build
+docker compose up --build -d
 ```
 
 ### 2. Initialize the database (first time only):
@@ -31,46 +31,46 @@ chmod +x scripts/init-db.sh
 ### Start services
 ```bash
 # Start all services
-docker-compose up
+docker compose up
 
 # Start in detached mode
-docker-compose up -d
+docker compose up -d
 
 # Rebuild and start
-docker-compose up --build
+docker compose up --build -d
 ```
 
 ### Stop services
 ```bash
 # Stop all services
-docker-compose down
+docker compose down
 
 # Stop and remove volumes (⚠️ deletes database)
-docker-compose down -v
+docker compose down -v
 ```
 
 ### View logs
 ```bash
 # All services
-docker-compose logs -f
+docker compose logs -f
 
 # Specific service
-docker-compose logs -f api
-docker-compose logs -f ingestion
-docker-compose logs -f web
+docker compose logs -f api
+docker compose logs -f ingestion
+docker compose logs -f web
 ```
 
 ### Execute commands in containers
 ```bash
 # Access API container shell
-docker-compose exec api sh
+docker compose exec api sh
 
 # Run Prisma commands
-docker-compose exec api npx prisma studio
-docker-compose exec api npx prisma db push
+docker compose exec api npx prisma studio
+docker compose exec api npx prisma db push
 
 # Access PostgreSQL
-docker-compose exec postgres psql -U meshscout -d meshscout
+docker compose exec postgres psql -U meshscout -d meshscout
 ```
 
 ## 📊 Services Overview
@@ -100,29 +100,29 @@ docker-compose exec postgres psql -U meshscout -d meshscout
 
 ### View database contents:
 ```bash
-docker-compose exec postgres psql -U meshscout -d meshscout -c "\dt"
+docker compose exec postgres psql -U meshscout -d meshscout -c "\dt"
 ```
 
 ### Check data:
 ```bash
 # Nodes
-docker-compose exec postgres psql -U meshscout -d meshscout -c "SELECT COUNT(*) FROM \"Node\";"
+docker compose exec postgres psql -U meshscout -d meshscout -c "SELECT COUNT(*) FROM \"Node\";"
 
 # Positions
-docker-compose exec postgres psql -U meshscout -d meshscout -c "SELECT COUNT(*) FROM \"Position\";"
+docker compose exec postgres psql -U meshscout -d meshscout -c "SELECT COUNT(*) FROM \"Position\";"
 
 # Telemetry
-docker-compose exec postgres psql -U meshscout -d meshscout -c "SELECT COUNT(*) FROM \"Telemetry\";"
+docker compose exec postgres psql -U meshscout -d meshscout -c "SELECT COUNT(*) FROM \"Telemetry\";"
 ```
 
 ### Backup database:
 ```bash
-docker-compose exec postgres pg_dump -U meshscout meshscout > backup.sql
+docker compose exec postgres pg_dump -U meshscout meshscout > backup.sql
 ```
 
 ### Restore database:
 ```bash
-cat backup.sql | docker-compose exec -T postgres psql -U meshscout -d meshscout
+cat backup.sql | docker compose exec -T postgres psql -U meshscout -d meshscout
 ```
 
 ## 🔧 Configuration
@@ -147,17 +147,17 @@ Source code is mounted as volumes for hot reload:
 ### Prisma client errors
 ```bash
 # Regenerate Prisma client
-docker-compose exec api npx prisma generate
-docker-compose restart api ingestion
+docker compose exec api npx prisma generate
+docker compose restart api ingestion
 ```
 
 ### Database connection issues
 ```bash
 # Check PostgreSQL status
-docker-compose exec postgres pg_isready -U meshscout
+docker compose exec postgres pg_isready -U meshscout
 
 # View PostgreSQL logs
-docker-compose logs postgres
+docker compose logs postgres
 ```
 
 ### Port already in use
@@ -170,11 +170,11 @@ lsof -ti:3001 | xargs kill -9
 ### Clean restart
 ```bash
 # Stop everything and clean up
-docker-compose down -v
+docker compose down -v
 docker system prune -f
 
 # Rebuild from scratch
-docker-compose up --build
+docker compose up --build -d
 ```
 
 ## 📈 Production Deployment
@@ -206,7 +206,7 @@ services:
 
 Deploy with:
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 ## 🔐 Security Notes
