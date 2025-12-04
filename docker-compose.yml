@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: meshscout-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: meshscout
+      POSTGRES_PASSWORD: meshscout123
+      POSTGRES_DB: meshscout
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meshscout"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - meshscout
+
+  # Ingestion Service (MQTT -> Database)
+  ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile.ingestion
+    container_name: meshscout-ingestion
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://meshscout:meshscout123@postgres:5432/meshscout?schema=public"
+      MQTT_BROKER_URL: "mqtt://mqtt.meshtastic.org"
+      MQTT_TOPIC: "msh/+/2/e/#"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - meshscout
+    volumes:
+      - ./apps/ingestion/src:/app/apps/ingestion/src
+      - ./packages/shared/prisma:/app/packages/shared/prisma
+
+  # API Service (REST API)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: meshscout-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://meshscout:meshscout123@postgres:5432/meshscout?schema=public"
+      API_PORT: 3001
+      API_HOST: "0.0.0.0"
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - meshscout
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - ./packages/shared/prisma:/app/packages/shared/prisma
+
+  # Web Frontend (Next.js)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: meshscout-web
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:3001"
+      NEXT_PUBLIC_WS_URL: "ws://localhost:3001"
+      NEXT_PUBLIC_MAPBOX_TOKEN: "pk.eyJ1IjoicG9uY2hlY2siLCJhIjoiY21pb3hibmsyMDVyejNmc2N2dTA0NnAzOSJ9.VxWyty0zK_90R_Zi3N2QHA"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - meshscout
+    volumes:
+      - ./apps/web/src:/app/apps/web/src
+      - ./apps/web/public:/app/apps/web/public
+
+networks:
+  meshscout:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

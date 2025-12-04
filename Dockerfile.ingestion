@@ -1,0 +1,28 @@
+# Ingestion Service Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY packages/shared/package*.json ./packages/shared/
+COPY apps/ingestion/package*.json ./apps/ingestion/
+
+# Install dependencies
+RUN npm install --workspace=@meshscout/shared
+RUN npm install --workspace=@meshscout/ingestion
+
+# Copy source code
+COPY packages/shared ./packages/shared
+COPY apps/ingestion ./apps/ingestion
+
+# Generate Prisma client
+WORKDIR /app/packages/shared
+RUN npx prisma generate
+
+WORKDIR /app/apps/ingestion
+
+# Expose port (if needed for debugging)
+EXPOSE 3002
+
+CMD ["npm", "run", "dev"]
