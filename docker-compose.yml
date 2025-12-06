@@ -29,6 +29,8 @@ services:
       dockerfile: Dockerfile.ingestion
     container_name: meshscout-ingestion
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       DATABASE_URL: "postgresql://meshscout:meshscout123@postgres:5432/meshscout?schema=public"
       MQTT_BROKER_URL: "mqtt://mqtt.meshtastic.org"
@@ -49,6 +51,8 @@ services:
       dockerfile: Dockerfile.api
     container_name: meshscout-api
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       DATABASE_URL: "postgresql://meshscout:meshscout123@postgres:5432/meshscout?schema=public"
       API_PORT: 3001
@@ -71,6 +75,8 @@ services:
       dockerfile: Dockerfile.web
     container_name: meshscout-web
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       NEXT_PUBLIC_API_URL: "http://localhost:3001"
       NEXT_PUBLIC_WS_URL: "ws://localhost:3001"
