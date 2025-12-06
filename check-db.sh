@@ -27,5 +27,8 @@ fi
 echo "📊 Łączę z bazą danych..."
 echo ""
 
+# Usuń parametry query z DATABASE_URL (psql ich nie rozumie)
+DB_URL_CLEAN="${DATABASE_URL%%\?*}"
+
 # Wykonaj zapytania SQL
-psql "$DATABASE_URL" -f scripts/check-db.sql
+psql "$DB_URL_CLEAN" -f scripts/check-db.sql
