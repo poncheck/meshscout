@@ -246,10 +246,30 @@ class MeshtasticIngestion {
             const fromNode = packet.from?.toString() || 'unknown';
             const toNode = packet.to?.toString() || 'broadcast';
 
-            // Skip encrypted packets - most channels use custom keys we don't have
+            // Try to decrypt encrypted packets using default key
             if (!packet.decoded && packet.encrypted && packet.encrypted.length > 0) {
-                // Silently skip encrypted packets
-                return;
+                try {
+                    console.log(`🔐 Attempting to decrypt packet from ${fromNode} (packet ID: ${packet.id})`);
+
+                    const decrypted = decryptMeshtasticPacket(
+                        Buffer.from(packet.encrypted),
+                        packet.id || 0,
+                        packet.from || 0,
+                        DEFAULT_KEY
+                    );
+
+                    // Try to decode the decrypted data as a Data message
+                    const data = meshtastic.Data.decode(decrypted);
+
+                    // Replace encrypted data with decoded data
+                    packet.decoded = data;
+
+                    console.log(`✅ Successfully decrypted packet: portnum=${data.portnum} (${meshtastic.PortNum[data.portnum] || 'UNKNOWN'})`);
+                } catch (decryptError) {
+                    // Decryption failed - likely using a custom key we don't have
+                    console.log(`⏭️  Skipping encrypted packet from ${fromNode} (custom key or decode error)`);
+                    return;
+                }
             }
 
             // Decode the payload based on portnum
