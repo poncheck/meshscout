@@ -249,7 +249,8 @@ class MeshtasticIngestion {
             // Try to decrypt encrypted packets using default key
             if (!packet.decoded && packet.encrypted && packet.encrypted.length > 0) {
                 try {
-                    console.log(`🔐 Attempting to decrypt packet from ${fromNode} (packet ID: ${packet.id})`);
+                    console.log(`🔐 Encrypted packet from ${fromNode} (ID: ${packet.id}, size: ${packet.encrypted.length} bytes)`);
+                    console.log(`🔍 Encrypted hex (first 40 bytes):`, Buffer.from(packet.encrypted).slice(0, 40).toString('hex'));
 
                     const decrypted = decryptMeshtasticPacket(
                         Buffer.from(packet.encrypted),
@@ -258,16 +259,20 @@ class MeshtasticIngestion {
                         DEFAULT_KEY
                     );
 
+                    console.log(`🔓 Decrypted ${decrypted.length} bytes`);
+                    console.log(`🔍 Decrypted hex (first 40 bytes):`, decrypted.slice(0, 40).toString('hex'));
+
                     // Try to decode the decrypted data as a Data message
                     const data = meshtastic.Data.decode(decrypted);
 
                     // Replace encrypted data with decoded data
                     packet.decoded = data;
 
-                    console.log(`✅ Successfully decrypted packet: portnum=${data.portnum} (${meshtastic.PortNum[data.portnum] || 'UNKNOWN'})`);
-                } catch (decryptError) {
+                    console.log(`✅ Successfully decrypted: portnum=${data.portnum} (${meshtastic.PortNum[data.portnum] || 'UNKNOWN'})`);
+                } catch (decryptError: any) {
                     // Decryption failed - likely using a custom key we don't have
-                    console.log(`⏭️  Skipping encrypted packet from ${fromNode} (custom key or decode error)`);
+                    console.log(`⏭️  Decrypt failed for ${fromNode}: ${decryptError.message}`);
+                    // Don't log every failed decrypt - most channels use custom keys
                     return;
                 }
             }
