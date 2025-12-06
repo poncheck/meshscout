@@ -14,6 +14,21 @@ function parseChannelKeys(): Buffer[] {
     const keysEnv = process.env.CHANNEL_KEYS || 'AQ==';
     const keys: Buffer[] = [];
 
+    // Meshtastic default keys for 1-byte PSKs (from channel.proto)
+    const MESHTASTIC_DEFAULT_KEYS = {
+        0: null, // No crypto
+        1: Buffer.from([0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x01]),
+        2: Buffer.from([0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x02]),
+        3: Buffer.from([0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x03]),
+        4: Buffer.from([0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x04]),
+        5: Buffer.from([0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x05]),
+        6: Buffer.from([0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x06]),
+        7: Buffer.from([0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x07]),
+        8: Buffer.from([0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x08]),
+        9: Buffer.from([0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x09]),
+        10: Buffer.from([0xd4, 0xf1, 0xbb, 0x3a, 0x20, 0x29, 0x07, 0x59, 0xf0, 0xbc, 0xff, 0xab, 0xcf, 0x4e, 0x69, 0x0a]),
+    };
+
     keysEnv.split(',').forEach(keyB64 => {
         try {
             const keyTrimmed = keyB64.trim();
@@ -22,12 +37,31 @@ function parseChannelKeys(): Buffer[] {
             // Decode base64 PSK
             const psk = Buffer.from(keyTrimmed, 'base64');
 
-            // Pad to 16 bytes for AES-128 (Meshtastic pads short keys with zeros)
-            const key = Buffer.alloc(16);
-            psk.copy(key, 0, 0, Math.min(psk.length, 16));
+            let key: Buffer;
+
+            // Handle special 1-byte PSK shortcuts (Meshtastic default keys)
+            if (psk.length === 1) {
+                const shortcut = psk[0];
+                if (shortcut === 0) {
+                    console.log(`🔑 Skipping PSK shortcut 0 (no crypto)`);
+                    return;
+                } else if (shortcut >= 1 && shortcut <= 10) {
+                    key = MESHTASTIC_DEFAULT_KEYS[shortcut];
+                    console.log(`🔑 Loaded Meshtastic default key #${shortcut}: ${keyTrimmed} (1 → 16 bytes, AES-128)`);
+                } else {
+                    console.error(`❌ Invalid PSK shortcut ${shortcut}, must be 0-10`);
+                    return;
+                }
+            } else if (psk.length === 16 || psk.length === 32) {
+                // Use key as-is for 16 or 32 byte keys
+                key = psk;
+                console.log(`🔑 Loaded encryption key: ${keyTrimmed} (${psk.length} bytes, ${psk.length === 16 ? 'AES-128' : 'AES-256'})`);
+            } else {
+                console.error(`❌ Invalid key length ${psk.length} bytes, must be 1 (shortcut), 16, or 32: ${keyTrimmed}`);
+                return;
+            }
 
             keys.push(key);
-            console.log(`🔑 Loaded encryption key: ${keyTrimmed} (${psk.length} → ${key.length} bytes, AES-128)`);
         } catch (error) {
             console.error(`❌ Failed to parse key "${keyB64}":`, error);
         }
