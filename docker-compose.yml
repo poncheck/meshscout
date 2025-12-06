@@ -31,10 +31,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    environment:
-      DATABASE_URL: "postgresql://meshscout:meshscout123@postgres:5432/meshscout?schema=public"
-      MQTT_BROKER_URL: "mqtt://mqtt.meshtastic.org"
-      MQTT_TOPIC: "msh/+/2/e/#"
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,10 +49,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    environment:
-      DATABASE_URL: "postgresql://meshscout:meshscout123@postgres:5432/meshscout?schema=public"
-      API_PORT: 3001
-      API_HOST: "0.0.0.0"
     ports:
       - "3001:3001"
     depends_on:
@@ -77,10 +69,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    environment:
-      NEXT_PUBLIC_API_URL: "http://localhost:3001"
-      NEXT_PUBLIC_WS_URL: "ws://localhost:3001"
-      NEXT_PUBLIC_MAPBOX_TOKEN: "pk.eyJ1IjoicG9uY2hlY2siLCJhIjoiY21pb3hibmsyMDVyejNmc2N2dTA0NnAzOSJ9.VxWyty0zK_90R_Zi3N2QHA"
     ports:
       - "3000:3000"
     depends_on:
