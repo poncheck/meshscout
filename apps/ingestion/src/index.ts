@@ -22,12 +22,12 @@ function parseChannelKeys(): Buffer[] {
             // Decode base64 PSK
             const psk = Buffer.from(keyTrimmed, 'base64');
 
-            // Expand to 32 bytes for AES256
-            const key = Buffer.alloc(32);
-            psk.copy(key, 0, 0, Math.min(psk.length, 32));
+            // Pad to 16 bytes for AES-128 (Meshtastic pads short keys with zeros)
+            const key = Buffer.alloc(16);
+            psk.copy(key, 0, 0, Math.min(psk.length, 16));
 
             keys.push(key);
-            console.log(`🔑 Loaded encryption key: ${keyTrimmed} (${psk.length} bytes -> ${key.length} bytes)`);
+            console.log(`🔑 Loaded encryption key: ${keyTrimmed} (${psk.length} → ${key.length} bytes, AES-128)`);
         } catch (error) {
             console.error(`❌ Failed to parse key "${keyB64}":`, error);
         }
@@ -40,33 +40,36 @@ function parseChannelKeys(): Buffer[] {
 let CHANNEL_KEYS: Buffer[] = [];
 
 /**
- * Decrypt Meshtastic packet using AES256-CTR
+ * Decrypt Meshtastic packet using AES-CTR
  * @param encryptedPayload - The encrypted payload buffer
  * @param packetId - Packet ID (used in nonce)
  * @param fromNode - Sender node number (used in nonce)
- * @param key - AES256 key (32 bytes)
+ * @param key - AES key (16 bytes for AES-128 or 32 bytes for AES-256)
  * @returns Decrypted buffer
  */
 function decryptMeshtasticPacket(
     encryptedPayload: Buffer,
     packetId: number,
     fromNode: number,
-    key: Buffer = DEFAULT_KEY
+    key: Buffer
 ): Buffer {
-    // Construct nonce: packetId (8 bytes) + fromNode (4 bytes) + padding (4 bytes) = 16 bytes
-    // Meshtastic uses 96-bit nonce: packetId (64-bit) + fromNode (32-bit)
+    // Construct nonce: packetId (8 bytes) + fromNode (4 bytes) + blockCounter (4 bytes) = 16 bytes
     const nonce = Buffer.alloc(16);
 
-    // Write packetId as 64-bit little-endian (8 bytes)
+    // Write packetId as 64-bit little-endian (bytes 0-7)
     nonce.writeBigUInt64LE(BigInt(packetId), 0);
 
-    // Write fromNode as 32-bit little-endian (4 bytes)
+    // Write fromNode as 32-bit little-endian (bytes 8-11)
     nonce.writeUInt32LE(fromNode >>> 0, 8);
 
-    // Remaining 4 bytes are zero (padding for AES block size)
+    // Write blockCounter as 32-bit little-endian (bytes 12-15), always starts at 0
+    nonce.writeUInt32LE(0, 12);
+
+    // Determine algorithm based on key length
+    const algorithm = key.length === 16 ? 'aes-128-ctr' : 'aes-256-ctr';
 
     // Create decipher
-    const decipher = createDecipheriv('aes-256-ctr', key, nonce);
+    const decipher = createDecipheriv(algorithm, key, nonce);
 
     // Decrypt
     const decrypted = Buffer.concat([
