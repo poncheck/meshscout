@@ -13,6 +13,6 @@ echo "✅ PostgreSQL is ready!"
 
 # Apply Prisma migrations
 echo "📦 Applying database schema..."
-docker compose exec -T api npx prisma db push --skip-generate
+docker compose exec -T api sh -c "cd /app/packages/shared && npx prisma db push --skip-generate"
 
 echo "✅ Database initialized successfully!"
