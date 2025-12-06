@@ -9,10 +9,35 @@ import { createDecipheriv } from 'crypto';
 // Extract the meshtastic namespace from the protobuf root
 const meshtastic = (protobuf as any).meshtastic;
 
-// Meshtastic default channel key "AQ==" (base64) = 0x01
-// For AES256, we need to expand this to 32 bytes
-const DEFAULT_KEY = Buffer.alloc(32);
-DEFAULT_KEY[0] = 0x01;
+// Parse encryption keys from environment
+function parseChannelKeys(): Buffer[] {
+    const keysEnv = process.env.CHANNEL_KEYS || 'AQ==';
+    const keys: Buffer[] = [];
+
+    keysEnv.split(',').forEach(keyB64 => {
+        try {
+            const keyTrimmed = keyB64.trim();
+            if (!keyTrimmed) return;
+
+            // Decode base64 PSK
+            const psk = Buffer.from(keyTrimmed, 'base64');
+
+            // Expand to 32 bytes for AES256
+            const key = Buffer.alloc(32);
+            psk.copy(key, 0, 0, Math.min(psk.length, 32));
+
+            keys.push(key);
+            console.log(`🔑 Loaded encryption key: ${keyTrimmed} (${psk.length} bytes -> ${key.length} bytes)`);
+        } catch (error) {
+            console.error(`❌ Failed to parse key "${keyB64}":`, error);
+        }
+    });
+
+    return keys;
+}
+
+// Will be initialized after .env is loaded
+let CHANNEL_KEYS: Buffer[] = [];
 
 /**
  * Decrypt Meshtastic packet using AES256-CTR
@@ -75,6 +100,9 @@ class MeshtasticIngestion {
         }
 
         console.log('🔍 MQTT_BROKER_URL:', process.env.MQTT_BROKER_URL);
+
+        // Parse encryption keys after .env is loaded
+        CHANNEL_KEYS = parseChannelKeys();
 
         const brokerUrl = process.env.MQTT_BROKER_URL || 'mqtt://mqtt.meshtastic.org';
         const mqttOptions: any = {
@@ -246,25 +274,37 @@ class MeshtasticIngestion {
             const fromNode = packet.from?.toString() || 'unknown';
             const toNode = packet.to?.toString() || 'broadcast';
 
-            // Try to decrypt encrypted packets using default key
+            // Try to decrypt encrypted packets with all known keys
             if (!packet.decoded && packet.encrypted && packet.encrypted.length > 0) {
-                try {
-                    const decrypted = decryptMeshtasticPacket(
-                        Buffer.from(packet.encrypted),
-                        packet.id || 0,
-                        packet.from || 0,
-                        DEFAULT_KEY
-                    );
+                let decrypted = false;
 
-                    // Try to decode the decrypted data as a Data message
-                    const data = meshtastic.Data.decode(decrypted);
+                // Try each key until one works
+                for (let i = 0; i < CHANNEL_KEYS.length; i++) {
+                    try {
+                        const decryptedData = decryptMeshtasticPacket(
+                            Buffer.from(packet.encrypted),
+                            packet.id || 0,
+                            packet.from || 0,
+                            CHANNEL_KEYS[i]
+                        );
 
-                    // Replace encrypted data with decoded data
-                    packet.decoded = data;
+                        // Try to decode the decrypted data as a Data message
+                        const data = meshtastic.Data.decode(decryptedData);
 
-                    console.log(`🔓 Successfully decrypted packet from ${fromNode}: portnum=${data.portnum} (${meshtastic.PortNum[data.portnum] || 'UNKNOWN'})`);
-                } catch (decryptError: any) {
-                    // Silently skip encrypted packets with custom keys (most public channels)
+                        // Replace encrypted data with decoded data
+                        packet.decoded = data;
+
+                        console.log(`🔓 Decrypted with key #${i + 1} from ${fromNode}: portnum=${data.portnum} (${meshtastic.PortNum[data.portnum] || 'UNKNOWN'})`);
+                        decrypted = true;
+                        break;
+                    } catch (decryptError: any) {
+                        // This key didn't work, try next one
+                        continue;
+                    }
+                }
+
+                // If no key worked, skip this packet
+                if (!decrypted) {
                     return;
                 }
             }
