@@ -96,7 +96,7 @@ export default function NodeDetailsPage() {
                     </h1>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     {/* Info Card */}
                     <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
                         <h2 className="text-xl font-semibold mb-4 text-blue-400">Device Info</h2>
@@ -114,29 +114,6 @@ export default function NodeDetailsPage() {
                                 <span>{node.positions.length}</span>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Signal Quality (from Position data) */}
-                    <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
-                        <h2 className="text-xl font-semibold mb-4 text-purple-400">Signal Quality</h2>
-                        {node.positions.length > 0 ? (
-                            <div className="space-y-3">
-                                <div className="flex justify-between border-b border-gray-800 pb-2">
-                                    <span className="text-gray-400">Altitude</span>
-                                    <span>{node.positions[0].altitude?.toFixed(1) || 'N/A'} m</span>
-                                </div>
-                                <div className="flex justify-between border-b border-gray-800 pb-2">
-                                    <span className="text-gray-400">SNR</span>
-                                    <span>{node.positions[0].snr?.toFixed(2) || 'N/A'} dB</span>
-                                </div>
-                                <div className="flex justify-between border-b border-gray-800 pb-2">
-                                    <span className="text-gray-400">RSSI</span>
-                                    <span>{node.positions[0].rssi || 'N/A'} dBm</span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-gray-500">No position data</div>
-                        )}
                     </div>
 
                     {/* Device Telemetry */}
