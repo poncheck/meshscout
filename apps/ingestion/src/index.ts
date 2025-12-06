@@ -77,12 +77,20 @@ class MeshtasticIngestion {
         console.log('🔍 MQTT_BROKER_URL:', process.env.MQTT_BROKER_URL);
 
         const brokerUrl = process.env.MQTT_BROKER_URL || 'mqtt://mqtt.meshtastic.org';
-        this.client = mqtt.connect(brokerUrl, {
-            username: 'meshdev',
-            password: 'large4cats',
+        const mqttOptions: any = {
             reconnectPeriod: 5000,
             encoding: 'binary', // Preserve binary data, don't convert to UTF-8
-        });
+        };
+
+        // Add credentials if provided
+        if (process.env.MQTT_USERNAME) {
+            mqttOptions.username = process.env.MQTT_USERNAME;
+        }
+        if (process.env.MQTT_PASSWORD) {
+            mqttOptions.password = process.env.MQTT_PASSWORD;
+        }
+
+        this.client = mqtt.connect(brokerUrl, mqttOptions);
 
         this.client.on('connect', () => {
             console.log('✅ Connected to MQTT broker:', brokerUrl);
