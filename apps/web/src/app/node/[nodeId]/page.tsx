@@ -218,37 +218,6 @@ export default function NodeDetailsPage() {
                     </div>
                 )}
 
-                {/* Position History */}
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold mb-4">Position History</h2>
-                    <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-800 text-gray-400">
-                                <tr>
-                                    <th className="p-4">Time</th>
-                                    <th className="p-4">Altitude</th>
-                                    <th className="p-4">SNR</th>
-                                    <th className="p-4">RSSI</th>
-                                    <th className="p-4">Coordinates</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-800">
-                                {node.positions.slice(0, 20).map((pos) => (
-                                    <tr key={pos.id} className="hover:bg-gray-800/50">
-                                        <td className="p-4 text-gray-300">{new Date(pos.timestamp).toLocaleString()}</td>
-                                        <td className="p-4 font-mono text-blue-300">{pos.altitude || '-'} m</td>
-                                        <td className="p-4 font-mono text-green-300">{pos.snr?.toFixed(2) || '-'} dB</td>
-                                        <td className="p-4 font-mono text-yellow-300">{pos.rssi || '-'} dBm</td>
-                                        <td className="p-4 font-mono text-gray-400 text-sm">
-                                            {pos.latitude.toFixed(5)}, {pos.longitude.toFixed(5)}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
                 {/* Traceroutes */}
                 <div>
                     <h2 className="text-2xl font-bold mb-4">Traceroutes Initiated</h2>
