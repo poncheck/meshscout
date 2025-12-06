@@ -30,5 +30,8 @@ echo ""
 # Usuń parametry query z DATABASE_URL (psql ich nie rozumie)
 DB_URL_CLEAN="${DATABASE_URL%%\?*}"
 
+# Zamień hostname 'postgres' na 'localhost' (dla połączenia z hosta)
+DB_URL_CLEAN="${DB_URL_CLEAN//postgres:5432/localhost:5432}"
+
 # Wykonaj zapytania SQL
 psql "$DB_URL_CLEAN" -f scripts/check-db.sql
